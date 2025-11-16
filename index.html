@@ -345,18 +345,14 @@
             width: 100%;
             height: 100%; /* Fill the 1:1 space */
         }
-        
-        /* ▼▼▼ FIX ▼▼▼ */
-        /* Make library video fill the container */
+
         #library-modal-player-container video {
              border-radius: 0; /* No radius inside modal */
              background-color: #000;
-             /* Make the video cover the entire 1:1 area */
              width: 100%;
              height: 100%;
-             object-fit: cover;
+             object-fit: cover; /* Make the video fill the container */
         }
-        /* ▲▲▲ END FIX ▲▲▲ */
         
         /* Library Grid */
         #library-grid {
@@ -670,7 +666,6 @@
             const recordButton = document.getElementById('record-button');
             const recordButtonIcon = document.getElementById('record-button-icon');
             const recordInstructions = document.getElementById('record-instructions');
-            // NEW: Mode selectors
             const modeHoldButton = document.getElementById('mode-hold');
             const modeLockButton = document.getElementById('mode-lock');
             
@@ -732,11 +727,9 @@
             let facingMode = 'user'; // 'user' (front) or 'environment' (back)
             let currentView = '';
             let db; // IndexedDB instance
-            let libraryModalBlob = null; // Holds the blob for the video in the library modal
-            
-            // NEW: Recording mode state
-            let recordingMode = 'hold'; // 'hold' or 'lock'
-            let isRecording = false; // Tracks if we are actively recording (for 'lock' mode)
+            let libraryModalBlob = null;
+            let recordingMode = 'hold';
+            let isRecording = false;
 
             // --- Constants ---
             const circumference = 2 * Math.PI * 46; // 2 * pi * r
@@ -757,7 +750,7 @@
                 } catch (err) {
                     console.error("Initialization failed:", err);
                     showToast("Could not load library storage.");
-                    showView('permissions'); // Show app anyway, but library might fail
+                    showView('permissions');
                 } finally {
                     loadingView.classList.add('hidden');
                 }
@@ -770,7 +763,6 @@
                 flipCameraButton.addEventListener('click', flipCamera);
                 resetButton.addEventListener('click', resetRecordingProgress);
                 
-                // Event listeners for record button and mode toggles
                 modeHoldButton.addEventListener('click', () => setRecordingMode('hold'));
                 modeLockButton.addEventListener('click', () => setRecordingMode('lock'));
                 recordButton.addEventListener('pointerdown', handleRecordPointerDown);
@@ -844,12 +836,8 @@
                     views[viewId].classList.add('flex');
                     currentView = viewId;
                     
-                    if (viewId === 'library') {
-                        loadLibrary();
-                    }
-                    if (viewId === 'preview') {
-                        recordedVideo.play().catch(e => console.error("Autoplay failed:", e));
-                    }
+                    if (viewId === 'library') loadLibrary();
+                    if (viewId === 'preview') recordedVideo.play().catch(e => console.error("Autoplay failed:", e));
                 }
             }
             
@@ -885,17 +873,13 @@
                     try {
                         const devices = await navigator.mediaDevices.enumerateDevices();
                         const videoInputDevices = devices.filter(device => device.kind === 'videoinput');
-                        if (videoInputDevices.length > 1) {
-                            flipCameraButton.classList.remove('hidden');
-                        } else {
-                            flipCameraButton.classList.add('hidden');
-                        }
+                        flipCameraButton.classList.toggle('hidden', videoInputDevices.length <= 1);
                     } catch (err) {
                         console.error('Could not enumerate devices:', err);
-                        flipCameraButton.classList.add('hidden'); // Hide on error
+                        flipCameraButton.classList.add('hidden');
                     }
                 } else {
-                    flipCameraButton.classList.add('hidden'); // Hide if API not supported
+                    flipCameraButton.classList.add('hidden');
                 }
             }
 
@@ -917,50 +901,46 @@
                     if (!preserveProgress) {
                         resetRecordingProgress();
                     }
-                    // ▼▼▼ FIX ▼▼▼
-                    // Always re-initialize the recorder when the stream changes.
                     initializeMediaRecorder();
-                    // ▲▲▲ END FIX ▲▲▲
                     showView('recording');
                 } catch (err) {
                      throw err;
                 }
             }
             
+            // ▼▼▼ FIX ▼▼▼
+            // Correctly handles the state of the MediaRecorder during a camera flip
+            // to prevent premature finalization of the video.
 			async function flipCamera() {
 				if (isRecording) {
-                    // Pause the current recording before switching cameras
-                    if (recordingMode === 'hold') {
-					    pauseRecording();
-                    } else {
-                        toggleLockRecording();
-                    }
+                    pauseRecording();
 				}
 
-                // Discard the old MediaRecorder instance. A new one will be created in startCamera.
+                // Detach the old recorder's onstop event. This is critical.
+                // It prevents the recorder from finalizing the video when its stream is killed by startCamera().
                 if (mediaRecorder) {
                     mediaRecorder.onstop = null;
-                    mediaRecorder.ondataavailable = null;
-                    mediaRecorder.onerror = null;
-                    mediaRecorder = null;
                 }
 
+                flipCameraButton.disabled = true;
+                recordButton.disabled = true;
+
 				facingMode = (facingMode === 'user') ? 'environment' : 'user';
+                
 				try {
-                    flipCameraButton.disabled = true;
-                    recordButton.disabled = true;
-                    
-                    // Restart camera with the new facing mode, preserving existing recorded chunks.
+                    // Restart the camera. This function will stop the old stream and create a new MediaRecorder.
+                    // The `recordedChunks` array is preserved because we pass `true`.
 					await startCamera(true); 
 				} catch (err) {
 					showToast("Could not switch camera.");
-					// Revert facing mode on error
+					// Revert facing mode on error to keep the state consistent.
 					facingMode = (facingMode === 'user') ? 'environment' : 'user';
 				} finally {
                     flipCameraButton.disabled = false;
                     recordButton.disabled = false;
                 }
 			}
+            // ▲▲▲ END FIX ▲▲▲
 
             function resetRecordingProgress() {
                 recordedChunks = [];
@@ -970,7 +950,6 @@
                 updateProgressUI();
                 nextButton.disabled = true;
                 recordButton.classList.remove('is-recording', 'is-paused');
-                
                 recordButtonIcon.classList.remove('fa-stop');
                 recordButtonIcon.classList.add('fa-video');
                 
@@ -979,11 +958,8 @@
             }
 
             function initializeMediaRecorder() {
-                if (!stream) {
-                    console.error("Cannot initialize MediaRecorder: stream is not available.");
-                    return;
-                }
-                
+                if (!stream) return;
+
                 const options = [
                     'video/mp4; codecs=avc1,mp4a.40.2',
                     'video/webm; codecs=vp9,opus',
@@ -999,16 +975,11 @@
                     };
                     
                     mediaRecorder.onstop = () => {
-                        if (recordedChunks.length === 0) {
-                            console.log("MediaRecorder stopped with no data.");
-                            return;
-                        }
+                        if (recordedChunks.length === 0) return;
 
                         const mimeType = recordedChunks[0].type || mediaRecorder.mimeType || 'video/mp4';
                         recordedBlob = new Blob(recordedChunks, { type: mimeType });
-                        const videoURL = URL.createObjectURL(recordedBlob);
-                        
-                        recordedVideo.src = videoURL;
+                        recordedVideo.src = URL.createObjectURL(recordedBlob);
                         recordedVideo.muted = false;
                         showView('preview');
                     };
@@ -1017,7 +988,6 @@
                         console.error('MediaRecorder error:', event.error);
                         showToast('An error occurred during recording.');
                     };
-
                 } catch (err) {
                     console.error('Failed to create MediaRecorder:', err);
                     showToast('This device may not be supported for recording.');
@@ -1029,57 +999,45 @@
             // --- Recording Mode Logic ---
             function setRecordingMode(mode) {
                 if (isRecording) return;
-                
                 recordingMode = mode;
                 
-                if (mode === 'hold') {
-                    modeHoldButton.classList.add('text-blue-500', 'ring-2', 'ring-blue-500');
-                    modeHoldButton.classList.remove('text-gray-500', 'dark:text-gray-400');
-                    modeLockButton.classList.remove('text-blue-500', 'ring-2', 'ring-blue-500');
-                    modeLockButton.classList.add('text-gray-500', 'dark:text-gray-400');
-                    
-                    recordInstructions.textContent = 'Hold to record, release to pause';
-                    recordButtonIcon.classList.remove('fa-stop');
-                    recordButtonIcon.classList.add('fa-video');
-                } else { // mode === 'lock'
-                    modeHoldButton.classList.remove('text-blue-500', 'ring-2', 'ring-blue-500');
-                    modeHoldButton.classList.add('text-gray-500', 'dark:text-gray-400');
-                    modeLockButton.classList.add('text-blue-500', 'ring-2', 'ring-blue-500');
-                    modeLockButton.classList.remove('text-gray-500', 'dark:text-gray-400');
-                    
-                    recordInstructions.textContent = 'Tap to record, tap again to stop';
-                    recordButtonIcon.classList.remove('fa-stop');
-                    recordButtonIcon.classList.add('fa-video');
-                }
+                const isHoldMode = mode === 'hold';
+                modeHoldButton.classList.toggle('text-blue-500', isHoldMode);
+                modeHoldButton.classList.toggle('ring-2', isHoldMode);
+                modeHoldButton.classList.toggle('ring-blue-500', isHoldMode);
+                modeHoldButton.classList.toggle('text-gray-500', !isHoldMode);
+                modeHoldButton.classList.toggle('dark:text-gray-400', !isHoldMode);
+
+                modeLockButton.classList.toggle('text-blue-500', !isHoldMode);
+                modeLockButton.classList.toggle('ring-2', !isHoldMode);
+                modeLockButton.classList.toggle('ring-blue-500', !isHoldMode);
+                modeLockButton.classList.toggle('text-gray-500', isHoldMode);
+                modeLockButton.classList.toggle('dark:text-gray-400', isHoldMode);
+                
+                recordInstructions.textContent = isHoldMode ? 'Hold to record, release to pause' : 'Tap to record, tap again to stop';
+                recordButtonIcon.classList.remove('fa-stop');
+                recordButtonIcon.classList.add('fa-video');
             }
             
             function handleRecordPointerDown() {
-                if (recordingMode === 'hold') {
-                    startRecording();
-                }
+                if (recordingMode === 'hold') startRecording();
             }
             
             function handleRecordPointerUp() {
-                if (recordingMode === 'hold') {
-                    pauseRecording();
-                }
+                if (recordingMode === 'hold') pauseRecording();
             }
             
             function handleRecordClick() {
-                if (recordingMode === 'lock') {
-                    toggleLockRecording();
-                }
+                if (recordingMode === 'lock') toggleLockRecording();
             }
             
             function toggleLockRecording() {
                 if (isRecording) {
                     pauseRecording();
-                    recordButtonIcon.classList.remove('fa-stop');
-                    recordButtonIcon.classList.add('fa-video');
+                    recordButtonIcon.classList.replace('fa-stop', 'fa-video');
                 } else {
                     startRecording();
-                    recordButtonIcon.classList.remove('fa-video');
-                    recordButtonIcon.classList.add('fa-stop');
+                    recordButtonIcon.classList.replace('fa-video', 'fa-stop');
                 }
             }
 
@@ -1088,13 +1046,11 @@
                 if (!mediaRecorder || totalRecordedTime >= MAX_DURATION || isRecording) return;
                 
                 isRecording = true;
-                
                 if (mediaRecorder.state === 'inactive') mediaRecorder.start(100);
                 else if (mediaRecorder.state === 'paused') mediaRecorder.resume();
                 
                 recordButton.classList.remove('is-paused');
                 recordButton.classList.add('is-recording');
-                
                 nextButton.disabled = true;
                 chunkStartTime = Date.now();
                 
@@ -1106,7 +1062,6 @@
                 if (!mediaRecorder || mediaRecorder.state !== 'recording' || !isRecording) return;
                 
                 isRecording = false;
-                
                 mediaRecorder.pause();
                 recordButton.classList.remove('is-recording');
                 totalRecordedTime += Date.now() - chunkStartTime;
@@ -1124,7 +1079,9 @@
                 const currentTotalTime = totalRecordedTime + currentTimeInChunk;
                 
                 if (currentTotalTime >= MAX_DURATION) {
-                    pauseRecording(); 
+                    if (recordingMode === 'lock') toggleLockRecording();
+                    else pauseRecording();
+                    
                     finishRecording();
                 } else {
                     updateProgressUI(currentTotalTime);
@@ -1146,13 +1103,14 @@
                 
                 recordButton.classList.remove('is-recording', 'is-paused');
                 nextButton.disabled = true;
-                
-                recordButtonIcon.classList.remove('fa-stop');
-                recordButtonIcon.classList.add('fa-video');
+                recordButtonIcon.classList.replace('fa-stop', 'fa-video');
 
                 if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                     mediaRecorder.stop();
-                } else if (recordedChunks.length === 0) {
+                } else if (recordedChunks.length > 0) {
+                    // Manually trigger the onstop if recorder is already inactive but we have chunks
+                    mediaRecorder.onstop();
+                } else {
                     showToast("Hold the record button to capture video first!");
                 }
                 stopCurrentStream();
