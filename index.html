@@ -1,8 +1,4 @@
 <!DOCTYPE html>
-<!-- 
-    Adds `dark` class to <html> based on localStorage or OS preference.
-    This must run before the body renders to prevent FOUC (Flash Of Unstyled Content).
--->
 <script>
     if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
@@ -13,25 +9,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- 
-        Viewport meta tags to prevent zooming and ensure proper scaling on mobile.
-        user-scalable=no, maximum-scale=1.0 are crucial for a native-app feel.
-        viewport-fit=cover is added for better edge-to-edge display on modern phones.
-    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Shorties - 6 Second Video</title>
     
     <link rel="icon" type="image/png" href="https://i.ibb.co/93dkgst4/video-video-call-camera-record-svgrepo-com.png">
 
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Load Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Load Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
@@ -148,22 +136,6 @@
         @keyframes pulse-record {
             0%, 100% {
                 transform: scale(1);
-                /* Using a blue shadow for the new lock button, 
-                   but it will be overridden by .is-recording-hold */
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); /* blue-500 */
-            }
-            50% {
-                transform: scale(1.05);
-                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-            }
-        }
-        /* Specific pulse for hold button */
-        .is-recording-hold {
-            animation: pulse-record 1.5s infinite;
-        }
-        @keyframes pulse-record-hold {
-            0%, 100% {
-                transform: scale(1);
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); /* red-500 */
             }
             50% {
@@ -171,35 +143,19 @@
                 box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
             }
         }
-        .is-recording-hold {
-            animation: pulse-record-hold 1.5s infinite;
+        .is-recording {
+            animation: pulse-record 1.5s infinite;
         }
-
-        /* Specific pulse for lock button */
-        @keyframes pulse-record-lock {
-             0%, 100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); /* blue-500 */
-            }
-            50% {
-                transform: scale(1.05);
-                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-            }
-        }
-        .is-recording-lock {
-             animation: pulse-record-lock 1.5s infinite;
-        }
-
-
+        
         @keyframes riffle-paused {
             0% {
-                box-shadow: 0 0 0 0px rgba(107, 114, 128, 0.4); /* gray-500 */
+                box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.4);
             }
             70% {
-                box-shadow: 0 0 0 15px rgba(107, 114, 128, 0);
+                box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
             }
             100% {
-                box-shadow: 0 0 0 0px rgba(107, 114, 128, 0);
+                box-shadow: 0 0 0 0px rgba(239, 68, 68, 0);
             }
         }
         .is-paused {
@@ -472,74 +428,48 @@
 
 <body class="overflow-hidden h-screen">
 
-    <!-- Loading Screen (Visible on start) -->
     <div id="loading-view" class="fixed inset-0 bg-white flex flex-col items-center justify-center">
         <div class="loader"></div>
         <p class="mt-4 text-gray-600">Initializing App...</p>
     </div>
 
-    <!-- Main App Container -->
-    <!-- h-full was changed to h-screen to work on 100vh devices -->
     <div class="flex flex-col h-screen max-w-md mx-auto">
         
-        <!-- Header -->
         <header class="flex items-center justify-between p-4 w-full relative">
-            <!-- Library Button -->
             <button id="library-button" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 <i class="fas fa-folder-open text-xl"></i>
             </button>
             
-            <!-- Centered Title -->
             <h1 class="text-2xl font-bold text-blue-500 absolute left-1/2 -translate-x-1/2">Shorties</h1>
             
-            <!-- Dark Mode Toggle Button -->
             <button id="theme-toggle-button" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <!-- Icon will be set by JS (fa-sun or fa-moon) -->
                 <i id="theme-icon" class="fa-solid fa-certificate text-xl"></i>
             </button>
         </header>
 
-        <!-- App Content Area -->
-        <!-- flex-1 and overflow-y-auto allow content to scroll if needed, while header is fixed -->
         <main id="app-container" class="flex-1 flex flex-col p-4 overflow-y-auto">
             
-            <!-- View 1: Permissions Screen -->
             <div id="permissions-view" class="hidden flex-1 flex flex-col items-center justify-center text-center">
                 <div class="p-5 bg-blue-100 rounded-full mb-6 flex items-center justify-center" style="width: 80px; height: 80px;">
-                    <!-- Font Awesome icon replacement -->
                     <i class="fas fa-video fa-2x text-blue-500"></i>
                 </div>
                 <h2 class="text-2xl font-bold mb-2">Ready to create a Shortie?</h2>
                 <p class="text-gray-600 mb-8">We'll need access to your camera and microphone to record.</p>
                 <button id="get-camera-button" class="w-full bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-lg hover:bg-blue-600 transition-all flex items-center justify-center">
-                    <!-- Font Awesome icon added -->
                     <i class="fas fa-camera mr-2"></i>
                     Enable Camera & Mic
                 </button>
             </div>
             
-            <!-- View 2: Recording Screen -->
             <div id="recording-view" class="hidden flex-1 flex flex-col justify-between">
-                <!-- Video Preview -->
                 <div class="aspect-square bg-gray-800 rounded-3xl shadow-lg w-full mx-auto">
-                    <!-- 
-                        'transform: scaleX(-1)' flips the preview for a "mirror" effect,
-                        which is standard for front-facing cameras. The recording
-                        itself is not flipped.
-                        
-                        NEW: Touch-action: none prevents page scroll/refresh on swipe
-                    -->
-                    <video id="preview" muted autoplay playsinline class="rounded-3xl" style="touch-action: none;"></video>
+                    <video id="preview" muted autoplay playsinline class="rounded-3xl"></video>
                 </div>
                 
-                <!-- Recording Controls -->
                 <div id="recording-controls" class="flex flex-col items-center gap-4 mt-6">
-                    <!-- Progress Timer -->
                     <div class="relative w-24 h-24">
                         <svg class="w-full h-full" viewBox="0 0 100 100">
-                            <!-- Background circle -->
                             <circle class="text-gray-200 progress-ring__circle_bg" stroke-width="8" stroke="currentColor" fill="transparent" r="46" cx="50" cy="50" />
-                            <!-- Progress circle -->
                             <circle class="progress-ring__circle"
                                 stroke-width="8"
                                 stroke-dasharray="289.0265"
@@ -552,43 +482,31 @@
                         </div>
                     </div>
                     
-                    <!-- MODIFIED: Text changes based on state -->
-                    <p id="record-instructions" class="text-gray-600 h-6">Hold to record, or swipe for Lock Mode</p>
+                    <p id="record-instructions" class="text-gray-600">Hold to record, release to pause</p>
 
-                    <!-- REMOVED: Swipe up to lock indicator -->
-
-                    <!-- Main Record Button Container -->
-                    <div class="flex items-center justify-center w-full mt-2">
-                        <!-- 
-                            NEW: Wrapper to hold both buttons.
-                            Only one button will be visible at a time.
-                        -->
-                        <div id="record-button-wrapper" class="relative w-20 h-20">
-                            <!-- Hold to Record Button (Default) -->
-                            <button id="record-button-hold" class="w-20 h-20 bg-red-500 rounded-full shadow-xl focus:outline-none transition-all duration-200 active:scale-95 flex items-center justify-center absolute inset-0 disabled:opacity-50">
-                                <i id="record-button-hold-icon" class="fas fa-video text-white text-3xl transition-transform"></i>
-                            </button>
-                            <!-- Tap to Record (Locked) Button (Hidden) -->
-                            <button id="record-button-lock" class="w-20 h-20 bg-blue-500 rounded-full shadow-xl focus:outline-none transition-all duration-200 active:scale-95 flex items-center justify-center absolute inset-0 hidden disabled:opacity-50">
-                                <i id="record-button-lock-icon" class="fas fa-lock text-white text-3xl transition-transform"></i>
-                            </button>
-                        </div>
+                    <div class="flex items-center justify-center w-full mt-2 gap-4">
+                        <button id="mode-hold" class="w-16 h-16 bg-gray-200 rounded-full shadow-lg flex items-center justify-center text-xl text-blue-500 ring-2 ring-blue-500 transition-all" title="Hold to Record">
+                            <i class="fas fa-hand-pointer"></i>
+                        </button>
+                        
+                        <button id="record-button" class="w-20 h-20 bg-red-500 rounded-full shadow-xl focus:outline-none transition-all duration-200 active:scale-95 flex items-center justify-center disabled:opacity-50">
+                            <i id="record-button-icon" class="fas fa-video text-white text-3xl transition-transform"></i>
+                        </button>
+            
+                        <button id="mode-lock" class="w-16 h-16 bg-gray-200 rounded-full shadow-lg flex items-center justify-center text-xl text-gray-500 dark:text-gray-400 transition-all" title="Tap to Lock Record">
+                            <i class="fas fa-lock"></i>
+                        </button>
                     </div>
 
-
-                    <!-- Secondary Controls (Redesigned Layout) -->
                     <div class="flex items-center justify-between gap-4 w-full mt-4">
-                        <!-- NEW: Reset Button -->
                         <button id="reset-button" class="w-16 h-16 bg-gray-200 rounded-full shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center text-xl text-red-500">
                             <i class="fas fa-trash-alt"></i>
                         </button>
 
-                        <!-- Camera Flip Button -->
                         <button id="flip-camera-button" class="w-16 h-16 bg-gray-200 rounded-full shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center text-xl disabled:opacity-50">
                             <i class="fas fa-sync-alt"></i>
                         </button>
                         
-                        <!-- Next Button -->
                         <button id="next-button" class="flex-1 bg-gray-200 font-medium py-3 px-6 rounded-xl shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center text-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                             Next
                             <i class="fas fa-arrow-right ml-2"></i>
@@ -597,24 +515,18 @@
                 </div>
             </div>
             
-            <!-- View 3: Preview Screen -->
             <div id="preview-view" class="hidden flex-1 flex flex-col justify-between">
-                <!-- Recorded Video Player with Custom Controls -->
                 <div id="video-container" class="video-player-container aspect-square bg-gray-900 rounded-3xl shadow-lg w-full mx-auto paused">
                     <video id="recorded-video" loop playsinline class="rounded-3xl"></video>
                     
-                    <!-- Big Center Play Button -->
                     <div id="preview-big-play-button" class="big-play-button">
                         <i class="fas fa-play"></i>
                     </div>
                     
-                    <!-- Custom Player UI -->
                     <div id="preview-custom-controls" class="custom-controls-container flex flex-col">
-                        <!-- Custom Progress Bar -->
                         <div id="preview-progress-bar-container" class="progress-bar-container">
                             <div id="preview-progress-bar" class="progress-bar"></div>
                         </div>
-                        <!-- Controls Row -->
                         <div class="flex items-center justify-between">
                             <button id="preview-play-pause-btn" class="play-pause-btn">
                                 <i id="preview-play-pause-icon" class="fas fa-play"></i>
@@ -626,17 +538,14 @@
                     </div>
                 </div>
                 
-                <!-- Action Buttons -->
                 <div id="preview-actions" class="flex flex-col gap-3 mt-6">
                     <h3 class="text-xl font-semibold text-center mb-2">Your Shortie is ready!</h3>
                     
-                    <!-- Download Button -->
                     <button id="download-video-button" class="w-full text-center bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-lg hover:bg-blue-600 transition-all flex items-center justify-center">
                         <i class="fas fa-download mr-2"></i>
                         Save to Device
                     </button>
                     
-                    <!-- Record Another Button -->
                     <button id="record-another-button" class="w-full bg-gray-200 font-medium py-3 px-6 rounded-xl shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center">
                         <i class="fas fa-redo mr-2"></i>
                         Record Another
@@ -644,11 +553,9 @@
                 </div>
             </div>
             
-            <!-- View 4: Library Screen -->
             <div id="library-view" class="hidden flex-1 flex flex-col">
                 <div class="flex items-center justify-between mb-4">
                      <h2 class="text-2xl font-bold">My Library</h2>
-                     <!-- Back button to go to recording view -->
                      <button id="library-back-button" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-times text-xl"></i>
                     </button>
@@ -656,10 +563,8 @@
                 
                 <p class="text-gray-600 mb-6">Videos you save are stored here, on this device.</p>
                 
-                <!-- Grid for saved videos -->
                 <div id="library-grid" class="flex-0 overflow-y-auto">
-                    <!-- Library items will be injected here by JS -->
-                </div>
+                    </div>
                 
                 <div id="library-empty-state" class="hidden flex-1 flex-col items-center justify-center text-center p-8">
                     <i class="fas fa-folder-open text-6xl text-gray-400 mb-4"></i>
@@ -671,12 +576,10 @@
         </main>
     </div>
 
-    <!-- Toast Notification (for errors) -->
     <div id="toast" class="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-red-500 text-white p-4 rounded-lg shadow-lg">
         <p id="toast-message">Error message goes here</p>
     </div>
     
-    <!-- Download/Share Modal (Hidden by default) -->
     <div id="download-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl p-6 shadow-xl w-full max-w-sm text-center">
             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -685,7 +588,6 @@
             <h2 class="text-xl font-bold text-gray-900 mb-2">Saved!</h2>
             <p class="text-gray-600 mb-6">Your video is saved to your device and added to your library.</p>
             <div class="flex flex-col gap-3">
-                <!-- REMOVED Share Button -->
                 <button id="modal-close-button" class="w-full bg-gray-200 font-medium py-3 px-5 rounded-xl shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center">
                     Close
                 </button>
@@ -693,36 +595,27 @@
         </div>
     </div>
     
-    <!-- Library Video Player Modal -->
     <div id="library-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden" style="backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
-        <!-- Main modal container with rounded corners and overflow hidden -->
         <div class="flex flex-col w-full max-w-md bg-transparent rounded-3xl overflow-hidden">
             
-            <!-- 1:1 Aspect Ratio Content (Video Player) -->
             <div id="library-modal-content" class="bg-black shadow-xl w-full rounded-t-3xl">
                 <div id="library-modal-body">
                     
-                    <!-- Close Button -->
                     <button id="library-modal-close" class="absolute top-3 right-3 w-10 h-10 bg-black bg-opacity-50 rounded-full text-white flex items-center justify-center z-50">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                     
-                    <!-- Video Player Container -->
                     <div id="library-modal-player-container" class="video-player-container w-full h-full rounded-none paused">
                         <video id="library-video-player" loop playsinline></video>
                         
-                        <!-- Big Center Play Button -->
                         <div id="library-big-play-button" class="big-play-button">
                             <i class="fas fa-play"></i>
                         </div>
                         
-                        <!-- Custom Player UI -->
                         <div id="library-custom-controls" class="custom-controls-container flex flex-col rounded-none">
-                            <!-- Custom Progress Bar -->
                             <div id="library-progress-bar-container" class="progress-bar-container">
                                 <div id="library-progress-bar" class="progress-bar"></div>
                             </div>
-                            <!-- Controls Row -->
                             <div class="flex items-center justify-between">
                                 <button id="library-play-pause-btn" class="play-pause-btn">
                                     <i id="library-play-pause-icon" class="fas fa-play"></i>
@@ -736,15 +629,8 @@
                 </div>
             </div>
             
-            <!-- Action buttons container for Library Modal -->
             <div class="modal-actions-container bg-black p-4 rounded-b-3xl">
                 <div class="flex items-center justify-center gap-4">
-                    <!-- REMOVED Share button -->
-                    <!--
-                        SECURITY NOTE: This button downloads the video to the browser's default 'Downloads' folder.
-                        For security reasons, web apps CANNOT open local file paths (like C:\...) or save files to custom folders.
-                        This is a universal browser rule to protect you from malicious websites.
-                    -->
                     <button id="library-modal-download" class="w-full bg-blue-500 text-white font-bold py-3 px-5 rounded-xl text-lg shadow-lg hover:bg-blue-600 transition-all flex items-center justify-center">
                         <i class="fas fa-download mr-2"></i> Download
                     </button>
@@ -776,14 +662,13 @@
             
             // Recording
             const previewVideo = document.getElementById('preview');
-            // NEW: Record button elements
-            const recordButtonHold = document.getElementById('record-button-hold');
-            const recordButtonHoldIcon = document.getElementById('record-button-hold-icon');
-            const recordButtonLock = document.getElementById('record-button-lock');
-            const recordButtonLockIcon = document.getElementById('record-button-lock-icon');
-            
+            const recordButton = document.getElementById('record-button');
+            const recordButtonIcon = document.getElementById('record-button-icon');
             const recordInstructions = document.getElementById('record-instructions');
-            // REMOVED: swipeLockIndicator
+            // NEW: Mode selectors
+            const modeHoldButton = document.getElementById('mode-hold');
+            const modeLockButton = document.getElementById('mode-lock');
+            
             const nextButton = document.getElementById('next-button');
             const flipCameraButton = document.getElementById('flip-camera-button');
             const resetButton = document.getElementById('reset-button');
@@ -838,20 +723,15 @@
             let totalRecordedTime = 0; // in milliseconds
             let chunkStartTime = 0;
             let recordingInterval;
-            // REMOVED: countdownInterval
             const MAX_DURATION = 6000; // 6 seconds
             let facingMode = 'user'; // 'user' (front) or 'environment' (back)
             let currentView = '';
             let db; // IndexedDB instance
             let libraryModalBlob = null; // Holds the blob for the video in the library modal
             
-            // NEW: Record Mode state
-            let currentRecordMode = 'hold'; // 'hold' or 'lock'
-            
-            // NEW: Swipe tracking variables
-            let swipeStartX = 0;
-            let swipeStartY = 0;
-            const SWIPE_THRESHOLD = 50; // Min pixels for a horizontal swipe
+            // NEW: Recording mode state
+            let recordingMode = 'hold'; // 'hold' or 'lock'
+            let isRecording = false; // Tracks if we are actively recording (for 'lock' mode)
 
             // --- Constants ---
             const circumference = 2 * Math.PI * 46; // 2 * pi * r
@@ -885,16 +765,13 @@
                 flipCameraButton.addEventListener('click', flipCamera);
                 resetButton.addEventListener('click', resetRecordingProgress);
                 
-                // NEW: Event listeners for new record buttons
-                recordButtonHold.addEventListener('pointerdown', handleHoldPointerDown);
-                // We no longer need a window-wide 'pointerup' for hold, 
-                // it's added dynamically in handleHoldPointerDown
-                recordButtonLock.addEventListener('click', handleLockClick);
+                // NEW: Event listeners for record button and mode toggles
+                modeHoldButton.addEventListener('click', () => setRecordingMode('hold'));
+                modeLockButton.addEventListener('click', () => setRecordingMode('lock'));
+                recordButton.addEventListener('pointerdown', handleRecordPointerDown);
+                recordButton.addEventListener('pointerup', handleRecordPointerUp);
+                recordButton.addEventListener('click', handleRecordClick);
                 
-                // NEW: Swipe listeners on video preview
-                previewVideo.addEventListener('pointerdown', handleSwipeStart);
-                previewVideo.addEventListener('pointerup', handleSwipeEnd);
-
                 nextButton.addEventListener('click', finishRecording);
                 downloadVideoButton.addEventListener('click', downloadAndSaveToLibrary);
                 recordAnotherButton.addEventListener('click', () => {
@@ -941,8 +818,7 @@
                     if (err.name === 'NotAllowedError') {
                         showToast('Camera and Mic access was denied.');
                     } else if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
-                        // Refined error
-                        showToast('Could not find a suitable camera or mic.');
+                        showToast('Could not find a suitable camera.');
                     } else {
                         showToast('Error starting camera. Please refresh.');
                     }
@@ -1001,12 +877,15 @@
             async function startCamera(preserveProgress = false) {
                 stopCurrentStream();
                 
+                // FIX: Removed `aspectRatio: 1`. This allows the browser to
+                // select the 'environment' camera even if it doesn't
+                // support a 1:1 stream. The CSS `object-fit: cover`
+                // will handle cropping the preview to a square.
                 const constraints = {
                     audio: true,
-                    video: { aspectRatio: 1, facingMode: facingMode }
+                    video: { facingMode: facingMode }
                 };
 
-                // We 'await' here, so if it throws, the caller's catch block will get it.
                 try {
                     stream = await navigator.mediaDevices.getUserMedia(constraints);
                     previewVideo.srcObject = stream;
@@ -1018,85 +897,64 @@
                     initializeMediaRecorder();
                     showView('recording');
                 } catch (err) {
-                     console.error("Error in startCamera:", err.name, err.message);
-                     // Re-throw the error so the caller (flipCamera or requestCameraAndStart) 
-                     // can handle it and show a specific toast.
                      throw err;
                 }
             }
             
 			async function flipCamera() {
                 // Pause recording if it's active
-				if (mediaRecorder && mediaRecorder.state === 'recording') {
-                    if (currentRecordMode === 'hold') {
-                        // If holding, just pause.
-                        handleHoldPointerUp(); // This will call pauseRecording() and update UI
+				if (isRecording) {
+                    if (recordingMode === 'hold') {
+					    pauseRecording();
                     } else {
-                        // If locked, simulate a click to pause.
-                        handleLockClick(); // This will call pauseRecording() and update UI
+                        // In 'lock' mode, toggle it off
+                        toggleLockRecording();
                     }
 				}
 
-                // Detach the onstop event handler from the *old*
+                // FIX: Detach the onstop event handler from the *old*
                 // mediaRecorder instance *before* we stop its stream.
+                // This prevents it from firing and navigating to the preview screen.
                 if (mediaRecorder) {
                     mediaRecorder.onstop = null;
                 }
 
 				facingMode = (facingMode === 'user') ? 'environment' : 'user';
 				try {
-                    // Disable controls while camera is switching
+                    // BUGFIX: Disable controls while camera is switching
                     flipCameraButton.disabled = true;
-                    recordButtonHold.disabled = true;
-                    recordButtonLock.disabled = true;
+                    recordButton.disabled = true;
 
-					await startCamera(true); // 'true' preserves recording progress
+                    // startCamera(true) will stop the old stream (triggering nothing)
+                    // and create a new MediaRecorder, which will have its
+                    // onstop handler set correctly by initializeMediaRecorder().
+					await startCamera(true); 
 				} catch (err) {
-                    // NEW: Improved error handling
-                    console.error('Failed to flip camera:', err);
-                    if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
-                        showToast("Could not switch. The other camera may not be available.");
-                    } else {
-                        showToast("Could not switch cameras.");
-                    }
-                    
+					showToast("Could not switch camera.");
                     // Restore facing mode if it failed
 					facingMode = (facingMode === 'user') ? 'environment' : 'user';
 				} finally {
-                    // Re-enable controls
+                    // BUGFIX: Re-enable controls
                     flipCameraButton.disabled = false;
-                    recordButtonHold.disabled = false;
-                    recordButtonLock.disabled = false;
+                    recordButton.disabled = false;
                 }
 			}
 
             function resetRecordingProgress() {
                 recordedChunks = [];
                 totalRecordedTime = 0;
+                isRecording = false; // NEW
                 
                 updateProgressUI();
                 nextButton.disabled = true;
+                recordButton.classList.remove('is-recording', 'is-paused');
+                
+                // NEW: Reset icon
+                recordButtonIcon.classList.remove('fa-stop');
+                recordButtonIcon.classList.add('fa-video');
                 
                 clearInterval(recordingInterval);
-                
-                // NEW: Reset both buttons and set mode to 'hold'
-                setRecordMode('hold'); // Resets text, shows correct button
-                resetButtonAppearance(); // Resets icons and animations
-
                 console.log("Recording progress has been reset.");
-            }
-            
-            // NEW: Resets icons and animations for BOTH buttons
-            function resetButtonAppearance() {
-                 // Reset Hold Button
-                recordButtonHoldIcon.classList.add('fa-video');
-                recordButtonHoldIcon.classList.remove('fa-stop'); // Not really used, but good to have
-                recordButtonHold.classList.remove('is-recording-hold', 'is-paused');
-                
-                // Reset Lock Button
-                recordButtonLockIcon.classList.add('fa-lock');
-                recordButtonLockIcon.classList.remove('fa-stop');
-                recordButtonLock.classList.remove('is-recording-lock', 'is-paused');
             }
 
             function initializeMediaRecorder() {
@@ -1137,132 +995,87 @@
                 } catch (err) {
                     console.error('Failed to create MediaRecorder:', err);
                     showToast('This device may not be supported for recording.');
+                    // BUGFIX: Explicitly nullify recorder on failure
                     mediaRecorder = null;
                     showView('permissions');
                 }
             }
 
-            // --- NEW: Swipe-to-change-mode logic ---
-
-            function handleSwipeStart(e) {
-                // Don't track swipes if we are in the middle of recording
-                if (mediaRecorder && mediaRecorder.state === 'recording') return;
-                // Don't track if it's not the primary pointer (e.g., pinch zoom)
-                if (!e.isPrimary) return;
-
-                swipeStartX = e.clientX;
-                swipeStartY = e.clientY;
-            }
-
-            function handleSwipeEnd(e) {
-                // Don't track swipes if we are in the middle of recording
-                if (mediaRecorder && mediaRecorder.state === 'recording') return;
-                if (!e.isPrimary || swipeStartX === 0) return;
-
-                const swipeEndX = e.clientX;
-                const swipeEndY = e.clientY;
-                const deltaX = swipeEndX - swipeStartX;
-                const deltaY = swipeEndY - swipeStartY;
-
-                // Reset start coordinates
-                swipeStartX = 0;
-                swipeStartY = 0;
+            // --- NEW: Recording Mode Logic ---
+            function setRecordingMode(mode) {
+                if (isRecording) return; // Don't switch modes while recording
                 
-                // Check if it's a clear horizontal swipe (more horizontal than vertical)
-                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
-                    if (deltaX > 0) {
-                        // Swipe Right -> Show 'Hold' Mode
-                        setRecordMode('hold');
-                    } else {
-                        // Swipe Left -> Show 'Lock' Mode
-                        setRecordMode('lock');
-                    }
+                recordingMode = mode;
+                
+                if (mode === 'hold') {
+                    // Activate 'hold' button
+                    modeHoldButton.classList.add('text-blue-500', 'ring-2', 'ring-blue-500');
+                    modeHoldButton.classList.remove('text-gray-500', 'dark:text-gray-400');
+                    // Deactivate 'lock' button
+                    modeLockButton.classList.remove('text-blue-500', 'ring-2', 'ring-blue-500');
+                    modeLockButton.classList.add('text-gray-500', 'dark:text-gray-400');
+                    
+                    recordInstructions.textContent = 'Hold to record, release to pause';
+                    recordButtonIcon.classList.remove('fa-stop');
+                    recordButtonIcon.classList.add('fa-video');
+                } else { // mode === 'lock'
+                    // Deactivate 'hold' button
+                    modeHoldButton.classList.remove('text-blue-500', 'ring-2', 'ring-blue-500');
+                    modeHoldButton.classList.add('text-gray-500', 'dark:text-gray-400');
+                    // Activate 'lock' button
+                    modeLockButton.classList.add('text-blue-500', 'ring-2', 'ring-blue-500');
+                    modeLockButton.classList.remove('text-gray-500', 'dark:text-gray-400');
+                    
+                    recordInstructions.textContent = 'Tap to record, tap again to stop';
+                    recordButtonIcon.classList.remove('fa-stop');
+                    recordButtonIcon.classList.add('fa-video');
                 }
-            }
-
-            function setRecordMode(mode) {
-                // Don't do anything if we're already in this mode
-                if (mode === currentRecordMode) return;
-
-                if (mode === 'lock') {
-                    currentRecordMode = 'lock';
-                    recordButtonHold.classList.add('hidden');
-                    recordButtonLock.classList.remove('hidden');
-                    recordInstructions.textContent = 'Tap to record (locked)';
-                } else { // 'hold'
-                    currentRecordMode = 'hold';
-                    recordButtonLock.classList.add('hidden');
-                    recordButtonHold.classList.remove('hidden');
-                    recordInstructions.textContent = 'Hold to record, or swipe for Lock Mode';
-                }
-                // Reset button appearance when switching modes (in case one was paused)
-                resetButtonAppearance();
-            }
-
-            // --- NEW: Event Handlers for Recording ---
-
-            // Hold Button
-            function handleHoldPointerDown(e) {
-                // Prevent this from triggering swipe detection on the video
-                e.stopPropagation(); 
-                if (totalRecordedTime >= MAX_DURATION || !mediaRecorder) return;
-                
-                startRecording();
-                recordButtonHold.classList.remove('is-paused');
-                recordButtonHold.classList.add('is-recording-hold');
-                recordInstructions.textContent = 'Release to pause';
-                
-                // Add listener to window to catch "drag off"
-                window.addEventListener('pointerup', handleHoldPointerUp, { once: true });
             }
             
-            function handleHoldPointerUp() {
-                if (mediaRecorder && mediaRecorder.state === 'recording') {
-                    pauseRecording();
-                    recordButtonHold.classList.remove('is-recording-hold');
-                    if (totalRecordedTime > 0) {
-                        recordButtonHold.classList.add('is-paused');
-                    }
-                }
-                // Only reset text if we are still in hold mode
-                if (currentRecordMode === 'hold') {
-                     recordInstructions.textContent = 'Hold to record, or swipe for Lock Mode';
-                }
-            }
-
-            // Lock Button
-            function handleLockClick() {
-                if (!mediaRecorder || totalRecordedTime >= MAX_DURATION) return;
-                
-                if (mediaRecorder.state === 'recording') {
-                    // Is recording, so pause it
-                    pauseRecording();
-                    recordButtonLockIcon.classList.add('fa-lock');
-                    recordButtonLockIcon.classList.remove('fa-stop');
-                    recordButtonLock.classList.remove('is-recording-lock');
-                    if (totalRecordedTime > 0) {
-                        recordButtonLock.classList.add('is-paused');
-                    }
-                    recordInstructions.textContent = 'Tap to resume, or swipe for Hold Mode';
-                } else {
-                    // Is paused or inactive, so start it
+            function handleRecordPointerDown() {
+                if (recordingMode === 'hold') {
                     startRecording();
-                    recordButtonLockIcon.classList.add('fa-stop');
-                    recordButtonLockIcon.classList.remove('fa-lock');
-                    recordButtonLock.classList.remove('is-paused');
-                    recordButtonLock.classList.add('is-recording-lock');
-                    recordInstructions.textContent = 'Recording (Locked)...';
                 }
             }
             
-            // --- Original recording functions (now with UI logic removed) ---
+            function handleRecordPointerUp() {
+                if (recordingMode === 'hold') {
+                    pauseRecording();
+                }
+            }
+            
+            function handleRecordClick() {
+                if (recordingMode === 'lock') {
+                    toggleLockRecording();
+                }
+            }
+            
+            function toggleLockRecording() {
+                if (isRecording) {
+                    pauseRecording();
+                    // Update UI for 'lock' mode (paused)
+                    recordButtonIcon.classList.remove('fa-stop');
+                    recordButtonIcon.classList.add('fa-video');
+                } else {
+                    startRecording();
+                    // Update UI for 'lock' mode (recording)
+                    recordButtonIcon.classList.remove('fa-video');
+                    recordButtonIcon.classList.add('fa-stop');
+                }
+            }
+
+            // --- Original recording functions (Modified) ---
             function startRecording() {
-                if (!mediaRecorder || totalRecordedTime >= MAX_DURATION) return;
+                if (!mediaRecorder || totalRecordedTime >= MAX_DURATION || isRecording) return;
+                
+                isRecording = true; // NEW
                 
                 if (mediaRecorder.state === 'inactive') mediaRecorder.start(100);
                 else if (mediaRecorder.state === 'paused') mediaRecorder.resume();
                 
-                // UI logic is now in the handlers
+                recordButton.classList.remove('is-paused');
+                recordButton.classList.add('is-recording');
+                
                 nextButton.disabled = true;
                 chunkStartTime = Date.now();
                 
@@ -1271,16 +1084,19 @@
             }
 
             function pauseRecording() {
-                if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+                if (!mediaRecorder || mediaRecorder.state !== 'recording' || !isRecording) return;
+                
+                isRecording = false; // NEW
                 
                 mediaRecorder.pause();
+                recordButton.classList.remove('is-recording');
                 totalRecordedTime += Date.now() - chunkStartTime;
                 clearInterval(recordingInterval);
                 updateProgressUI();
                 
                 if (totalRecordedTime > 0) {
                     nextButton.disabled = false;
-                    // UI logic is now in the handlers
+                    recordButton.classList.add('is-paused');
                 }
             }
 
@@ -1289,12 +1105,7 @@
                 const currentTotalTime = totalRecordedTime + currentTimeInChunk;
                 
                 if (currentTotalTime >= MAX_DURATION) {
-                    // Stop based on mode
-                    if (currentRecordMode === 'hold') {
-                        handleHoldPointerUp();
-                    } else { // 'lock'
-                        handleLockClick();
-                    }
+                    pauseRecording(); 
                     finishRecording();
                 } else {
                     updateProgressUI(currentTotalTime);
@@ -1312,15 +1123,19 @@
 
             function finishRecording() {
                 clearInterval(recordingInterval);
-
-                resetButtonAppearance();
-                nextButton.disabled = true;
-                recordInstructions.textContent = 'Hold to record, or swipe for Lock Mode';
+                isRecording = false; // NEW
                 
+                recordButton.classList.remove('is-recording', 'is-paused');
+                nextButton.disabled = true;
+                
+                // NEW: Reset icon
+                recordButtonIcon.classList.remove('fa-stop');
+                recordButtonIcon.classList.add('fa-video');
+
                 if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                     mediaRecorder.stop();
                 } else if (recordedChunks.length === 0) {
-                    showToast("Hold or tap the record button to capture video first!");
+                    showToast("Hold the record button to capture video first!");
                 }
                 stopCurrentStream();
             }
@@ -1361,13 +1176,7 @@
                 playPauseBtn.addEventListener('click', togglePlay);
                 bigPlayBtn.addEventListener('click', togglePlay);
                 muteBtn.addEventListener('click', toggleMute);
-                video.addEventListener('click', (e) => {
-                    // Only toggle play if the click is on the video,
-                    // not part of a swipe gesture
-                    if (swipeStartX === 0) {
-                        togglePlay();
-                    }
-                });
+                video.addEventListener('click', togglePlay);
             }
             
             // --- Library (IndexedDB) Functions ---
