@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<!-- 
+    This script handles loading the dark/light theme instantly to prevent flashing.
+    It checks localStorage first, then falls back to the user's system preference.
+-->
 <script>
     if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
@@ -9,17 +13,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- 
+        Viewport settings for a non-resizable, full-screen mobile-first experience.
+        'viewport-fit=cover' ensures the app fills the entire screen on devices with notches (like iPhones).
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Shorties - 6 Second Video</title>
     
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://i.ibb.co/93dkgst4/video-video-call-camera-record-svgrepo-com.png">
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
@@ -38,9 +50,7 @@
             -webkit-user-select: none;
             -ms-user-select: none;
             -moz-user-select: none;
-            /* Default light mode colors.
-                These are overridden by dark mode styles below.
-            */
+            /* Default light mode colors */
             background-color: #ffffff; /* bg-white */
             color: #111827; /* text-gray-900 */
             transition: background-color 0.2s linear, color 0.2s linear;
@@ -71,22 +81,21 @@
             background-color: #030712; /* bg-gray-950 */
         }
         /* Modal dark styles */
-        html.dark #download-modal .bg-white,
+        html.dark #download-modal .modal-content,
+        html.dark #confirm-modal .modal-content,
         html.dark #library-modal-content {
             background-color: #1f2937; /* bg-gray-800 */
         }
-        html.dark #download-modal .text-gray-900,
-        html.dark #library-modal-content .text-gray-900 {
+        html.dark .modal-content .text-gray-900 {
             color: #f9fafb; /* text-gray-50 */
         }
-        html.dark #download-modal .text-gray-600,
-        html.dark #library-modal-content .text-gray-600 {
+        html.dark .modal-content .text-gray-600 {
             color: #9ca3af; /* text-gray-400 */
         }
-        html.dark #download-modal .bg-gray-200 {
+        html.dark .modal-content .bg-gray-200 {
             background-color: #4b5563; /* bg-gray-600 */
         }
-        html.dark #download-modal .bg-gray-200:hover {
+        html.dark .modal-content .bg-gray-200:hover {
             background-color: #525c6a;
         }
         html.dark .library-item {
@@ -114,10 +123,7 @@
             height: 100%;
             object-fit: cover; /* Fill the square, cropping as needed */
             cursor: pointer; /* Add pointer cursor to indicate it's clickable */
-            /* FIX: Prevents the grey background flash on mobile before video loads.
-              This sets a black background, which is less jarring than the
-              browser default (a grey box with a play icon).
-            */
+            /* FIX: Prevents the grey background flash on mobile before video loads. */
             background-color: #000;
         }
         
@@ -126,7 +132,7 @@
             transition: stroke-dashoffset 0.1s linear;
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
-            stroke: #3b82f6; /* blue-500 */
+            stroke: #3b82f6; /* default blue-500 */
         }
         html.dark .progress-ring__circle_bg {
             color: #374151; /* bg-gray-700 */
@@ -248,10 +254,13 @@
             font-size: 18px;
             border: none;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s ease;
         }
         .play-pause-btn:hover {
             background: rgba(255, 255, 255, 0.3);
+        }
+        .play-pause-btn:active {
+            transform: scale(0.95);
         }
         
         /* Custom progress bar */
@@ -308,19 +317,23 @@
         .big-play-button i.fa-play {
             font-size: 40px;
             color: white;
-            /* Nudge icon for better visual centering */
-            margin-left: 4px; 
+            margin-left: 3px; /* Nudge icon for better visual centering */
         }
         
         /* Center play icon in smaller button */
         .play-pause-btn i.fa-play {
-             /* Nudge icon for better visual centering */
-            margin-left: 2px;
+            margin-left: 1px; /* Nudge icon for better visual centering */
         }
 
         /* --- Modal Styles --- */
-        #download-modal, #library-modal {
+        .modal-backdrop {
             z-index: 150;
+            transition: opacity 0.2s ease-in-out;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        .modal-backdrop.hidden {
+            opacity: 0;
         }
         
         /* Library Modal (1:1 Aspect Ratio) */
@@ -374,6 +387,10 @@
             cursor: pointer;
             overflow: hidden;
             text-align: center;
+            transition: transform 0.2s ease;
+        }
+        .library-item:active {
+            transform: scale(0.95);
         }
         
         .library-item-thumbnail {
@@ -420,76 +437,123 @@
             justify-content: center;
             font-size: 14px;
             z-index: 10;
+            transition: background-color 0.2s, transform 0.2s;
         }
         .library-item-delete:hover {
             background: rgba(239, 68, 68, 0.8); /* red-500 */
+            transform: scale(1.1);
         }
+        
+        /* New layout for controls */
+        #action-buttons-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Spread them out */
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        /* Generic button improvements */
+        .btn {
+            transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s ease;
+            transform-origin: center;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Glowing shadow for primary button */
+        #get-camera-button:hover {
+            box-shadow: 0 5px 15px -3px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Gradient text for header */
+        .header-title {
+            background: -webkit-linear-gradient(45deg, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        html.dark .header-title {
+            background: -webkit-linear-gradient(45deg, #60a5fa, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
     </style>
 </head>
 
 <body class="overflow-hidden h-screen">
 
+    <!-- Loading View -->
     <div id="loading-view" class="fixed inset-0 bg-white flex flex-col items-center justify-center">
         <div class="loader"></div>
         <p class="mt-4 text-gray-600">Initializing App...</p>
     </div>
 
+    <!-- Main App Container -->
     <div class="flex flex-col h-screen max-w-md mx-auto">
         
+        <!-- Header -->
         <header class="flex items-center justify-between p-4 w-full relative">
-            <button id="library-button" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <button id="library-button" class="btn w-10 h-10 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                 <i class="fas fa-folder-open text-xl"></i>
             </button>
             
-            <h1 class="text-2xl font-bold text-blue-500 absolute left-1/2 -translate-x-1/2">Shorties</h1>
+            <h1 class="header-title text-3xl font-extrabold text-blue-500 absolute left-1/2 -translate-x-1/2">Shorties</h1>
             
-            <button id="theme-toggle-button" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <i id="theme-icon" class="fa-solid fa-certificate text-xl"></i>
+            <button id="theme-toggle-button" class="btn w-10 h-10 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <i id="theme-icon" class="fa-solid fa-sun text-xl"></i>
             </button>
         </header>
 
+        <!-- Main Content Area -->
         <main id="app-container" class="flex-1 flex flex-col p-4 overflow-y-auto">
             
+            <!-- Permissions View -->
             <div id="permissions-view" class="hidden flex-1 flex flex-col items-center justify-center text-center">
-                <div class="p-5 bg-blue-100 rounded-full mb-6 flex items-center justify-center" style="width: 80px; height: 80px;">
-                    <i class="fas fa-video fa-2x text-blue-500"></i>
+                <div class="p-5 bg-blue-100 dark:bg-blue-900/50 rounded-full mb-6 flex items-center justify-center" style="width: 80px; height: 80px;">
+                    <i class="fas fa-video fa-2x text-blue-500 dark:text-blue-400"></i>
                 </div>
                 <h2 class="text-2xl font-bold mb-2">Ready to create a Shortie?</h2>
                 <p class="text-gray-600 mb-8">We'll need access to your camera and microphone to record.</p>
-                <button id="get-camera-button" class="w-full bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-lg hover:bg-blue-600 transition-all flex items-center justify-center">
+                <button id="get-camera-button" class="btn w-full bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-lg hover:bg-blue-600 transition-all flex items-center justify-center">
                     <i class="fas fa-camera mr-2"></i>
                     Enable Camera & Mic
                 </button>
             </div>
             
+            <!-- Recording View -->
             <div id="recording-view" class="hidden flex-1 flex flex-col justify-between">
+                <!-- Video Preview -->
                 <div class="aspect-square bg-gray-800 rounded-3xl shadow-lg w-full mx-auto">
                     <video id="preview" muted autoplay playsinline class="rounded-3xl"></video>
                 </div>
                 
+                <!-- Recording Controls -->
                 <div id="recording-controls" class="flex flex-col items-center gap-4 mt-6">
+                    <!-- Progress Ring & Timer -->
                     <div class="relative w-24 h-24">
-                        <!-- NEW: Updated SVG for segmented progress -->
                         <svg class="w-full h-full" viewBox="0 0 100 100">
-                            <!-- The grey background ring -->
+                            <!-- Background ring -->
                             <circle class="text-gray-200 progress-ring__circle_bg" stroke-width="8" stroke="currentColor" fill="transparent" r="46" cx="50" cy="50" />
                             
-                            <!-- Container for completed segments -->
-                            <g id="progress-segments" transform="rotate(-90 50 50)"></g>
+                            <!-- Completed segments container -->
+                            <g id="progress-segments-container"></g>
                             
-                            <!-- The currently recording segment -->
-                            <!-- REMOVED: This element is no longer needed. We will create segments dynamically. -->
-                            <!-- <circle id="active-progress-circle" ... /> -->
+                            <!-- Active recording segment (animated) -->
+                            <circle id="active-progress-segment" class="progress-ring__circle" stroke-width="8" fill="transparent" r="46" cx="50" cy="50" stroke-dasharray="0 289" />
                         </svg>
+                        <!-- Timer Text -->
                         <div id="timer-text" class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-2xl font-semibold">
                             0.0s
                         </div>
                     </div>
                     
-                    <p id="record-instructions" class="text-gray-600">Hold to record, release to pause</p>
+                    <p id="record-instructions" class="text-gray-600 text-sm">Hold to record, release to pause</p>
 
+                    <!-- Main Record Buttons -->
                     <div class="flex items-center justify-center w-full mt-2 gap-4">
-                        <button id="mode-hold" class="w-16 h-16 bg-gray-200 rounded-full shadow-lg flex items-center justify-center text-xl text-blue-500 ring-2 ring-blue-500 transition-all" title="Hold to Record">
+                        <button id="mode-hold" class="btn w-16 h-16 bg-gray-200 rounded-full shadow-lg flex items-center justify-center text-xl text-blue-500 ring-2 ring-blue-500" title="Hold to Record">
                             <i class="fas fa-hand-pointer"></i>
                         </button>
                         
@@ -497,22 +561,27 @@
                             <i id="record-button-icon" class="fas fa-video text-white text-3xl transition-transform"></i>
                         </button>
             
-                        <button id="mode-lock" class="w-16 h-16 bg-gray-200 rounded-full shadow-lg flex items-center justify-center text-xl text-gray-500 dark:text-gray-400 transition-all" title="Tap to Lock Record">
+                        <button id="mode-lock" class="btn w-16 h-16 bg-gray-200 rounded-full shadow-lg flex items-center justify-center text-xl text-gray-500 dark:text-gray-400" title="Tap to Lock Record">
                             <i class="fas fa-lock"></i>
                         </button>
                     </div>
 
-                    <div class="flex items-center justify-between gap-4 w-full mt-4">
-                        <!-- NEW: Replaced Reset Button with Undo Button -->
-                        <button id="undo-button" class="w-16 h-16 bg-gray-200 rounded-full shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center text-xl text-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                            <i class="fas fa-undo"></i>
-                        </button>
-
-                        <button id="flip-camera-button" class="w-16 h-16 bg-gray-200 rounded-full shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center text-xl disabled:opacity-50 hidden">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
+                    <!-- Action Buttons (Flip, Restart, Next) -->
+                    <div id="action-buttons-container">
+                        <!-- Left-side utility buttons -->
+                        <div class="flex items-center gap-4">
+                            <button id="flip-camera-button" class="btn w-16 h-16 bg-gray-200 rounded-full shadow-lg hover:bg-gray-300 flex items-center justify-center text-xl disabled:opacity-50 hidden" title="Flip Camera">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            
+                            <!-- NEW RESTART BUTTON -->
+                            <button id="restart-button" class="btn w-16 h-16 bg-gray-200 rounded-full shadow-lg hover:bg-gray-300 flex items-center justify-center text-xl text-red-500 disabled:opacity-50 hidden" title="Start Over">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
                         
-                        <button id="next-button" class="flex-1 bg-gray-200 font-medium py-3 px-6 rounded-xl shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center text-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <!-- Right-side next button -->
+                        <button id="next-button" class="btn bg-gray-200 font-medium py-3 px-6 rounded-xl shadow-lg hover:bg-gray-300 flex items-center justify-center text-lg disabled:opacity-50 disabled:cursor-not-allowed flex-grow-0" disabled>
                             Next
                             <i class="fas fa-arrow-right ml-2"></i>
                         </button>
@@ -520,7 +589,9 @@
                 </div>
             </div>
             
+            <!-- Preview View -->
             <div id="preview-view" class="hidden flex-1 flex flex-col justify-between">
+                <!-- Video Player -->
                 <div id="video-container" class="video-player-container aspect-square bg-gray-900 rounded-3xl shadow-lg w-full mx-auto paused">
                     <video id="recorded-video" loop playsinline class="rounded-3xl"></video>
                     
@@ -543,25 +614,27 @@
                     </div>
                 </div>
                 
+                <!-- Preview Actions -->
                 <div id="preview-actions" class="flex flex-col gap-3 mt-6">
                     <h3 class="text-xl font-semibold text-center mb-2">Your Shortie is ready!</h3>
                     
-                    <button id="download-video-button" class="w-full text-center bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-lg hover:bg-blue-600 transition-all flex items-center justify-center">
+                    <button id="download-video-button" class="btn w-full text-center bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-lg hover:bg-blue-600 flex items-center justify-center">
                         <i class="fas fa-download mr-2"></i>
                         Save to Device
                     </button>
                     
-                    <button id="record-another-button" class="w-full bg-gray-200 font-medium py-3 px-6 rounded-xl shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center">
+                    <button id="record-another-button" class="btn w-full bg-gray-200 font-medium py-3 px-6 rounded-xl shadow-lg hover:bg-gray-300 flex items-center justify-center">
                         <i class="fas fa-redo mr-2"></i>
                         Record Another
                     </button>
                 </div>
             </div>
             
+            <!-- Library View -->
             <div id="library-view" class="hidden flex-1 flex flex-col">
                 <div class="flex items-center justify-between mb-4">
                      <h2 class="text-2xl font-bold">My Library</h2>
-                     <button id="library-back-button" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                     <button id="library-back-button" class="btn w-10 h-10 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
@@ -569,10 +642,11 @@
                 <p class="text-gray-600 mb-6">Videos you save are stored here, on this device.</p>
                 
                 <div id="library-grid" class="flex-0 overflow-y-auto">
-                    </div>
+                    <!-- Library items will be injected here -->
+                </div>
                 
                 <div id="library-empty-state" class="hidden flex-1 flex-col items-center justify-center text-center p-8">
-                    <i class="fas fa-folder-open text-6xl text-gray-400 mb-4"></i>
+                    <i class="fas fa-folder-open text-6xl text-gray-400 dark:text-gray-600 mb-4"></i>
                     <h3 class="text-xl font-semibold">Library is Empty</h3>
                     <p class="text-gray-600 mt-2">Record a video and tap "Save to Device" to add it to your library.</p>
 
@@ -582,32 +656,54 @@
         </main>
     </div>
 
+    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-red-500 text-white p-4 rounded-lg shadow-lg">
         <p id="toast-message">Error message goes here</p>
     </div>
     
-    <div id="download-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl p-6 shadow-xl w-full max-w-sm text-center">
-            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-check fa-2x text-green-500"></i>
+    <!-- Download Modal -->
+    <div id="download-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="modal-content bg-white rounded-2xl p-6 shadow-xl w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check fa-2x text-green-500 dark:text-green-400"></i>
             </div>
             <h2 class="text-xl font-bold text-gray-900 mb-2">Saved!</h2>
             <p class="text-gray-600 mb-6">Your video is saved to your device and added to your library.</p>
             <div class="flex flex-col gap-3">
-                <button id="modal-close-button" class="w-full bg-gray-200 font-medium py-3 px-5 rounded-xl shadow-lg hover:bg-gray-300 transition-all flex items-center justify-center">
+                <button id="modal-close-button" class="btn w-full bg-gray-200 font-medium py-3 px-5 rounded-xl shadow-lg hover:bg-gray-300 flex items-center justify-center">
                     Close
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- NEW Confirmation Modal (for Restart) -->
+    <div id="confirm-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="modal-content bg-white rounded-2xl p-6 shadow-xl w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle fa-2x text-red-500 dark:text-red-400"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Are you sure?</h2>
+            <p class="text-gray-600 mb-6">This will delete your current recording. This action cannot be undone.</p>
+            <div class="flex gap-3">
+                <button id="confirm-cancel" class="btn w-full bg-gray-200 font-medium py-3 px-5 rounded-xl shadow-lg hover:bg-gray-300 flex items-center justify-center">
+                    Cancel
+                </button>
+                <button id="confirm-ok" class="btn w-full bg-red-500 text-white font-bold py-3 px-5 rounded-xl shadow-lg hover:bg-red-600 flex items-center justify-center">
+                    Restart
+                </button>
+            </div>
+        </div>
+    </div>
     
-    <div id="library-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden" style="backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+    <!-- Library Player Modal -->
+    <div id="library-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden">
         <div class="flex flex-col w-full max-w-md bg-transparent rounded-3xl overflow-hidden">
             
             <div id="library-modal-content" class="bg-black shadow-xl w-full rounded-t-3xl">
                 <div id="library-modal-body">
                     
-                    <button id="library-modal-close" class="absolute top-3 right-3 w-10 h-10 bg-black bg-opacity-50 rounded-full text-white flex items-center justify-center z-50">
+                    <button id="library-modal-close" class="btn absolute top-3 right-3 w-10 h-10 bg-black bg-opacity-50 rounded-full text-white flex items-center justify-center z-50">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                     
@@ -637,7 +733,7 @@
             
             <div class="modal-actions-container bg-black p-4 rounded-b-3xl">
                 <div class="flex items-center justify-center gap-4">
-                    <button id="library-modal-download" class="w-full bg-blue-500 text-white font-bold py-3 px-5 rounded-xl text-lg shadow-lg hover:bg-blue-600 transition-all flex items-center justify-center">
+                    <button id="library-modal-download" class="btn w-full bg-blue-500 text-white font-bold py-3 px-5 rounded-xl text-lg shadow-lg hover:bg-blue-600 flex items-center justify-center">
                         <i class="fas fa-download mr-2"></i> Download
                     </button>
                 </div>
@@ -676,12 +772,12 @@
             
             const nextButton = document.getElementById('next-button');
             const flipCameraButton = document.getElementById('flip-camera-button');
-            const undoButton = document.getElementById('undo-button'); // NEW
+            const restartButton = document.getElementById('restart-button'); // NEW
             const timerText = document.getElementById('timer-text');
             
-            // NEW: Progress Bar Elements
-            const progressSegments = document.getElementById('progress-segments');
-            const activeProgressCircle = document.getElementById('active-progress-circle');
+            // Progress Ring Elements
+            const progressSegmentsContainer = document.getElementById('progress-segments-container');
+            const activeProgressSegment = document.getElementById('active-progress-segment'); 
             
             // Preview Screen Elements
             const videoContainer = document.getElementById('video-container');
@@ -718,6 +814,11 @@
             // Download Modal
             const downloadModal = document.getElementById('download-modal');
             const modalCloseButton = document.getElementById('modal-close-button');
+
+            // Confirm Modal (NEW)
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmCancel = document.getElementById('confirm-cancel');
+            const confirmOk = document.getElementById('confirm-ok');
             
             // Toast
             const toast = document.getElementById('toast');
@@ -726,9 +827,7 @@
             // --- State Variables ---
             let mediaRecorder;
             let stream;
-            let recordedChunks = []; // This will be the flattened array for the final blob
-            let chunkGroups = []; // NEW: Array of arrays, each holding chunks for one segment
-            let chunkDurations = []; // NEW: Array of durations (ms) for each segment
+            let recordedChunks = []; // Array to hold ALL chunks
             let recordedBlob;
             let totalRecordedTime = 0; // in milliseconds
             let chunkStartTime = 0;
@@ -740,15 +839,19 @@
             let libraryModalBlob = null;
             let recordingMode = 'hold';
             let isRecording = false;
-            let currentSegmentElement = null; // NEW: Store the segment we are actively drawing
+            let segmentDurations = []; // Store durations of each segment
 
             // --- Constants ---
             const circumference = 2 * Math.PI * 46; // 2 * pi * r
+            const blueShades = ["#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"]; // Colors for segments
+            
+            // Set initial dash array for the full ring (empty)
+            activeProgressSegment.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
+            activeProgressSegment.setAttribute('stroke-dashoffset', circumference); 
+            
             const DB_NAME = 'ShortiesDB';
             const DB_VERSION = 1;
             const STORE_NAME = 'videos';
-            // NEW: Colors for segments
-            const colors = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af'];
 
             // --- Initialization ---
             async function init() {
@@ -773,10 +876,8 @@
                 themeToggleButton.addEventListener('click', toggleTheme);
                 getCameraButton.addEventListener('click', requestCameraAndStart);
                 flipCameraButton.addEventListener('click', flipCamera);
-                
-                // NEW: Undo button listener
-                undoButton.addEventListener('click', undoLastChunk);
-                
+                restartButton.addEventListener('click', showConfirmResetModal); // NEW
+
                 modeHoldButton.addEventListener('click', () => setRecordingMode('hold'));
                 modeLockButton.addEventListener('click', () => setRecordingMode('lock'));
                 recordButton.addEventListener('pointerdown', handleRecordPointerDown);
@@ -794,6 +895,14 @@
                     checkPermissionsAndStart();
                 });
                 modalCloseButton.addEventListener('click', () => downloadModal.classList.add('hidden'));
+                
+                // NEW Confirm Modal Listeners
+                confirmCancel.addEventListener('click', () => confirmModal.classList.add('hidden'));
+                confirmOk.addEventListener('click', () => {
+                    confirmModal.classList.add('hidden');
+                    resetRecordingProgress();
+                });
+
                 libraryModalClose.addEventListener('click', closeLibraryPlayer);
                 libraryModalDownload.addEventListener('click', () => downloadVideo(libraryModalBlob));
 
@@ -870,7 +979,8 @@
             }
 
             function updateThemeIcon() {
-                themeIcon.classList.toggle('fa-certificate', !document.documentElement.classList.contains('dark'));
+                // Use fa-sun for light mode, fa-moon for dark mode
+                themeIcon.classList.toggle('fa-sun', !document.documentElement.classList.contains('dark'));
                 themeIcon.classList.toggle('fa-moon', document.documentElement.classList.contains('dark'));
             }
 
@@ -932,6 +1042,7 @@
                 }
 
                 flipCameraButton.disabled = true;
+                restartButton.disabled = true; // NEW
                 recordButton.disabled = true;
 
 				facingMode = (facingMode === 'user') ? 'environment' : 'user';
@@ -943,33 +1054,47 @@
 					facingMode = (facingMode === 'user') ? 'environment' : 'user';
 				} finally {
                     flipCameraButton.disabled = false;
+                    restartButton.disabled = false; // NEW
                     recordButton.disabled = false;
                 }
 			}
 
-            // NEW: Updated Reset Function
+            // NEW: Modal for reset confirmation
+            function showConfirmResetModal() {
+                if (totalRecordedTime > 0) {
+                    confirmModal.classList.remove('hidden');
+                }
+            }
+
             function resetRecordingProgress() {
                 clearInterval(recordingInterval);
 
                 if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                     mediaRecorder.onstop = null; 
-                    mediaRecorder.stop();
+                    mediaRecorder.ondataavailable = null;
+                    mediaRecorder.onerror = null;
+                    mediaRecorder.stop(); 
                 }
 
-                chunkGroups = [];
-                chunkDurations = [];
+                recordedChunks = []; // Clear all chunks
                 recordedBlob = null; 
                 totalRecordedTime = 0;
+                segmentDurations = []; // Clear segments
                 isRecording = false;
                 
                 // Update UI to its initial state
                 updateTimerText(0);
-                progressSegments.innerHTML = '';
-                currentSegmentElement = null; // NEW
-                // updateActiveCircle(0, 0); // REMOVED
+                
+                // Reset progress ring visual
+                progressSegmentsContainer.innerHTML = ''; // Clear completed segments
+                activeProgressSegment.style.strokeDashoffset = circumference;
                 
                 nextButton.disabled = true;
-                undoButton.disabled = true; // Disable undo
+                
+                // NEW: Hide and disable restart button
+                restartButton.classList.add('hidden');
+                restartButton.disabled = true;
+
                 recordButton.classList.remove('is-recording', 'is-paused');
                 recordButtonIcon.classList.remove('fa-stop');
                 recordButtonIcon.classList.add('fa-video');
@@ -995,17 +1120,19 @@
                     mediaRecorder = new MediaRecorder(stream, { mimeType: options });
                 
                     mediaRecorder.ondataavailable = (event) => {
-                        if (event.data.size > 0 && chunkGroups.length > 0) {
-                            // NEW: Add data to the last (current) group
-                            chunkGroups[chunkGroups.length - 1].push(event.data);
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
                         }
                     };
                     
                     mediaRecorder.onstop = () => {
-                        // NEW: Flatten the groups into the final chunks array
-                        recordedChunks = chunkGroups.flat();
-                        
-                        if (recordedChunks.length === 0) return;
+                        if (recordedChunks.length === 0) {
+                            console.log("No chunks to create blob from.");
+                            resetRecordingProgress();
+                            // Re-initialize recorder to allow recording again
+                            initializeMediaRecorder();
+                            return;
+                        };
 
                         const mimeType = recordedChunks[0].type || mediaRecorder.mimeType || 'video/mp4';
                         recordedBlob = new Blob(recordedChunks, { type: mimeType });
@@ -1079,40 +1206,21 @@
                 if (flipCameraButton) {
                     flipCameraButton.disabled = true;
                 }
-                
-                // NEW: Start a new chunk group
-                chunkGroups.push([]);
+                restartButton.disabled = true; // NEW
                 
                 if (mediaRecorder.state === 'inactive') mediaRecorder.start(100);
                 else if (mediaRecorder.state === 'paused') mediaRecorder.resume();
 
-                // --- NEW PROGRESS BAR LOGIC ---
-                // 1. Calculate offset and color for the new segment
-                const startOffsetProgress = totalRecordedTime / MAX_DURATION;
-                const startOffset = startOffsetProgress * circumference;
-                const color = colors[chunkDurations.length % colors.length];
+                // Set color for the new active segment
+                activeProgressSegment.style.stroke = blueShades[segmentDurations.length % blueShades.length];
+                // Set the starting offset for the active segment
+                activeProgressSegment.style.strokeDashoffset = circumference * (1 - totalRecordedTime / MAX_DURATION);
+                activeProgressSegment.setAttribute('stroke-dasharray', circumference);
 
-                // 2. Create the new segment element
-                currentSegmentElement = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                currentSegmentElement.setAttribute('stroke-width', '8');
-                currentSegmentElement.setAttribute('stroke', color);
-                currentSegmentElement.setAttribute('fill', 'transparent');
-                currentSegmentElement.setAttribute('r', '46');
-                currentSegmentElement.setAttribute('cx', '50');
-                currentSegmentElement.setAttribute('cy', '50');
-                // 3. Set its initial state (0 length) and correct offset
-                currentSegmentElement.setAttribute('stroke-dasharray', `0 ${circumference}`);
-                currentSegmentElement.setAttribute('stroke-dashoffset', -startOffset);
-                currentSegmentElement.style.transition = 'stroke-dasharray 0.05s linear'; // Add transition for smooth growth
-                
-                // 4. Add it to the SVG
-                progressSegments.appendChild(currentSegmentElement);
-                // --- END NEW LOGIC ---
-                
                 recordButton.classList.remove('is-paused');
                 recordButton.classList.add('is-recording');
                 nextButton.disabled = true;
-                undoButton.disabled = true; // NEW: Disable undo while recording
+                
                 chunkStartTime = Date.now();
                 
                 clearInterval(recordingInterval);
@@ -1126,26 +1234,48 @@
                 mediaRecorder.pause();
                 recordButton.classList.remove('is-recording');
                 
-                // NEW: Save chunk duration
+                // Save chunk duration
                 const chunkDuration = Date.now() - chunkStartTime;
-                chunkDurations.push(chunkDuration);
-
-                // --- NEW PROGRESS BAR LOGIC ---
-                // Set the final length of the segment we were just drawing
-                const finalLength = (chunkDuration / MAX_DURATION) * circumference;
-                if (currentSegmentElement) {
-                    currentSegmentElement.setAttribute('stroke-dasharray', `${finalLength} ${circumference}`);
-                }
-                currentSegmentElement = null; // We are no longer drawing this segment
-                // --- END NEW LOGIC ---
-
-                totalRecordedTime += chunkDuration; // Now update total time
+                segmentDurations.push(chunkDuration);
+                const oldTotalRecordedTime = totalRecordedTime;
+                totalRecordedTime += chunkDuration; // Update total time
                 
                 clearInterval(recordingInterval);
                 
+                // Create a finalized circle for the segment just recorded
+                const segmentCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                segmentCircle.setAttribute('class', 'progress-ring__circle');
+                segmentCircle.setAttribute('stroke-width', '8');
+                segmentCircle.setAttribute('fill', 'transparent');
+                segmentCircle.setAttribute('r', '46');
+                segmentCircle.setAttribute('cx', '50');
+                segmentCircle.setAttribute('cy', '50');
+                
+                // Set its color
+                segmentCircle.style.stroke = blueShades[(segmentDurations.length - 1) % blueShades.length];
+
+                // Calculate its dash properties to show only this segment
+                const segmentStartPercent = oldTotalRecordedTime / MAX_DURATION;
+                const segmentPercent = chunkDuration / MAX_DURATION;
+                
+                const dash = segmentPercent * circumference;
+                const gap = (1 - segmentPercent) * circumference;
+                
+                segmentCircle.setAttribute('stroke-dasharray', `${dash} ${gap}`);
+                
+                // The offset pushes the "dash" to the correct start position
+                const offset = circumference * (1 - segmentStartPercent);
+                segmentCircle.setAttribute('stroke-dashoffset', offset);
+
+                progressSegmentsContainer.appendChild(segmentCircle);
+
+                // Hide the active segment animator
+                activeProgressSegment.style.strokeDashoffset = circumference;
+                
                 if (totalRecordedTime > 0) {
                     nextButton.disabled = false;
-                    undoButton.disabled = false; // NEW: Enable undo
+                    restartButton.disabled = false; // NEW
+                    restartButton.classList.remove('hidden'); // NEW
                     recordButton.classList.add('is-paused');
                     if (flipCameraButton) {
                         flipCameraButton.disabled = true; // Keep disabled
@@ -1156,49 +1286,10 @@
                     }
                 }
                 
-                // NEW: Update progress display
-                // updateActiveCircle(0, totalRecordedTime); // REMOVED
                 updateTimerText(totalRecordedTime);
             }
-            
-            // NEW: Undo last recording segment
-            function undoLastChunk() {
-                if (chunkGroups.length === 0 || isRecording) return;
 
-                // *** FIX: Stop the current (paused) recorder before we orphan it ***
-                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                    mediaRecorder.onstop = null; // Prevent its onstop from firing by accident
-                    mediaRecorder.stop();
-                }
-
-                chunkGroups.pop();
-                const undoneDuration = chunkDurations.pop();
-                totalRecordedTime -= undoneDuration;
-
-                // NEW: Remove the last <circle> element from the <g>
-                if (progressSegments.lastChild) {
-                    progressSegments.removeChild(progressSegments.lastChild);
-                }
-                currentSegmentElement = null; // Just in case
-
-                // updateActiveCircle(0, totalRecordedTime); // REMOVED
-                updateTimerText(totalRecordedTime);
-
-                if (chunkGroups.length === 0) {
-                    undoButton.disabled = true;
-                    nextButton.disabled = true;
-                    if (flipCameraButton && !flipCameraButton.classList.contains('hidden')) {
-                        flipCameraButton.disabled = false;
-                    }
-                } else {
-                    nextButton.disabled = false; // Still have other chunks
-                }
-                
-                // Re-initialize recorder to clear its internal state and get new handlers
-                initializeMediaRecorder();
-            }
-
-            // NEW: Interval function
+            // Interval function to update progress
             function updateProgress() {
                 const currentTimeInChunk = Date.now() - chunkStartTime;
                 const currentTotalTime = totalRecordedTime + currentTimeInChunk;
@@ -1209,61 +1300,42 @@
                     
                     finishRecording();
                 } else {
-                    // Update the active circle's length and offset
-                    // updateActiveCircle(currentTimeInChunk, totalRecordedTime); // REMOVED
-
-                    // --- NEW PROGRESS BAR LOGIC ---
-                    // Update the length of the segment we are currently drawing
-                    if (currentSegmentElement) {
-                        const length = (currentTimeInChunk / MAX_DURATION) * circumference;
-                        currentSegmentElement.setAttribute('stroke-dasharray', `${length} ${circumference}`);
-                    }
-                    // --- END NEW LOGIC ---
+                    // Update progress ring visual
+                    const percent = currentTotalTime / MAX_DURATION;
+                    const offset = circumference * (1 - percent);
+                    activeProgressSegment.style.strokeDashoffset = offset;
 
                     // Update the timer text
                     updateTimerText(currentTotalTime);
                 }
             }
 
-            // NEW: Update timer text
+            // Update timer text
             function updateTimerText(time) {
                 const timeToDisplay = time !== undefined ? time : totalRecordedTime;
                 const seconds = (timeToDisplay / 1000).toFixed(1);
                 timerText.textContent = `${seconds}s`;
             }
             
-            // NEW: Draw the static, completed segments
-            /* REMOVED: This function is no longer needed.
-                Segments are now added one-by-one in pauseRecording()
-                and removed one-by-one in undoLastChunk().
-            */
-            // function drawCompletedSegments() { ... }
-            
-            // NEW: Update the actively-recording circle
-            /* REMOVED: This function is no longer needed.
-                We update `currentSegmentElement` directly.
-            */
-            // function updateActiveCircle(lengthInMs, offsetInMs) { ... }
-
-
             function finishRecording() {
                 clearInterval(recordingInterval);
                 isRecording = false;
                 
                 recordButton.classList.remove('is-recording', 'is-paused');
                 nextButton.disabled = true;
-                undoButton.disabled = true; // Disable undo on preview
+                restartButton.disabled = true; // NEW
+                restartButton.classList.add('hidden'); // NEW
                 recordButtonIcon.classList.replace('fa-stop', 'fa-video');
 
+                // Final check to stop the recorder if it's active
                 if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                     mediaRecorder.stop();
-                } else if (chunkGroups.flat().length > 0) {
+                } else if (recordedChunks.length > 0) {
                     // Manually trigger the onstop if recorder is already inactive but we have chunks
                     mediaRecorder.onstop();
                 } else {
                     showToast("Hold the record button to capture video first!");
                     // Re-enable buttons if no video was recorded
-                    if (totalRecordedTime > 0) undoButton.disabled = false;
                     nextButton.disabled = (totalRecordedTime === 0);
                 }
                 stopCurrentStream();
@@ -1335,7 +1407,7 @@
                         canvas.width = video.videoWidth;
                         canvas.height = video.videoHeight;
                         canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                        URL.revokeObjectURL(videoUrl);
+                        URL.createObjectURL(videoUrl);
                         resolve(canvas.toDataURL('image/jpeg', 0.8));
                     };
                     video.onerror = (err) => {
