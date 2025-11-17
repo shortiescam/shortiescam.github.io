@@ -1014,13 +1014,20 @@
                 }
             }
 
-            async function startCamera(preserveProgress = false) {
+			async function startCamera(preserveProgress = false) {
                 stopCurrentStream();
                 
+                // --- MODIFIED CODE ---
+                // Added width and height constraints for a 1:1 aspect ratio (480x480)
                 const constraints = {
                     audio: true,
-                    video: { facingMode: facingMode }
+                    video: { 
+                        facingMode: facingMode,
+                        width: { ideal: 480 },
+                        height: { ideal: 480 }
+                    }
                 };
+                // --- END OF MODIFIED CODE ---
 
                 try {
                     stream = await navigator.mediaDevices.getUserMedia(constraints);
