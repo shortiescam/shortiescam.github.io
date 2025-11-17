@@ -1384,11 +1384,11 @@
                         canvas.width = video.videoWidth;
                         canvas.height = video.videoHeight;
                         canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                        URL.createObjectURL(videoUrl);
+                        URL.revokeObjectURL(videoUrl); // Clean up the object URL
                         resolve(canvas.toDataURL('image/jpeg', 0.8));
                     };
                     video.onerror = (err) => {
-                         URL.revokeObjectURL(videoUrl);
+                         URL.revokeObjectURL(videoUrl); // Clean up on error
                          reject('Error generating thumbnail');
                     }
                 });
@@ -1397,17 +1397,35 @@
             async function saveVideoToLibrary(blob) {
                 if (!db) return showToast("Library is not available.");
                 try {
+                    // FIX: Generate the thumbnail BEFORE starting the transaction.
+                    // This prevents the transaction from closing while we wait for the async thumbnail generation.
                     const thumbnail = await generateThumbnail(blob);
+                    
+                    // Now that we have the thumbnail, we can start the transaction.
                     const transaction = db.transaction([STORE_NAME], 'readwrite');
-                    transaction.objectStore(STORE_NAME).add({
+                    const objectStore = transaction.objectStore(STORE_NAME);
+                    
+                    const request = objectStore.add({
                         blob: blob,
                         date: new Date().toISOString(),
                         thumbnail: thumbnail
-                    }).onsuccess = () => {
-                        if (currentView === 'library') loadLibrary();
+                    });
+
+                    request.onsuccess = () => {
+                        console.log('Video added to library successfully');
+                        if (currentView === 'library') {
+                            loadLibrary(); // Refresh library view if it's open
+                        }
                     };
+
+                    request.onerror = (event) => {
+                        console.error('Failed to add video to object store:', event.target.error);
+                        showToast('Error: Could not save video to library.');
+                    };
+
                 } catch (error) {
-                    showToast('Could not create video thumbnail.');
+                    console.error('Error during saveVideoToLibrary process:', error);
+                    showToast('Could not create video thumbnail to save.');
                 }
             }
             
