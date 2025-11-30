@@ -10,7 +10,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap');
         
-        body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #cbd5e1; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0F0F0F; /* YouTube Dark BG */
+            color: #cbd5e1; 
+            background-image: radial-gradient(circle at 20% 20%, rgba(255,0,0,0.08), transparent 30%), radial-gradient(circle at 80% 90%, rgba(255,0,0,0.08), transparent 30%);
+        }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
 
         /* Custom Scrollbar */
@@ -20,16 +25,17 @@
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
         .glass-panel {
-            background: rgba(30, 41, 59, 0.7); /* Slightly more opaque */
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            background: rgba(40, 40, 40, 0.6);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
         }
-
+        
         .tab-btn.active {
-            background-color: rgba(239, 68, 68, 0.1);
             color: #ef4444;
             border-bottom: 2px solid #ef4444;
+            background: linear-gradient(to top, rgba(239, 68, 68, 0.1), transparent);
         }
 
         /* --- Custom Spinners --- */
@@ -71,20 +77,73 @@
         #modalContent { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         body.modal-open #videoModal { opacity: 1; pointer-events: auto; }
         body.modal-open #modalContent { opacity: 1; transform: translateY(0) scale(1); }
+        
+        /* Custom Seeker UI */
+        #seekerContainer {
+            --seeker-handle-size: 14px;
+            --seeker-track-height: 4px;
+            height: 20px;
+            cursor: pointer;
+            padding-top: 8px;
+            padding-bottom: 8px;
+        }
+        #seekerTrack {
+            height: var(--seeker-track-height);
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            position: relative;
+        }
+        #seekerProgress, #seekerBuffer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            border-radius: 2px;
+        }
+        #seekerProgress {
+            background-color: #ef4444;
+            z-index: 2;
+        }
+        #seekerBuffer {
+            background-color: rgba(255,255,255,0.4);
+            z-index: 1;
+            transition: width 0.2s linear;
+        }
+        #seekerHandle {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%) translateX(-50%);
+            width: var(--seeker-handle-size);
+            height: var(--seeker-handle-size);
+            background-color: white;
+            border-radius: 50%;
+            z-index: 3;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        #seekerContainer:hover #seekerHandle {
+            opacity: 1;
+        }
+        #seekerContainer:hover #seekerTrack {
+             height: 6px;
+        }
+
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-2 sm:p-6">
+    <script src="https://www.youtube.com/iframe_api"></script>
 
     <!-- Navbar / Header -->
     <header class="w-full max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-orange-600 rounded-lg flex items-center justify-center shadow-lg shadow-red-500/20">
-                <i class="fab fa-youtube text-white text-xl"></i>
+            <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center shadow-lg shadow-red-500/20">
+                <i class="fab fa-youtube text-white text-2xl"></i>
             </div>
-            <h1 class="text-2xl font-bold text-white tracking-tight">Playlist<span class="text-red-500">Analyst</span></h1>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Ultimate<span class="text-red-500">Analyst</span></h1>
         </div>
-        <div class="text-xs text-slate-500 font-mono bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
-            v3.1.0 • Modal Player & UI Polish
+        <div class="text-xs text-slate-500 font-mono bg-[#282828] px-3 py-1 rounded-full border border-slate-700">
+            v4.0.0 • Single Video & Enhanced UI
         </div>
     </header>
 
@@ -92,6 +151,18 @@
 
         <!-- Search Bar Area -->
         <div class="glass-panel p-6 rounded-2xl relative z-20">
+            <!-- Mode Toggle -->
+            <div class="flex justify-center mb-4">
+                <div class="bg-slate-900/80 border border-slate-700 rounded-full p-1 flex items-center text-sm">
+                    <button id="modeBtnPlaylist" onclick="switchMode('playlist')" class="px-4 py-1.5 rounded-full bg-red-600 text-white font-semibold">
+                        <i class="fas fa-list-ol mr-2"></i>Playlist
+                    </button>
+                    <button id="modeBtnVideo" onclick="switchMode('video')" class="px-4 py-1.5 rounded-full text-slate-400 font-semibold">
+                         <i class="fab fa-youtube mr-2"></i>Single Video
+                    </button>
+                </div>
+            </div>
+            
             <div class="flex flex-col lg:flex-row gap-4">
                 <div class="flex-grow relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-all duration-300">
@@ -100,6 +171,10 @@
                     <input type="text" id="playlistInput" 
                         class="w-full bg-slate-900/80 border border-slate-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent block pl-11 p-4 shadow-inner transition-all placeholder-slate-600" 
                         placeholder="Paste YouTube Playlist URL (e.g., https://youtube.com/playlist?list=...)"
+                    >
+                    <input type="text" id="videoInput" 
+                        class="w-full bg-slate-900/80 border border-slate-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent block pl-11 p-4 shadow-inner transition-all placeholder-slate-600 hidden" 
+                        placeholder="Paste YouTube Video URL (e.g., https://www.youtube.com/watch?v=...)"
                     >
                 </div>
                 
@@ -132,7 +207,7 @@
         <!-- Loading State -->
         <div id="loadingBox" class="hidden py-20 text-center">
             <div class="loader-lg mx-auto mb-6"></div>
-            <h3 class="text-xl text-white font-medium mb-2">Analyzing Playlist Data</h3>
+            <h3 class="text-xl text-white font-medium mb-2" id="loadingTitle">Analyzing Data</h3>
             <p class="text-slate-500 text-sm" id="loadingStatus">Fetching videos...</p>
         </div>
 
@@ -334,6 +409,53 @@
             </div>
 
         </div>
+        
+        <!-- SINGLE VIDEO DASHBOARD (Hidden by default) -->
+        <div id="singleVideoDashboard" class="hidden space-y-6 fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div class="relative aspect-video rounded-2xl overflow-hidden glass-panel mb-4">
+                        <img id="svThumb" src="https://placehold.co/1280x720/0F0F0F/475569?text=Video" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <button onclick="openModal($('svPlayButton').dataset.videoid, $('svTitle').textContent, $('svChannel').textContent)" id="svPlayButton" data-videoid="" class="text-white text-6xl hover:text-red-500 transition transform hover:scale-110">
+                                <i class="fas fa-play-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h2 id="svTitle" class="text-3xl font-bold text-white mb-2">Video Title</h2>
+                    <div class="flex items-center gap-4 text-sm text-slate-400 mb-4">
+                        <span id="svChannel" class="font-semibold">Channel</span>
+                        <span id="svPublished" class="font-mono">...</span>
+                    </div>
+                    <p id="svDescription" class="text-sm text-slate-300 whitespace-pre-wrap max-h-48 overflow-y-auto pr-2"></p>
+                </div>
+                <div class="space-y-4">
+                    <div class="glass-panel p-5 rounded-xl">
+                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-eye"></i> Views</div>
+                        <div id="svViews" class="text-3xl font-bold text-white">0</div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl">
+                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-thumbs-up"></i> Likes</div>
+                        <div id="svLikes" class="text-3xl font-bold text-white">0</div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl">
+                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-comments"></i> Comments</div>
+                        <div id="svComments" class="text-3xl font-bold text-white">0</div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl">
+                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-chart-line"></i> Engagement Rate</div>
+                        <div id="svEngagement" class="text-3xl font-bold text-green-400">0%</div>
+                    </div>
+                     <div class="glass-panel p-5 rounded-xl">
+                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-tags"></i> Tags</div>
+                        <div id="svTags" class="flex flex-wrap gap-2 mt-2">
+                           <span class="text-slate-500 text-xs">No tags found.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </main>
 
@@ -343,38 +465,39 @@
 
     <!-- --- Video Modal --- -->
     <div id="videoModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none" onclick="closeModal()">
-        <!-- Overlay -->
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-        
-        <!-- Content -->
-        <div id="modalContent" class="glass-panel w-full max-w-4xl rounded-2xl p-4 sm:p-6 space-y-4 opacity-0 transform -translate-y-4 scale-95" onclick="event.stopPropagation()">
-            <!-- Header -->
-            <div class="flex justify-between items-center">
-                <div class="min-w-0">
-                    <h3 id="modalTitle" class="text-lg font-bold text-white truncate">Video Title</h3>
-                    <p id="modalChannel" class="text-sm text-slate-400">Channel</p>
-                </div>
-                <button id="modalClose" onclick="closeModal()" class="w-8 h-8 flex-shrink-0 rounded-full bg-slate-800/70 text-slate-400 hover:text-white hover:bg-slate-700 transition">
-                    <i class="fas fa-times"></i>
-                </button>
+        <div id="modalContent" class="w-full max-w-4xl rounded-2xl p-2 sm:p-4 space-y-2 opacity-0 transform -translate-y-4 scale-95" onclick="event.stopPropagation()">
+            <div id="iframeWrapper" class="relative w-full bg-black rounded-xl overflow-hidden aspect-video">
+                <div id="videoIframe"></div> <!-- YouTube player will be injected here -->
             </div>
-            
-            <!-- Iframe Wrapper -->
-            <div id="iframeWrapper" class="relative w-full bg-black rounded-xl overflow-hidden" style="padding-top: 56.25%;">
-                <!-- Custom Loader -->
-                <div id="iframeLoader" class="absolute inset-0 flex items-center justify-center z-10">
-                    <div class="loader-sm"></div>
+            <!-- Custom Controls -->
+            <div class="px-2">
+                 <div id="seekerContainer">
+                    <div id="seekerTrack">
+                        <div id="seekerBuffer"></div>
+                        <div id="seekerProgress"></div>
+                        <div id="seekerHandle"></div>
+                    </div>
                 </div>
-                <!-- YouTube Iframe -->
-                <iframe id="videoIframe"
-                    class="absolute top-0 left-0 w-full h-full z-0" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <button id="playPauseBtn" class="text-white text-2xl w-10 h-10 flex items-center justify-center"><i class="fas fa-play"></i></button>
+                        <div class="flex items-center gap-2 text-white font-mono text-sm">
+                            <span id="currentTime">0:00</span>
+                            <span>/</span>
+                            <span id="totalTime">0:00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="modalClose" onclick="closeModal()" class="w-10 h-10 flex-shrink-0 rounded-full text-slate-400 hover:text-white hover:bg-slate-700/50 transition">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
 
     <!-- LOGIC -->
     <script>
@@ -382,11 +505,15 @@
         let GLOBAL_DATA = {
             meta: {},
             videos: [], // {id, title, views, duration, likes, comments, publishedAt, channel, thumb}
-            totalDuration: 0
+            totalDuration: 0,
+            analysisMode: 'playlist' // 'playlist' or 'video'
         };
         let charts = {}; // Store chart instances
-        // Used to prevent API error text from showing on successful fetch
         let lastFetchSuccess = true; 
+        
+        let player; // YouTube Iframe Player
+        let playerReady = false;
+        let progressInterval;
 
         // --- UTILS ---
         const $ = (id) => document.getElementById(id);
@@ -394,6 +521,7 @@
         const formatCompact = (n) => Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(n);
         
         const parseISO8601 = (duration) => {
+            if (!duration) return 0;
             const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
             if (!match) return 0;
             const h = (parseInt(match[1]) || 0);
@@ -409,8 +537,28 @@
             const s = Math.floor(seconds % 60);
             if(verbose) return `${h}h ${m}m ${s}s`;
             const pad = (n) => n.toString().padStart(2,'0');
-            return `${h>0?h+':':''}${pad(m)}:${pad(s)}`;
+            if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+            return `${m}:${pad(s)}`;
         };
+        
+        function switchMode(mode) {
+            GLOBAL_DATA.analysisMode = mode;
+            if (mode === 'playlist') {
+                $('modeBtnPlaylist').classList.add('bg-red-600', 'text-white');
+                $('modeBtnPlaylist').classList.remove('text-slate-400');
+                $('modeBtnVideo').classList.remove('bg-red-600', 'text-white');
+                $('modeBtnVideo').classList.add('text-slate-400');
+                $('playlistInput').classList.remove('hidden');
+                $('videoInput').classList.add('hidden');
+            } else {
+                $('modeBtnVideo').classList.add('bg-red-600', 'text-white');
+                $('modeBtnVideo').classList.remove('text-slate-400');
+                $('modeBtnPlaylist').classList.remove('bg-red-600', 'text-white');
+                $('modeBtnPlaylist').classList.add('text-slate-400');
+                $('videoInput').classList.remove('hidden');
+                $('playlistInput').classList.add('hidden');
+            }
+        }
 
         function toggleSettings() {
             const panel = $('settingsPanel');
@@ -434,7 +582,7 @@
             
             const view = $(`view-${tabId}`);
             view.classList.remove('hidden');
-            view.classList.add('fade-in'); // Add fade-in animation
+            view.classList.add('fade-in');
 
             if(tabId === 'analytics') renderCharts();
             if(tabId === 'planner') calculatePlan();
@@ -446,37 +594,44 @@
             lastFetchSuccess = false;
             $('errorBox').classList.add('hidden');
             $('dashboard').classList.add('hidden');
+            $('singleVideoDashboard').classList.add('hidden');
             $('loadingBox').classList.remove('hidden');
             $('analyzeBtn').disabled = true;
-            $('analyzeBtn').innerHTML = `<div class="loader-sm"></div>`; // Show loader in button
+            $('analyzeBtn').innerHTML = `<div class="loader-sm"></div>`; 
 
-            // Inputs
+            if (GLOBAL_DATA.analysisMode === 'playlist') {
+                await analyzePlaylist();
+            } else {
+                await analyzeSingleVideo();
+            }
+        }
+        
+        function getApiKey() {
             let apiKey = $('apiKeyInput').value.trim();
             if (!apiKey) {
-                // This is a placeholder key. In a real-world scenario, this should be handled server-side via a proxy.
-                // Using it client-side is insecure and will be quickly rate-limited or disabled.
-                // It is provided here for demonstration purposes only.
                 const keyParts = ['AIzaSy', 'B4z7Zd8m1Y', '7q2ZuwTcT', 'cWhxxOT', '-24BxIQ'];
                 apiKey = keyParts.join('');
             }
-            
+            return apiKey;
+        }
+
+        async function analyzePlaylist() {
+             $('loadingTitle').innerText = "Analyzing Playlist";
+            const apiKey = getApiKey();
             const url = $('playlistInput').value;
             const regex = /[?&]list=([^#\&\?]+)/;
             const match = url.match(regex);
             let plId = match ? match[1] : null;
 
-            // Handle URLs that are just the ID
             if (!plId && url.length > 12 && !url.includes('/')) {
                 plId = url;
             }
-
             if (!plId) {
-                showError("Invalid Playlist Link. Please copy the URL from the address bar while viewing the playlist.");
+                showError("Invalid Playlist Link. Please copy the URL from the address bar.");
                 return;
             }
 
             try {
-                // 1. Get Meta
                 updateStatus("Connecting to YouTube...");
                 const metaRes = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails,status&id=${plId}&key=${apiKey}`);
                 const metaJson = await metaRes.json();
@@ -494,12 +649,10 @@
                     totalItems: plItem.contentDetails.itemCount
                 };
 
-                // 2. Get Video IDs
                 GLOBAL_DATA.videos = [];
                 let nextToken = '';
                 let hasMore = true;
                 let page = 1;
-                // Limit to 10 pages (500 videos) for performance and quota safety
                 const MAX_PAGES = 10; 
                 
                 while(hasMore && page <= MAX_PAGES) { 
@@ -510,22 +663,17 @@
                     if(listJson.error) throw new Error(listJson.error.message);
 
                     const videoIds = listJson.items.map(i => i.contentDetails.videoId).filter(Boolean);
-                    if (!videoIds.length) { 
-                        hasMore = false; 
-                        break; 
-                    }
+                    if (!videoIds.length) { hasMore = false; break; }
 
-                    // 3. Get Video Details (Nested Batch)
                     updateStatus(`Fetching video details (${GLOBAL_DATA.videos.length + 1} - ${GLOBAL_DATA.videos.length + videoIds.length})...`);
                     const vidRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics,snippet&id=${videoIds.join(',')}&key=${apiKey}`);
                     const vidJson = await vidRes.json();
 
-                    // Map playlist item snippets to video details
                     const videoDetailsMap = new Map(vidJson.items.map(v => [v.id, v]));
 
                     listJson.items.forEach(item => {
                         const v = videoDetailsMap.get(item.contentDetails.videoId);
-                        if (v) { // Check if video details were found (video might be deleted/private)
+                        if (v) {
                             GLOBAL_DATA.videos.push({
                                 id: v.id,
                                 title: v.snippet.title,
@@ -554,12 +702,49 @@
             } catch (err) {
                 showError(err.message);
             } finally {
-                $('loadingBox').classList.add('hidden');
-                $('analyzeBtn').disabled = false;
-                $('analyzeBtn').innerHTML = `<span>Analyze</span> <i class="fas fa-bolt"></i>`; // Restore button text
-                if (lastFetchSuccess) {
-                    $('errorBox').classList.add('hidden'); // Hide error if last fetch was OK
-                }
+                completeAnalysis();
+            }
+        }
+
+        async function analyzeSingleVideo() {
+            $('loadingTitle').innerText = "Analyzing Video";
+            const apiKey = getApiKey();
+            const url = $('videoInput').value;
+            
+            // Regex for various YouTube URL formats
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(regex);
+            const videoId = match ? match[1] : null;
+
+            if (!videoId) {
+                showError("Invalid YouTube Video URL.");
+                return;
+            }
+
+            try {
+                updateStatus("Fetching video details...");
+                const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoId}&key=${apiKey}`);
+                const json = await res.json();
+                
+                if (json.error) throw new Error(json.error.message);
+                if (!json.items || json.items.length === 0) throw new Error("Video not found or is private.");
+                
+                lastFetchSuccess = true;
+                renderSingleVideoUI(json.items[0]);
+
+            } catch(err) {
+                showError(err.message);
+            } finally {
+                completeAnalysis();
+            }
+        }
+        
+        function completeAnalysis() {
+            $('loadingBox').classList.add('hidden');
+            $('analyzeBtn').disabled = false;
+            $('analyzeBtn').innerHTML = `<span>Analyze</span> <i class="fas fa-bolt"></i>`;
+            if (lastFetchSuccess) {
+                $('errorBox').classList.add('hidden');
             }
         }
 
@@ -630,9 +815,44 @@
             generateKeywords();
 
             // Show Dashboard
+            $('singleVideoDashboard').classList.add('hidden');
             $('dashboard').classList.remove('hidden');
             switchTab('overview'); // Set default tab
         }
+        
+        function renderSingleVideoUI(video) {
+            const stats = video.statistics;
+            const snippet = video.snippet;
+            
+            const views = parseInt(stats.viewCount) || 0;
+            const likes = parseInt(stats.likeCount) || 0;
+            const comments = parseInt(stats.commentCount) || 0;
+            const engagement = views > 0 ? (((likes + comments) / views) * 100).toFixed(2) : 0;
+            
+            $('svThumb').src = snippet.thumbnails.maxres?.url || snippet.thumbnails.standard?.url || snippet.thumbnails.high?.url;
+            $('svPlayButton').dataset.videoid = video.id;
+            $('svTitle').innerText = snippet.title;
+            $('svChannel').innerText = snippet.channelTitle;
+            $('svPublished').innerText = `Published on ${new Date(snippet.publishedAt).toLocaleDateString()}`;
+            $('svDescription').innerText = snippet.description;
+            
+            $('svViews').innerText = formatNum(views);
+            $('svLikes').innerText = formatNum(likes);
+            $('svComments').innerText = formatNum(comments);
+            $('svEngagement').innerText = `${engagement}%`;
+            
+            const tags = snippet.tags;
+            const tagsContainer = $('svTags');
+            if (tags && tags.length > 0) {
+                tagsContainer.innerHTML = tags.slice(0, 15).map(tag => `<span class="bg-slate-700/50 text-slate-300 text-xs px-2 py-1 rounded">${tag}</span>`).join('');
+            } else {
+                tagsContainer.innerHTML = `<span class="text-slate-500 text-xs">No tags found.</span>`;
+            }
+
+            $('dashboard').classList.add('hidden');
+            $('singleVideoDashboard').classList.remove('hidden');
+        }
+
 
         function renderSpotlight(elementId, video, label, iconClass, subtextFn) {
             if (!video) {
@@ -657,11 +877,9 @@
             if(charts.views) charts.views.destroy();
             if(charts.years) charts.years.destroy();
 
-            // Chart.js global defaults
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.borderColor = '#334155';
             
-            // 1. Top 10 Videos by Views
             const topVideos = [...GLOBAL_DATA.videos].sort((a,b) => b.views - a.views).slice(0, 10).reverse();
             
             const ctxViews = $('chartViews').getContext('2d');
@@ -679,7 +897,7 @@
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // Horizontal bar chart
+                    indexAxis: 'y',
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: { 
@@ -689,7 +907,6 @@
                 }
             });
 
-            // 2. Uploads by Year
             const years = {};
             GLOBAL_DATA.videos.forEach(v => {
                 const y = v.publishedAt.getFullYear();
@@ -777,7 +994,6 @@
             videos.forEach((v, i) => {
                 const row = document.createElement('tr');
                 row.className = "hover:bg-slate-800/50 transition border-b border-slate-700/50";
-                // Escape quotes for onclick function
                 const safeTitle = v.title.replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 const safeChannel = v.channel.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
@@ -814,7 +1030,6 @@
         }
 
         function sortTable(col) {
-            // Update sort icons
             document.querySelectorAll('th i.fa-sort').forEach(icon => icon.className = "fas fa-sort ml-1 opacity-50");
             const icon = $(`th[onclick="sortTable('${col}')"] i`);
 
@@ -856,33 +1071,107 @@
             document.body.removeChild(a);
         }
 
-        // --- Modal Logic ---
-        function openModal(videoId, title, channel) {
-            const iframe = $('videoIframe');
-            const loader = $('iframeLoader');
-            
-            $('modalTitle').innerText = title;
-            $('modalChannel').innerText = channel;
-            
-            // Show loader, hide iframe
-            loader.classList.remove('hidden');
-            iframe.classList.add('opacity-0');
-            
-            iframe.onload = () => {
-                // Hide loader, show iframe
-                loader.classList.add('hidden');
-                iframe.classList.remove('opacity-0');
-            };
-            
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&hl=en`;
-            
+        // --- Modal & Player Logic ---
+        function onYouTubeIframeAPIReady() { playerReady = true; }
+
+        function openModal(videoId) {
+            if (!playerReady) {
+                console.error("YouTube Iframe API is not ready yet.");
+                return;
+            }
             document.body.classList.add('modal-open');
+
+            if (player) {
+                player.loadVideoById(videoId);
+            } else {
+                player = new YT.Player('videoIframe', {
+                    height: '100%',
+                    width: '100%',
+                    videoId: videoId,
+                    playerVars: {
+                        'autoplay': 1,
+                        'controls': 0, // Hide default controls
+                        'rel': 0,
+                        'showinfo': 0,
+                        'modestbranding': 1,
+                        'iv_load_policy': 3,
+                        'playsinline': 1
+                    },
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
+                    }
+                });
+            }
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+            updateTimeDisplay();
+        }
+
+        function onPlayerStateChange(event) {
+            const playPauseIcon = $('playPauseBtn').querySelector('i');
+            clearInterval(progressInterval);
+            if (event.data == YT.PlayerState.PLAYING) {
+                playPauseIcon.className = 'fas fa-pause';
+                progressInterval = setInterval(updateSeeker, 100);
+                 updateTimeDisplay();
+            } else {
+                playPauseIcon.className = 'fas fa-play';
+            }
+        }
+        
+        function updateSeeker() {
+            if (!player || typeof player.getDuration !== 'function') return;
+            const duration = player.getDuration();
+            const currentTime = player.getCurrentTime();
+            const buffer = player.getVideoLoadedFraction();
+
+            const progressPercent = (currentTime / duration) * 100;
+            const bufferPercent = buffer * 100;
+            
+            $('seekerProgress').style.width = `${progressPercent}%`;
+            $('seekerHandle').style.left = `${progressPercent}%`;
+            $('seekerBuffer').style.width = `${bufferPercent}%`;
+            
+            updateTimeDisplay();
+        }
+        
+        function updateTimeDisplay() {
+            if (!player || typeof player.getDuration !== 'function') return;
+             $('currentTime').textContent = secondsToText(player.getCurrentTime());
+             $('totalTime').textContent = secondsToText(player.getDuration());
         }
 
         function closeModal() {
-            $('videoIframe').src = 'about:blank'; // Stop video
+            if(player && typeof player.stopVideo === 'function') player.stopVideo();
             document.body.classList.remove('modal-open');
+             clearInterval(progressInterval);
         }
+        
+        function setupPlayerControls() {
+            $('playPauseBtn').addEventListener('click', () => {
+                if (!player) return;
+                const state = player.getPlayerState();
+                if (state === YT.PlayerState.PLAYING) {
+                    player.pauseVideo();
+                } else {
+                    player.playVideo();
+                }
+            });
+
+            $('seekerContainer').addEventListener('click', (e) => {
+                if (!player || typeof player.getDuration !== 'function') return;
+                const rect = $('seekerContainer').getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const width = rect.width;
+                const percentage = x / width;
+                const newTime = player.getDuration() * percentage;
+                player.seekTo(newTime, true);
+            });
+        }
+
 
         // --- Custom Select Logic ---
         function setupCustomSelect() {
@@ -901,7 +1190,6 @@
             const closeSelect = () => {
                 optionsPanel.classList.add('opacity-0', '-translate-y-2');
                 icon.classList.remove('rotate-180');
-                // Allow animation to finish before hiding
                 setTimeout(() => optionsPanel.classList.add('hidden'), 200);
             }
 
@@ -922,11 +1210,10 @@
                     select.dataset.value = newValue;
                     valueSpan.innerText = newText;
                     closeSelect();
-                    calculatePlan(); // Recalculate on change
+                    calculatePlan();
                 });
             });
 
-            // Close when clicking outside
             document.addEventListener('click', (e) => {
                 if (!select.contains(e.target)) {
                     closeSelect();
@@ -937,6 +1224,7 @@
         // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
             setupCustomSelect();
+            setupPlayerControls();
         });
 
     </script>
