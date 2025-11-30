@@ -78,13 +78,26 @@
         body.modal-open #videoModal { opacity: 1; pointer-events: auto; }
         body.modal-open #modalContent { opacity: 1; transform: translateY(0) scale(1); }
         
+        #playerOverlay {
+            cursor: pointer;
+        }
+
         #customControls, #customTopBar {
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: none; /* Let clicks pass through to overlay */
         }
         #iframeWrapper:hover #customControls, #iframeWrapper.paused #customControls,
         #iframeWrapper:hover #customTopBar, #iframeWrapper.paused #customTopBar {
             opacity: 1;
+        }
+
+        /* Allow interaction with buttons inside controls */
+        #customControls *, #customTopBar * {
+            pointer-events: auto;
+        }
+        #seekerContainer {
+            pointer-events: auto;
         }
 
         /* Custom Seeker UI */
@@ -144,7 +157,7 @@
             <h1 class="text-2xl font-bold text-white tracking-tight">Ultimate<span class="text-red-500">Analyst</span></h1>
         </div>
         <div class="text-xs text-slate-500 font-mono bg-[#1f1f1f] px-3 py-1.5 rounded-full border border-slate-700">
-            v4.4.0 • Player Loading Fix
+            v5.0.0 • True Chromeless Player
         </div>
     </header>
 
@@ -483,49 +496,53 @@
             <div id="iframeWrapper" class="relative w-full bg-black rounded-xl overflow-hidden aspect-video">
                 <div id="videoIframe"></div> <!-- YouTube player will be injected here -->
                 
-                 <!-- Custom Top Bar -->
-                <div id="customTopBar" class="absolute top-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-b from-black/70 to-transparent text-white flex items-center gap-3 pointer-events-none">
-                    <img id="modalChannelThumb" src="https://placehold.co/40x40/1f2937/475569?text=?" class="w-10 h-10 rounded-full bg-slate-700 flex-shrink-0">
-                    <div class="min-w-0">
-                        <h3 id="modalVideoTitle" class="font-semibold truncate">Video Title</h3>
-                        <p id="modalChannelName" class="text-sm text-slate-300 truncate">Channel Name</p>
+                <!-- NEW: Full Coverage Transparent Overlay -->
+                <div id="playerOverlay" class="absolute inset-0 z-20 flex flex-col justify-between">
+                    <!-- Custom Top Bar -->
+                    <div id="customTopBar" class="p-3 sm:p-4 bg-gradient-to-b from-black/70 to-transparent text-white flex items-center gap-3">
+                        <img id="modalChannelThumb" src="https://placehold.co/40x40/1f2937/475569?text=?" class="w-10 h-10 rounded-full bg-slate-700 flex-shrink-0">
+                        <div class="min-w-0">
+                            <h3 id="modalVideoTitle" class="font-semibold truncate">Video Title</h3>
+                            <p id="modalChannelName" class="text-sm text-slate-300 truncate">Channel Name</p>
+                        </div>
+                    </div>
+
+                    <!-- Custom Controls Overlay -->
+                    <div id="customControls" class="p-2 sm:p-3 bg-gradient-to-t from-black/70 to-transparent">
+                        <!-- Seeker -->
+                        <div id="seekerContainer">
+                            <div id="seekerTrack">
+                                <div id="seekerBuffer"></div>
+                                <div id="seekerProgress"></div>
+                                <div id="seekerHandle"></div>
+                            </div>
+                        </div>
+                        <!-- Main Controls -->
+                        <div class="flex justify-between items-center text-white">
+                            <div class="flex items-center gap-4">
+                                <button id="playPauseBtn" class="text-2xl w-10 h-10 flex items-center justify-center"><i class="fas fa-play"></i></button>
+                                <div class="flex items-center gap-2">
+                                    <button id="volumeBtn" class="text-lg w-8 h-10 flex items-center justify-center"><i class="fas fa-volume-high"></i></button>
+                                    <div id="volumeSliderContainer">
+                                        <input type="range" min="0" max="100" value="100" id="volumeSlider" class="volume-slider">
+                                    </div>
+                                </div>
+                                <div class="font-mono text-sm hidden sm:flex items-center gap-2">
+                                    <span id="currentTime">0:00</span>
+                                    <span>/</span>
+                                    <span id="totalTime">0:00</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button id="fullscreenBtn" class="text-lg w-10 h-10 flex items-center justify-center"><i class="fas fa-expand"></i></button>
+                                <button onclick="closeModal()" class="w-10 h-10 flex-shrink-0 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Custom Controls Overlay -->
-                <div id="customControls" class="absolute bottom-0 left-0 right-0 p-2 sm:p-3 bg-gradient-to-t from-black/70 to-transparent">
-                    <!-- Seeker -->
-                    <div id="seekerContainer">
-                        <div id="seekerTrack">
-                            <div id="seekerBuffer"></div>
-                            <div id="seekerProgress"></div>
-                            <div id="seekerHandle"></div>
-                        </div>
-                    </div>
-                    <!-- Main Controls -->
-                    <div class="flex justify-between items-center text-white">
-                        <div class="flex items-center gap-4">
-                            <button id="playPauseBtn" class="text-2xl w-10 h-10 flex items-center justify-center"><i class="fas fa-play"></i></button>
-                            <div class="flex items-center gap-2">
-                                <button id="volumeBtn" class="text-lg w-8 h-10 flex items-center justify-center"><i class="fas fa-volume-high"></i></button>
-                                <div id="volumeSliderContainer">
-                                    <input type="range" min="0" max="100" value="100" id="volumeSlider" class="volume-slider">
-                                </div>
-                            </div>
-                            <div class="font-mono text-sm hidden sm:flex items-center gap-2">
-                                <span id="currentTime">0:00</span>
-                                <span>/</span>
-                                <span id="totalTime">0:00</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button id="fullscreenBtn" class="text-lg w-10 h-10 flex items-center justify-center"><i class="fas fa-expand"></i></button>
-                            <button onclick="closeModal()" class="w-10 h-10 flex-shrink-0 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1166,7 +1183,6 @@
         }
 
         function openModal(btn, videoId) {
-            // **FIXED**: Replaced alert with a non-blocking loading state and retry logic.
             if (!playerReady) {
                 const originalContent = btn.innerHTML;
                 btn.innerHTML = `<div class="loader-btn mx-auto"></div>`;
@@ -1213,8 +1229,13 @@
                     width: '100%',
                     videoId: videoId,
                     playerVars: {
-                        'autoplay': 1, 'controls': 0, 'rel': 0, 'showinfo': 0,
-                        'modestbranding': 1, 'iv_load_policy': 3, 'playsinline': 1
+                        'autoplay': 1, 
+                        'controls': 0, // Essential: Hides default controls
+                        'rel': 0,      // Prevents related videos from other channels
+                        'showinfo': 0, // Deprecated but doesn't hurt
+                        'modestbranding': 1, // Removes YouTube logo from control bar (when visible)
+                        'iv_load_policy': 3, // Hides annotations
+                        'playsinline': 1
                     },
                     events: {
                         'onReady': onPlayerReady,
@@ -1291,10 +1312,30 @@
             }
         }
         
+        function togglePlayPause() {
+            if (!player) return;
+            const state = player.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+
         function setupPlayerControls() {
             let isSeeking = false;
             const seeker = $('seekerContainer');
             const volumeSlider = $('volumeSlider');
+            const overlay = $('playerOverlay');
+
+            // NEW: Handle clicks on the main overlay to play/pause
+            overlay.addEventListener('click', (e) => {
+                // Only toggle play/pause if the click is on the overlay itself,
+                // not on one of the control elements inside it.
+                if (e.target === overlay) {
+                    togglePlayPause();
+                }
+            });
 
             const performSeek = (e) => {
                 if (!player || typeof player.getDuration !== 'function' || player.getDuration() <= 0) return;
@@ -1318,11 +1359,7 @@
             document.addEventListener('mousemove', (e) => { if (isSeeking) { performSeek(e); } });
             document.addEventListener('mouseup', () => { isSeeking = false; document.body.classList.remove('seeking'); });
 
-            $('playPauseBtn').addEventListener('click', () => {
-                if (!player) return;
-                const state = player.getPlayerState();
-                if (state === YT.PlayerState.PLAYING) player.pauseVideo(); else player.playVideo();
-            });
+            $('playPauseBtn').addEventListener('click', togglePlayPause);
             
             $('volumeBtn').addEventListener('click', () => {
                 if (!player) return;
@@ -1342,7 +1379,7 @@
                 if (document.fullscreenElement) {
                     document.exitFullscreen();
                 } else {
-                    iframe.requestFullscreen().catch(err => alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`));
+                    iframe.requestFullscreen().catch(err => console.error(`Fullscreen error: ${err.message}`));
                 }
             });
             
