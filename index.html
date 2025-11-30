@@ -99,6 +99,7 @@
             left: 0;
             height: 100%;
             border-radius: 2px;
+            pointer-events: none;
         }
         #seekerProgress {
             background-color: #ef4444;
@@ -120,11 +121,12 @@
             z-index: 3;
             opacity: 0;
             transition: opacity 0.2s ease;
+            pointer-events: none;
         }
-        #seekerContainer:hover #seekerHandle {
+        #seekerContainer:hover #seekerHandle, body.seeking #seekerHandle {
             opacity: 1;
         }
-        #seekerContainer:hover #seekerTrack {
+        #seekerContainer:hover #seekerTrack, body.seeking #seekerTrack {
              height: 6px;
         }
 
@@ -143,7 +145,7 @@
             <h1 class="text-2xl font-bold text-white tracking-tight">Ultimate<span class="text-red-500">Analyst</span></h1>
         </div>
         <div class="text-xs text-slate-500 font-mono bg-[#282828] px-3 py-1 rounded-full border border-slate-700">
-            v4.0.0 • Single Video & Enhanced UI
+            v4.1.0 • Draggable Seeker & More Stats
         </div>
     </header>
 
@@ -301,16 +303,13 @@
                 </div>
 
                 <!-- Superlatives -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div id="cardPopular" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition">
-                        <!-- Filled by JS -->
-                    </div>
-                    <div id="cardOldest" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition">
-                        <!-- Filled by JS -->
-                    </div>
-                    <div id="cardLongest" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition">
-                        <!-- Filled by JS -->
-                    </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="cardPopular" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition"></div>
+                    <div id="cardLiked" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition"></div>
+                    <div id="cardCommented" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition"></div>
+                    <div id="cardOldest" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition"></div>
+                    <div id="cardNewest" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition"></div>
+                    <div id="cardLongest" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition"></div>
                 </div>
             </div>
 
@@ -414,11 +413,14 @@
         <div id="singleVideoDashboard" class="hidden space-y-6 fade-in">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2">
-                    <div class="relative aspect-video rounded-2xl overflow-hidden glass-panel mb-4">
+                    <div class="relative aspect-video rounded-2xl overflow-hidden glass-panel mb-4 group">
                         <img id="svThumb" src="https://placehold.co/1280x720/0F0F0F/475569?text=Video" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
-                            <button onclick="openModal($('svPlayButton').dataset.videoid, $('svTitle').textContent, $('svChannel').textContent)" id="svPlayButton" data-videoid="" class="text-white text-6xl hover:text-red-500 transition transform hover:scale-110">
+                        <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                             <button onclick="openModal($('svPlayButton').dataset.videoid)" id="svPlayButton" data-videoid="" class="text-white text-6xl hover:text-red-500 transition transform hover:scale-110" title="Play Video">
                                 <i class="fas fa-play-circle"></i>
+                            </button>
+                            <button id="svDownloadBtn" class="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition border border-slate-700" title="Download Thumbnail">
+                                <i class="fas fa-download mr-2"></i> Download Thumbnail
                             </button>
                         </div>
                     </div>
@@ -441,6 +443,10 @@
                     <div class="glass-panel p-5 rounded-xl">
                         <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-comments"></i> Comments</div>
                         <div id="svComments" class="text-3xl font-bold text-white">0</div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl">
+                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-star"></i> Favorites</div>
+                        <div id="svFavorites" class="text-3xl font-bold text-white">0</div>
                     </div>
                     <div class="glass-panel p-5 rounded-xl">
                         <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-chart-line"></i> Engagement Rate</div>
@@ -504,7 +510,7 @@
         // --- STATE MANAGEMENT ---
         let GLOBAL_DATA = {
             meta: {},
-            videos: [], // {id, title, views, duration, likes, comments, publishedAt, channel, thumb}
+            videos: [], // {id, title, views, duration, likes, comments, publishedAt, channel, thumb, favorites}
             totalDuration: 0,
             analysisMode: 'playlist' // 'playlist' or 'video'
         };
@@ -683,7 +689,8 @@
                                 duration: parseISO8601(v.contentDetails.duration),
                                 views: parseInt(v.statistics.viewCount) || 0,
                                 likes: parseInt(v.statistics.likeCount) || 0,
-                                comments: parseInt(v.statistics.commentCount) || 0
+                                comments: parseInt(v.statistics.commentCount) || 0,
+                                favorites: parseInt(v.statistics.favoriteCount) || 0
                             });
                         }
                     });
@@ -759,6 +766,31 @@
             $('analyzeBtn').disabled = false;
             $('analyzeBtn').innerHTML = `<span>Analyze</span> <i class="fas fa-bolt"></i>`;
         }
+        
+        async function downloadResource(url, filename, button) {
+            const originalHtml = button.innerHTML;
+            button.innerHTML = `<div class="loader-sm mx-auto"></div>`;
+            button.disabled = true;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+                const blob = await response.blob();
+                const objectUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = objectUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(objectUrl);
+            } catch (error) {
+                console.error('Download failed:', error);
+                alert('Failed to download the thumbnail. The resource might be protected by CORS policy.');
+            } finally {
+                button.innerHTML = originalHtml;
+                button.disabled = false;
+            }
+        }
 
         // --- PROCESSING & RENDERING ---
         function processData() {
@@ -801,11 +833,16 @@
 
             // Spotlight Cards
             const sortedByViews = [...data.videos].sort((a,b) => b.views - a.views);
+            const sortedByLikes = [...data.videos].sort((a,b) => b.likes - a.likes);
+            const sortedByComments = [...data.videos].sort((a,b) => b.comments - a.comments);
             const sortedByDate = [...data.videos].sort((a,b) => a.publishedAt - b.publishedAt);
             const sortedByDur = [...data.videos].sort((a,b) => b.duration - a.duration);
 
             renderSpotlight('cardPopular', sortedByViews[0], 'Most Popular', 'fas fa-fire text-orange-500', v => `${formatCompact(v.views)} views`);
-            renderSpotlight('cardOldest', sortedByDate[0], 'Oldest Video', 'fas fa-history text-blue-500', v => v.publishedAt.toLocaleDateString());
+            renderSpotlight('cardLiked', sortedByLikes[0], 'Most Liked', 'fas fa-thumbs-up text-blue-500', v => `${formatCompact(v.likes)} likes`);
+            renderSpotlight('cardCommented', sortedByComments[0], 'Most Commented', 'fas fa-comments text-green-500', v => `${formatCompact(v.comments)} comments`);
+            renderSpotlight('cardOldest', sortedByDate[0], 'Oldest Video', 'fas fa-history text-indigo-400', v => v.publishedAt.toLocaleDateString());
+            renderSpotlight('cardNewest', sortedByDate[sortedByDate.length - 1], 'Newest Video', 'fas fa-calendar-alt text-teal-400', v => v.publishedAt.toLocaleDateString());
             renderSpotlight('cardLongest', sortedByDur[0], 'Longest Video', 'fas fa-hourglass-half text-purple-500', v => secondsToText(v.duration));
 
             // Populate Table
@@ -827,11 +864,15 @@
             const views = parseInt(stats.viewCount) || 0;
             const likes = parseInt(stats.likeCount) || 0;
             const comments = parseInt(stats.commentCount) || 0;
+            const favorites = parseInt(stats.favoriteCount) || 0;
             const engagement = views > 0 ? (((likes + comments) / views) * 100).toFixed(2) : 0;
             
-            $('svThumb').src = snippet.thumbnails.maxres?.url || snippet.thumbnails.standard?.url || snippet.thumbnails.high?.url;
+            const thumbUrl = snippet.thumbnails.maxres?.url || snippet.thumbnails.standard?.url || snippet.thumbnails.high?.url || snippet.thumbnails.medium?.url;
+            const videoTitle = snippet.title;
+
+            $('svThumb').src = thumbUrl;
             $('svPlayButton').dataset.videoid = video.id;
-            $('svTitle').innerText = snippet.title;
+            $('svTitle').innerText = videoTitle;
             $('svChannel').innerText = snippet.channelTitle;
             $('svPublished').innerText = `Published on ${new Date(snippet.publishedAt).toLocaleDateString()}`;
             $('svDescription').innerText = snippet.description;
@@ -839,7 +880,12 @@
             $('svViews').innerText = formatNum(views);
             $('svLikes').innerText = formatNum(likes);
             $('svComments').innerText = formatNum(comments);
+            $('svFavorites').innerText = formatNum(favorites);
             $('svEngagement').innerText = `${engagement}%`;
+
+            const downloadBtn = $('svDownloadBtn');
+            const safeFilename = videoTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            downloadBtn.onclick = () => downloadResource(thumbUrl, `${safeFilename}_thumbnail.jpg`, downloadBtn);
             
             const tags = snippet.tags;
             const tagsContainer = $('svTags');
@@ -856,11 +902,11 @@
 
         function renderSpotlight(elementId, video, label, iconClass, subtextFn) {
             if (!video) {
-                $(elementId).innerHTML = `<div class="text-slate-500">N/A</div>`;
+                $(elementId).innerHTML = `<div class="text-slate-500 p-4">N/A</div>`;
                 return;
             }
             $(elementId).innerHTML = `
-                <div class="w-16 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-slate-900">
+                <div class="w-20 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-slate-900">
                     <img src="${video.thumb}" class="w-full h-full object-cover opacity-90">
                 </div>
                 <div class="min-w-0">
@@ -994,9 +1040,7 @@
             videos.forEach((v, i) => {
                 const row = document.createElement('tr');
                 row.className = "hover:bg-slate-800/50 transition border-b border-slate-700/50";
-                const safeTitle = v.title.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                const safeChannel = v.channel.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-
+                
                 row.innerHTML = `
                     <td class="px-6 py-4 font-mono text-slate-500">${i+1}</td>
                     <td class="px-6 py-4">
@@ -1014,7 +1058,7 @@
                         <span class="mr-2"><i class="fas fa-thumbs-up text-[10px] text-slate-500"></i> ${formatCompact(v.likes)}</span>
                     </td>
                     <td class="px-6 py-4 text-center">
-                        <button onclick="openModal('${v.id}', '${safeTitle}', '${safeChannel}')" class="text-red-500 hover:text-red-400 transition transform hover:scale-110" title="Play Video">
+                        <button onclick="openModal('${v.id}')" class="text-red-500 hover:text-red-400 transition transform hover:scale-110" title="Play Video">
                             <i class="fas fa-play-circle text-lg"></i>
                         </button>
                     </td>
@@ -1056,10 +1100,10 @@
         }
 
         function exportCSV() {
-            let csv = "Title,Channel,Duration(s),Views,Likes,Comments,URL\n";
+            let csv = "Title,Channel,Duration(s),Views,Likes,Comments,Favorites,URL\n";
             GLOBAL_DATA.videos.forEach(v => {
                 const title = `"${v.title.replace(/"/g, '""')}"`;
-                csv += `${title},"${v.channel}",${v.duration},${v.views},${v.likes},${v.comments},https://youtu.be/${v.id}\n`;
+                csv += `${title},"${v.channel}",${v.duration},${v.views},${v.likes},${v.comments},${v.favorites},https://youtu.be/${v.id}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
@@ -1115,16 +1159,17 @@
             clearInterval(progressInterval);
             if (event.data == YT.PlayerState.PLAYING) {
                 playPauseIcon.className = 'fas fa-pause';
-                progressInterval = setInterval(updateSeeker, 100);
+                progressInterval = setInterval(updateSeekerUI, 250);
                  updateTimeDisplay();
             } else {
                 playPauseIcon.className = 'fas fa-play';
             }
         }
         
-        function updateSeeker() {
+        function updateSeekerUI() {
             if (!player || typeof player.getDuration !== 'function') return;
             const duration = player.getDuration();
+            if (duration <= 0) return;
             const currentTime = player.getCurrentTime();
             const buffer = player.getVideoLoadedFraction();
 
@@ -1139,7 +1184,11 @@
         }
         
         function updateTimeDisplay() {
-            if (!player || typeof player.getDuration !== 'function') return;
+            if (!player || typeof player.getDuration !== 'function' || player.getDuration() <= 0) {
+                 $('currentTime').textContent = '0:00';
+                 $('totalTime').textContent = '0:00';
+                 return;
+            };
              $('currentTime').textContent = secondsToText(player.getCurrentTime());
              $('totalTime').textContent = secondsToText(player.getDuration());
         }
@@ -1151,6 +1200,42 @@
         }
         
         function setupPlayerControls() {
+            let isSeeking = false;
+            const seeker = $('seekerContainer');
+
+            const performSeek = (e) => {
+                if (!player || typeof player.getDuration !== 'function' || player.getDuration() <= 0) return;
+                const rect = seeker.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                const width = rect.width;
+                x = Math.max(0, Math.min(x, width)); 
+                const percentage = x / width;
+                const newTime = player.getDuration() * percentage;
+                
+                $('seekerProgress').style.width = `${percentage * 100}%`;
+                $('seekerHandle').style.left = `${percentage * 100}%`;
+                $('currentTime').textContent = secondsToText(newTime);
+                
+                player.seekTo(newTime, true);
+            };
+
+            seeker.addEventListener('mousedown', (e) => {
+                isSeeking = true;
+                document.body.classList.add('seeking');
+                performSeek(e);
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isSeeking) {
+                    performSeek(e);
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isSeeking = false;
+                document.body.classList.remove('seeking');
+            });
+
             $('playPauseBtn').addEventListener('click', () => {
                 if (!player) return;
                 const state = player.getPlayerState();
@@ -1159,16 +1244,6 @@
                 } else {
                     player.playVideo();
                 }
-            });
-
-            $('seekerContainer').addEventListener('click', (e) => {
-                if (!player || typeof player.getDuration !== 'function') return;
-                const rect = $('seekerContainer').getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const width = rect.width;
-                const percentage = x / width;
-                const newTime = player.getDuration() * percentage;
-                player.seekTo(newTime, true);
             });
         }
 
