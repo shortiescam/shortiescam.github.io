@@ -73,7 +73,10 @@
         #customControls {
             opacity: 0;
             transition: opacity 0.3s ease;
+            z-index: 50; /* Above the Click Shield */
         }
+        
+        /* Show controls on hover OR when paused */
         #iframeWrapper:hover #customControls, #iframeWrapper.paused #customControls {
             opacity: 1;
         }
@@ -86,6 +89,8 @@
             cursor: pointer;
             padding-top: 8px;
             padding-bottom: 8px;
+            position: relative;
+            z-index: 60;
         }
         #seekerTrack {
             height: var(--seeker-track-height);
@@ -110,16 +115,85 @@
             background-color: white; border-radius: 50%;
             z-index: 3; opacity: 0;
             transition: opacity 0.2s ease; pointer-events: none;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
         #seekerContainer:hover #seekerHandle, body.seeking #seekerHandle { opacity: 1; }
         #seekerContainer:hover #seekerTrack { height: 6px; }
 
-        /* Volume Slider */
-        #volumeSliderContainer { width: 0; transition: width 0.3s ease; overflow: hidden; }
-        #volumeBtn:hover + #volumeSliderContainer, #volumeSliderContainer:hover { width: 80px; }
-        input[type=range].volume-slider { -webkit-appearance: none; background: transparent; cursor: pointer; }
-        input[type=range].volume-slider::-webkit-slider-runnable-track { height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; }
-        input[type=range].volume-slider::-webkit-slider-thumb { -webkit-appearance: none; margin-top: -5px; height: 14px; width: 14px; border-radius: 50%; background: white; }
+        /* Volume Slider Fixed */
+        .volume-group {
+            display: flex;
+            align-items: center;
+            height: 40px; /* Consistent height for hover detection */
+        }
+        #volumeSliderContainer { 
+            width: 0; 
+            overflow: hidden; 
+            transition: width 0.3s ease; 
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        .volume-group:hover #volumeSliderContainer, 
+        #volumeSliderContainer:hover,
+        #volumeSliderContainer:active { 
+            width: 80px; 
+            margin-left: 8px;
+        }
+
+        input[type=range].volume-slider { 
+            -webkit-appearance: none; 
+            background: transparent; 
+            cursor: pointer; 
+            width: 100%;
+        }
+        input[type=range].volume-slider:focus { outline: none; }
+        
+        /* Slider Track */
+        input[type=range].volume-slider::-webkit-slider-runnable-track { 
+            width: 100%; 
+            height: 4px; 
+            background: rgba(255,255,255,0.3); 
+            border-radius: 2px; 
+            cursor: pointer;
+        }
+        input[type=range].volume-slider::-moz-range-track { 
+            width: 100%; 
+            height: 4px; 
+            background: rgba(255,255,255,0.3); 
+            border-radius: 2px; 
+            cursor: pointer;
+        }
+
+        /* Slider Thumb */
+        input[type=range].volume-slider::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            height: 12px; 
+            width: 12px; 
+            border-radius: 50%; 
+            background: #ffffff; 
+            cursor: pointer; 
+            margin-top: -4px; /* Centers thumb on track */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        input[type=range].volume-slider::-moz-range-thumb { 
+            height: 12px; 
+            width: 12px; 
+            border-radius: 50%; 
+            background: #ffffff; 
+            cursor: pointer; 
+            border: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* Click Shield to Block YT Interactions */
+        #playerClickShield {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 20; /* Above Iframe (z0), Below Controls (z50) */
+            background: transparent; /* Invisible */
+            cursor: pointer;
+        }
 
     </style>
 </head>
@@ -135,7 +209,7 @@
             <h1 class="text-2xl font-bold text-white tracking-tight">Ultimate<span class="text-red-500">Analyst</span></h1>
         </div>
         <div class="text-xs text-slate-500 font-mono bg-[#1f1f1f] px-3 py-1.5 rounded-full border border-slate-700">
-            v4.2.0 • Revamped UI & Custom Player
+            v4.3.0 • Custom Clean Player
         </div>
     </header>
 
@@ -471,11 +545,16 @@
     <div id="videoModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none" onclick="closeModal()">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
         <div id="modalContent" class="w-full max-w-4xl rounded-2xl space-y-2 opacity-0 transform -translate-y-4 scale-95" onclick="event.stopPropagation()">
-            <div id="iframeWrapper" class="relative w-full bg-black rounded-xl overflow-hidden aspect-video">
-                <div id="videoIframe"></div> <!-- YouTube player will be injected here -->
+            <div id="iframeWrapper" class="relative w-full bg-black rounded-xl overflow-hidden aspect-video shadow-2xl ring-1 ring-white/10">
                 
+                <!-- YouTube player will be injected here -->
+                <div id="videoIframe"></div> 
+                
+                <!-- TRANSPARENT SHIELD: Blocks clicks on the Iframe (No Right Click, No Watch Later) -->
+                <div id="playerClickShield"></div>
+
                 <!-- Custom Controls Overlay -->
-                <div id="customControls" class="absolute bottom-0 left-0 right-0 p-2 sm:p-3 bg-gradient-to-t from-black/70 to-transparent">
+                <div id="customControls" class="absolute bottom-0 left-0 right-0 p-2 sm:p-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
                     <!-- Seeker -->
                     <div id="seekerContainer">
                         <div id="seekerTrack">
@@ -487,22 +566,24 @@
                     <!-- Main Controls -->
                     <div class="flex justify-between items-center text-white">
                         <div class="flex items-center gap-4">
-                            <button id="playPauseBtn" class="text-2xl w-10 h-10 flex items-center justify-center"><i class="fas fa-play"></i></button>
-                            <div class="flex items-center gap-2">
-                                <button id="volumeBtn" class="text-lg w-8 h-10 flex items-center justify-center"><i class="fas fa-volume-high"></i></button>
+                            <button id="playPauseBtn" class="text-2xl w-10 h-10 flex items-center justify-center hover:text-red-500 transition"><i class="fas fa-play"></i></button>
+                            
+                            <div class="volume-group">
+                                <button id="volumeBtn" class="text-lg w-8 h-10 flex items-center justify-center hover:text-slate-300 transition"><i class="fas fa-volume-high"></i></button>
                                 <div id="volumeSliderContainer">
                                     <input type="range" min="0" max="100" value="100" id="volumeSlider" class="volume-slider">
                                 </div>
                             </div>
-                            <div class="font-mono text-sm hidden sm:flex items-center gap-2">
+                            
+                            <div class="font-mono text-xs text-slate-300 hidden sm:flex items-center gap-2">
                                 <span id="currentTime">0:00</span>
-                                <span>/</span>
+                                <span class="text-slate-500">/</span>
                                 <span id="totalTime">0:00</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button id="fullscreenBtn" class="text-lg w-10 h-10 flex items-center justify-center"><i class="fas fa-expand"></i></button>
-                            <button onclick="closeModal()" class="w-10 h-10 flex-shrink-0 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition">
+                            <button id="fullscreenBtn" class="text-lg w-10 h-10 flex items-center justify-center hover:text-slate-300 transition"><i class="fas fa-expand"></i></button>
+                            <button onclick="closeModal()" class="w-10 h-10 flex-shrink-0 rounded-full text-slate-300 hover:text-red-500 hover:bg-white/5 transition">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -1138,8 +1219,15 @@
                     width: '100%',
                     videoId: videoId,
                     playerVars: {
-                        'autoplay': 1, 'controls': 0, 'rel': 0, 'showinfo': 0,
-                        'modestbranding': 1, 'iv_load_policy': 3, 'playsinline': 1
+                        'autoplay': 1, 
+                        'controls': 0, // Disable Native UI
+                        'rel': 0,      // Limit Related videos
+                        'showinfo': 0,
+                        'modestbranding': 1, 
+                        'iv_load_policy': 3, // Disable annotations
+                        'playsinline': 1,
+                        'fs': 0,             // Disable native fullscreen button
+                        'disablekb': 1       // Disable keyboard to prevent menu popup via keys
                     },
                     events: {
                         'onReady': onPlayerReady,
@@ -1160,6 +1248,15 @@
             const playPauseIcon = $('playPauseBtn').querySelector('i');
             const wrapper = $('iframeWrapper');
             clearInterval(progressInterval);
+            
+            // If Video Ends, immediately stop to prevent "Suggested Videos" grid
+            if(event.data === YT.PlayerState.ENDED) {
+                 player.stopVideo(); // Resets to thumbnail
+                 playPauseIcon.className = 'fas fa-rotate-right'; // Show replay icon
+                 wrapper.classList.add('paused');
+                 return;
+            }
+
             if (event.data == YT.PlayerState.PLAYING) {
                 playPauseIcon.className = 'fas fa-pause';
                 wrapper.classList.remove('paused');
@@ -1220,6 +1317,27 @@
             let isSeeking = false;
             const seeker = $('seekerContainer');
             const volumeSlider = $('volumeSlider');
+            const shield = $('playerClickShield');
+
+            // --- Custom "Click Shield" Interaction ---
+            // Blocks YouTube's native click/right-click but allows us to toggle Play/Pause
+            shield.addEventListener('click', () => {
+                 if (!player) return;
+                 const state = player.getPlayerState();
+                 if (state === YT.PlayerState.PLAYING) player.pauseVideo(); 
+                 else player.playVideo();
+            });
+            
+            shield.addEventListener('dblclick', (e) => {
+                 e.preventDefault(); // Stop rapid zoom on some browsers
+                 toggleFullscreen();
+            });
+
+            // Prevent right click context menu on the video
+            shield.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
 
             const performSeek = (e) => {
                 if (!player || typeof player.getDuration !== 'function' || player.getDuration() <= 0) return;
@@ -1262,14 +1380,16 @@
                 updateVolumeIcon();
             });
             
-            $('fullscreenBtn').addEventListener('click', () => {
+            function toggleFullscreen() {
                 const iframe = $('iframeWrapper');
                 if (document.fullscreenElement) {
                     document.exitFullscreen();
                 } else {
                     iframe.requestFullscreen().catch(err => alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`));
                 }
-            });
+            }
+
+            $('fullscreenBtn').addEventListener('click', toggleFullscreen);
             
             document.addEventListener('fullscreenchange', () => {
                 const icon = $('fullscreenBtn').querySelector('i');
