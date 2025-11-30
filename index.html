@@ -139,33 +139,43 @@
             pointer-events: auto;
         }
 
-        /* Center Play Button (Only visible when paused) */
-        #centerPlayBtn {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
-            opacity: 0;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: none;
-            z-index: 25;
-            background: rgba(239, 68, 68, 0.9); /* Red */
-            color: white;
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 32px;
-            box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
-        }
-        #iframeWrapper.paused #centerPlayBtn {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-            pointer-events: auto;
-            cursor: pointer;
-        }
-        #centerPlayBtn:hover {
-            transform: translate(-50%, -50%) scale(1.1);
-            background: #ef4444;
-        }
+		/* Center Play Button (Only visible when paused) */
+		#centerPlayBtn {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%) scale(0.8);
+			opacity: 0;
+			transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* Slightly smoother transition */
+			pointer-events: none;
+			z-index: 25;
+			background: rgba(30, 30, 30, 0.85); /* Dark, semi-transparent background */
+			color: white;
+			width: 80px;
+			height: 80px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 32px;
+			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* A softer, more natural shadow */
+			backdrop-filter: blur(8px); /* Adds a frosted glass effect (optional) */
+			-webkit-backdrop-filter: blur(8px); /* Safari support */
+		}
+
+		/* When the video is paused, fade in the play button */
+		#iframeWrapper.paused #centerPlayBtn {
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+			pointer-events: auto;
+			cursor: pointer;
+		}
+
+		/* A more subtle hover effect */
+		#centerPlayBtn:hover {
+			transform: translate(-50%, -50%) scale(1.1);
+			background: rgba(15, 15, 15, 0.9); /* Darken background slightly on hover */
+		}
 
         /* --- Seeker UI --- */
         #seekerContainer {
