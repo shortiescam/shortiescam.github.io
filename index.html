@@ -1381,6 +1381,60 @@
                 });
             }
         }
+        
+        // ---[FIX START]--- Player Control Functions
+        function togglePlayPause() {
+            if (!player || typeof player.getPlayerState !== 'function') return;
+            const playerState = player.getPlayerState();
+            if (playerState === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+
+        function closeModal() {
+            document.body.classList.remove('modal-open');
+            if (player && typeof player.pauseVideo === 'function') {
+                player.pauseVideo();
+            }
+        }
+        
+        function updateTimeDisplay() {
+            if (!player || typeof player.getCurrentTime !== 'function' || !player.getDuration) return;
+            $('currentTime').textContent = secondsToText(player.getCurrentTime());
+            $('totalTime').textContent = secondsToText(player.getDuration());
+        }
+
+        function updateSeekerUI() {
+            if (!player || typeof player.getDuration !== 'function' || player.getDuration() <= 0) return;
+            const currentTime = player.getCurrentTime();
+            const duration = player.getDuration();
+            const progressPercent = (currentTime / duration) * 100;
+            const bufferPercent = (player.getVideoLoadedFraction() || 0) * 100;
+
+            $('seekerProgress').style.width = `${progressPercent}%`;
+            $('seekerHandle').style.left = `${progressPercent}%`;
+            $('seekerBuffer').style.width = `${bufferPercent}%`;
+            
+            updateTimeDisplay();
+        }
+
+        function updateVolumeIcon() {
+            if (!player) return;
+            const icon = $('volumeBtn').querySelector('i');
+            const volume = player.getVolume();
+            const isMuted = player.isMuted();
+
+            if (isMuted || volume === 0) {
+                icon.className = 'fas fa-volume-mute';
+            } else if (volume < 50) {
+                icon.className = 'fas fa-volume-low';
+            } else {
+                icon.className = 'fas fa-volume-high';
+            }
+        }
+        // ---[FIX END]---
 
         function onPlayerReady(event) {
             event.target.playVideo();
@@ -1389,24 +1443,21 @@
             updateVolumeIcon();
         }
 
-function onPlayerStateChange(event) {
+        function onPlayerStateChange(event) {
             const playPauseIcon = $('playPauseBtn').querySelector('i');
-            const centerBtn = $('centerPlayBtn'); // Get the big center button
             const wrapper = $('iframeWrapper');
             
             clearInterval(progressInterval);
 
             if (event.data == YT.PlayerState.PLAYING) {
-                // Video Playing: Icon becomes Pause, Remove 'paused' class (removes blur)
                 playPauseIcon.className = 'fas fa-pause';
                 wrapper.classList.remove('paused');
-                
                 progressInterval = setInterval(updateSeekerUI, 250);
-                updateTimeDisplay();
             } else {
-                // Video Paused/Ended: Icon becomes Play, Add 'paused' class (adds blur & shows center button)
                 playPauseIcon.className = 'fas fa-play';
                 wrapper.classList.add('paused');
+                // Update time display one last time when paused or ended
+                updateTimeDisplay();
             }
         }
 
@@ -1416,15 +1467,12 @@ function onPlayerStateChange(event) {
             const volumeSlider = $('volumeSlider');
             const overlay = $('playerOverlay');
 
-            // Handle clicking the transparent overlay to toggle play/pause
             overlay.addEventListener('click', (e) => {
-                // If clicking directly on the overlay (not the controls bar), toggle.
-                if (e.target === overlay || e.target.id === 'customTopBar') {
+                if (e.target === overlay || e.target.id === 'customTopBar' || e.target.id === 'playerOverlay') {
                     togglePlayPause();
                 }
             });
 
-            // Seeker Logic
             const performSeek = (e) => {
                 if (!player || typeof player.getDuration !== 'function' || player.getDuration() <= 0) return;
                 const rect = seeker.getBoundingClientRect();
@@ -1447,30 +1495,26 @@ function onPlayerStateChange(event) {
             document.addEventListener('mousemove', (e) => { if (isSeeking) { performSeek(e); } });
             document.addEventListener('mouseup', () => { isSeeking = false; document.body.classList.remove('seeking'); });
 
-            // Button Listeners
             $('playPauseBtn').addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent overlay click
+                e.stopPropagation();
                 togglePlayPause();
             });
             
-            // Volume Button
             $('volumeBtn').addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (!player) return;
                 player.isMuted() ? player.unMute() : player.mute();
-                updateVolumeIcon();
+                updateVolumeIcon(); // <-- FIX
             });
 
-            // Volume Slider
             volumeSlider.addEventListener('input', (e) => {
                 e.stopPropagation();
                 if (!player) return;
                 player.setVolume(volumeSlider.value);
                 if (player.isMuted()) player.unMute();
-                updateVolumeIcon();
+                updateVolumeIcon(); // <-- FIX
             });
             
-            // Prevent overlay click when interacting with volume slider wrapper
             document.querySelector('.volume-container').addEventListener('click', (e) => {
                 e.stopPropagation();
             });
