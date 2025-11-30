@@ -136,10 +136,24 @@
         #seekerContainer:hover #seekerHandle, body.seeking #seekerHandle { opacity: 1; }
         #seekerContainer:hover #seekerTrack { height: 6px; }
 
-        /* Volume Slider */
-        #volumeSliderContainer { width: 0; transition: width 0.3s ease; overflow: hidden; }
-        #volumeBtn:hover + #volumeSliderContainer, #volumeSliderContainer:hover { width: 80px; }
-        input[type=range].volume-slider { -webkit-appearance: none; background: transparent; cursor: pointer; }
+        /* Volume Slider - Re-engineered for better hover interaction */
+        #volumeSliderContainer {
+            width: 0;
+            transition: width 0.25s ease-in-out;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+        #volumeControlWrapper:hover #volumeSliderContainer {
+            width: 100px; /* Provides space for an 80px slider + margin */
+        }
+        input[type=range].volume-slider {
+            -webkit-appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 80px;
+            margin: 0 10px; /* Center it within the 100px container */
+        }
         input[type=range].volume-slider::-webkit-slider-runnable-track { height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; }
         input[type=range].volume-slider::-webkit-slider-thumb { -webkit-appearance: none; margin-top: -5px; height: 14px; width: 14px; border-radius: 50%; background: white; }
 
@@ -521,8 +535,8 @@
                         <div class="flex justify-between items-center text-white">
                             <div class="flex items-center gap-4">
                                 <button id="playPauseBtn" class="text-2xl w-10 h-10 flex items-center justify-center"><i class="fas fa-play"></i></button>
-                                <div class="flex items-center gap-2">
-                                    <button id="volumeBtn" class="text-lg w-8 h-10 flex items-center justify-center"><i class="fas fa-volume-high"></i></button>
+                                <div id="volumeControlWrapper" class="flex items-center">
+                                    <button id="volumeBtn" class="text-lg w-10 h-10 flex items-center justify-center"><i class="fas fa-volume-high"></i></button>
                                     <div id="volumeSliderContainer">
                                         <input type="range" min="0" max="100" value="100" id="volumeSlider" class="volume-slider">
                                     </div>
@@ -1264,6 +1278,12 @@
             } else {
                 playPauseIcon.className = 'fas fa-play';
                 wrapper.classList.add('paused');
+            }
+            
+            // When video ends, seek to start and pause. This prevents the "More Videos" grid from showing.
+            if (event.data == YT.PlayerState.ENDED) {
+                player.pauseVideo();
+                player.seekTo(0, true);
             }
         }
         
