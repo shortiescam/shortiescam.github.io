@@ -48,6 +48,7 @@
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'float': 'float 6s ease-in-out infinite',
                         'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
                     },
                     keyframes: {
                         float: {
@@ -57,6 +58,10 @@
                         slideUp: {
                             'from': { transform: 'translateY(20px)', opacity: '0' },
                             'to': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            'from': { opacity: '0' },
+                            'to': { opacity: '1' },
                         }
                     }
                 }
@@ -76,6 +81,9 @@
             -webkit-tap-highlight-color: transparent;
             touch-action: pan-x pan-y;
             height: 100dvh;
+            /* Disable text highlighting globally */
+            user-select: none;
+            -webkit-user-select: none;
         }
         
         /* Modern Glassmorphism */
@@ -105,28 +113,38 @@
         .rotate-y-180 { transform: rotateY(180deg); }
 
         /* Supercell Background Animation */
-        @keyframes supercell-scroll {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        .supercell-card {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .supercell-card::before {
-            content: '';
+        .supercell-container {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: url('https://www.clashchamps.com/wp-content/uploads/2024/06/czJOx2-Q.png');
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+            border-radius: inherit;
+        }
+
+        .supercell-bg-1, .supercell-bg-2 {
+            position: absolute;
+            inset: 0;
             background-size: cover;
             background-position: center;
-            opacity: 0.3;
             mix-blend-mode: overlay;
-            animation: supercell-scroll 20s ease-in-out infinite alternate;
+            transition: opacity 1s ease;
+        }
+
+        .supercell-bg-1 {
+            background-image: url('https://www.clashchamps.com/wp-content/uploads/2024/06/czJOx2-Q.png');
+            opacity: 0.6;
+        }
+
+        .supercell-bg-2 {
+            background-image: url('https://static0.srcdn.com/wordpress/wp-content/uploads/2021/04/Three-new-Clash-of-Clans-games-announced.jpg');
+            opacity: 0;
+            animation: supercellFade 10s infinite; /* 5s for one image, 5s for the other = 10s cycle */
+        }
+
+        @keyframes supercellFade {
+            0%, 45% { opacity: 0; }
+            50%, 95% { opacity: 0.6; }
+            100% { opacity: 0; }
         }
 
         /* Ambient Blobs */
@@ -145,14 +163,13 @@
         }
     </style>
 </head>
-<body>
+<body class="select-none">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
         // --- DATA ---
-        // Same Word Bank as before
         const WORD_BANK = {
             Supercell: ["Barbarian", "Archer", "Giant", "Goblin", "Wall Breaker", "Balloon", "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", "Miner", "Electro Dragon", "Yeti", "Ice Golem", "Headhunter", "Barbarian King", "Archer Queen", "Grand Warden", "Royal Champion", "Knight", "Musketeer", "Prince", "Skeleton Army", "Goblin Barrel", "Giant Skeleton", "Royal Giant", "Elite Barbarians", "Mega Minion", "Ice Wizard", "Electro Wizard", "Inferno Dragon", "Night Witch", "Bandit", "Royal Ghost", "Magic Archer", "Lumberjack", "Ram Rider", "Fisherman", "Mother Witch", "Electro Giant", "Phoenix", "Monk", "Little Prince", "Cannon", "Tesla", "Mortar", "X-Bow", "Inferno Tower", "Bomb Tower", "Elixir Collector"],
             Movies: ["The Godfather", "Titanic", "Avatar", "Star Wars", "Jurassic Park", "The Matrix", "Inception", "Forrest Gump", "The Lion King", "Avengers", "Pulp Fiction", "Frozen", "The Dark Knight", "Harry Potter", "Back to the Future", "Rocky", "Gladiator", "Shrek", "Toy Story", "Jaws", "Interstellar", "Parasite", "Coco", "Up", "Wall-E", "Alien", "Terminator", "Fight Club", "Goodfellas", "Spirited Away", "Barbie", "Oppenheimer", "Dune", "Spider-Man", "Black Panther", "Iron Man", "Wonder Woman", "Joker", "Top Gun", "The Shining", "Get Out", "Blade Runner", "E.T.", "Indiana Jones", "Schindler's List", "Lord of the Rings", "Silence of the Lambs", "Casablanca", "Citizen Kane", "The Prestige", "Memento", "Se7en", "Zootopia", "Moana", "Inside Out", "Finding Nemo", "Ratatouille", "The Incredibles"],
@@ -176,23 +193,29 @@
 
         const CATEGORY_ICONS = {
             Supercell: "https://twitch.supercell.com/supercell-logo.png",
-            Movies: "fa-video",
-            Food: "fa-utensils",
-            Brands: "fa-bag-shopping",
-            Technology: "fa-microchip",
-            Jobs: "fa-briefcase",
-            Mythology: "fa-mask", 
-            Sport: "fa-trophy",
-            Places: "fa-location-dot",
-            Instruments: "fa-music",
-            Superheroes: "fa-bolt",
-            Animals: "fa-paw",
-            Countries: "fa-flag",
-            VideoGames: "fa-gamepad",
-            Science: "fa-flask",
-            Clothing: "fa-shirt",
-            Home: "fa-house",
-            People: "fa-user-group"
+            Movies: "https://em-content.zobj.net/source/microsoft-teams/337/popcorn_1f37f.png",
+            Food: "https://em-content.zobj.net/source/microsoft-teams/363/hamburger_1f354.png",
+            Brands: "https://em-content.zobj.net/source/microsoft-teams/337/shopping-bags_1f6cd-fe0f.png",
+            Technology: "https://em-content.zobj.net/source/microsoft-teams/337/gear_2699-fe0f.png",
+            Jobs: "https://em-content.zobj.net/source/microsoft-teams/337/briefcase_1f4bc.png",
+            Mythology: "https://em-content.zobj.net/source/microsoft-teams/337/dragon-face_1f432.png", 
+            Sport: "https://em-content.zobj.net/source/microsoft-teams/337/trophy_1f3c6.png",
+            Places: "https://em-content.zobj.net/source/microsoft-teams/337/cityscape_1f3d9-fe0f.png",
+            Instruments: "https://em-content.zobj.net/source/microsoft-teams/337/musical-note_1f3b5.png",
+            Superheroes: "https://em-content.zobj.net/source/microsoft-teams/337/superhero_light-skin-tone_1f9b8-1f3fb_1f3fb.png",
+            Animals: "https://em-content.zobj.net/source/microsoft-teams/337/service-dog_1f415-200d-1f9ba.png",
+            Countries: "https://em-content.zobj.net/source/microsoft-teams/337/globe-showing-americas_1f30e.png",
+            VideoGames: "https://em-content.zobj.net/source/microsoft-teams/337/joystick_1f579-fe0f.png",
+            Science: "https://em-content.zobj.net/source/microsoft-teams/363/scientist-light-skin-tone_1f9d1-1f3fb-200d-1f52c.png",
+            Clothing: "https://em-content.zobj.net/source/microsoft-teams/337/t-shirt_1f455.png",
+            Home: "https://em-content.zobj.net/source/microsoft-teams/337/house_1f3e0.png",
+            People: [
+                "https://em-content.zobj.net/source/microsoft-teams/337/person_light-skin-tone_1f9d1-1f3fb_1f3fb.png",
+                "https://em-content.zobj.net/source/microsoft-teams/337/old-man_light-skin-tone_1f474-1f3fb_1f3fb.png",
+                "https://em-content.zobj.net/source/microsoft-teams/337/boy_medium-dark-skin-tone_1f466-1f3fe_1f3fe.png",
+                "https://em-content.zobj.net/source/microsoft-teams/337/boy_medium-light-skin-tone_1f466-1f3fc_1f3fc.png",
+                "https://em-content.zobj.net/source/microsoft-teams/337/woman-medium-light-skin-tone-red-hair_1f469-1f3fc-200d-1f9b0.png"
+            ]
         };
         
         const DISPLAY_CATEGORIES = ['Supercell', ...Object.keys(WORD_BANK).filter(c => c !== 'Supercell')];
@@ -200,6 +223,32 @@
         // --- COMPONENTS ---
 
         const FaIcon = ({ name, sizeClass = "text-xl", className = "" }) => {
+            const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+            useEffect(() => {
+                if (Array.isArray(name) && name.length > 1) {
+                    const interval = setInterval(() => {
+                        setCurrentImageIndex(prev => (prev + 1) % name.length);
+                    }, 5000);
+                    return () => clearInterval(interval);
+                }
+            }, [name]);
+
+            if (Array.isArray(name)) {
+                return (
+                    <div className={`relative w-8 h-8 inline-block ${className}`}>
+                        {name.map((url, index) => (
+                             <img 
+                                key={url} 
+                                src={url} 
+                                alt="icon" 
+                                className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
+                             />
+                        ))}
+                    </div>
+                );
+            }
+
             if (name.startsWith('http')) {
                 return <img src={name} alt="icon" className={`w-8 h-8 object-contain ${className}`} />;
             }
@@ -346,7 +395,7 @@
                                     />
                                     <button 
                                         onClick={addPlayer}
-                                        className="bg-brand-600 hover:bg-brand-500 w-14 flex items-center justify-center rounded-xl font-bold transition shadow-lg shadow-brand-900/20 active:scale-95 border border-white/10"
+                                        className="bg-brand-600 hover:bg-brand-500 w-24 flex items-center justify-center rounded-xl font-bold transition shadow-lg shadow-brand-900/20 active:scale-95 border border-white/10"
                                     >
                                         <i className="fa-solid fa-plus text-white text-lg"></i>
                                     </button>
@@ -373,7 +422,7 @@
 
                             {/* Timer */}
                             <section className="mb-6 glass-panel rounded-[2rem] p-6">
-                                <div className="flex items-center justify-between mb-4">
+                                <div className={`flex items-center justify-between transition-all duration-300 ${timerEnabled ? 'mb-4' : 'mb-0'}`}>
                                     <h2 className="text-sm font-bold tracking-widest text-sky-400 flex items-center gap-2 uppercase">
                                         <i className="fa-solid fa-stopwatch"></i> Countdown
                                     </h2>
@@ -388,7 +437,7 @@
                                     </button>
                                 </div>
                                 
-                                <div className={`transition-all duration-300 overflow-hidden ${timerEnabled ? 'opacity-100 max-h-40' : 'opacity-30 max-h-0'}`}>
+                                <div className={`transition-all duration-300 overflow-hidden ${timerEnabled ? 'opacity-100 max-h-40' : 'opacity-0 max-h-0'}`}>
                                     <div className="flex justify-between items-end mb-2 px-1">
                                         <span className="text-white/40 text-[10px] font-bold uppercase">Duration</span>
                                         <span className="font-mono text-xl font-bold text-white">{timerMinutes} <span className="text-sm text-white/50">min</span></span>
@@ -448,6 +497,23 @@
                                             const isSelected = selectedCategories.includes(cat);
                                             const isSupercell = cat === 'Supercell';
                                             
+                                            // Conditional styling logic
+                                            let cardClasses = `relative overflow-hidden flex flex-col items-center justify-center gap-3 p-4 rounded-[1.5rem] border transition-all duration-300 active:scale-95 group min-h-[110px] `;
+                                            
+                                            if (isSupercell) {
+                                                if (isSelected) {
+                                                    cardClasses += 'border-blue-400 bg-blue-900/20 ring-2 ring-blue-500 shadow-lg shadow-blue-900/40 text-white';
+                                                } else {
+                                                    cardClasses += 'border-white/10 bg-slate-900/40 opacity-60 grayscale-[0.5] hover:opacity-100 hover:grayscale-0 text-slate-300';
+                                                }
+                                            } else {
+                                                if (isSelected) {
+                                                    cardClasses += 'glass-panel bg-teal-500/10 border-teal-500/40 text-teal-100 shadow-[0_0_20px_rgba(20,184,166,0.1)]';
+                                                } else {
+                                                    cardClasses += 'glass-panel-lighter border-white/5 text-slate-400 hover:bg-white/5 hover:border-white/10';
+                                                }
+                                            }
+
                                             return (
                                                 <button
                                                     key={cat}
@@ -457,24 +523,31 @@
                                                     onMouseLeave={handleTouchEnd}
                                                     onTouchStart={() => handleTouchStart(cat)}
                                                     onTouchEnd={handleTouchEnd}
-                                                    className={`relative overflow-hidden flex flex-col items-center justify-center gap-3 p-4 rounded-[1.5rem] border transition-all duration-300 active:scale-95 group min-h-[110px]
-                                                        ${isSupercell 
-                                                            ? 'supercell-card shadow-lg shadow-blue-900/20 border-blue-400/20' 
-                                                            : (isSelected 
-                                                                ? 'glass-panel bg-teal-500/10 border-teal-500/40 text-teal-100 shadow-[0_0_20px_rgba(20,184,166,0.1)]' 
-                                                                : 'glass-panel-lighter border-white/5 text-slate-400 hover:bg-white/5 hover:border-white/10'
-                                                            )
-                                                        }
-                                                    `}
+                                                    className={cardClasses}
                                                 >
+                                                    {/* Supercell Background Layers */}
+                                                    {isSupercell && (
+                                                        <div className="supercell-container pointer-events-none">
+                                                            <div className="supercell-bg-1"></div>
+                                                            <div className="supercell-bg-2"></div>
+                                                        </div>
+                                                    )}
+
                                                     <div className="relative z-10 flex flex-col items-center gap-2">
                                                         <FaIcon 
                                                             name={iconSource} 
                                                             sizeClass="text-2xl" 
                                                             className={`transition-all duration-300 ${isSupercell ? "drop-shadow-md brightness-125" : (isSelected ? "text-teal-400 scale-110" : "text-white/40 group-hover:text-white/70")}`} 
                                                         />
-                                                        <span className={`text-xs font-bold tracking-wide transition-colors ${isSupercell ? 'text-white drop-shadow-md' : (isSelected ? 'text-white' : 'text-slate-500 group-hover:text-slate-300')}`}>{cat}</span>
+                                                        <span className={`text-xs font-bold tracking-wide transition-colors ${isSupercell ? 'text-white drop-shadow-md' : ''}`}>{cat}</span>
                                                     </div>
+
+                                                    {/* Selection Indicator Checkmark */}
+                                                    {isSelected && (
+                                                        <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow-sm ${isSupercell ? 'bg-blue-500 text-white' : 'bg-teal-500 text-slate-900'}`}>
+                                                            <i className="fa-solid fa-check"></i>
+                                                        </div>
+                                                    )}
                                                 </button>
                                             )
                                         })}
@@ -547,7 +620,8 @@
                     <div className="w-32 h-32 rounded-full flex items-center justify-center mb-10 relative">
                         <div className="absolute inset-0 bg-brand-500/20 blur-2xl rounded-full animate-pulse-slow"></div>
                         <div className="glass-panel w-full h-full rounded-full flex items-center justify-center border border-white/10">
-                            <i className="fa-solid fa-user-secret text-white/50 text-5xl"></i>
+                            {/* Replaced fa-user-secret with image */}
+                            <img src="https://em-content.zobj.net/source/microsoft-teams/363/detective_light-skin-tone_1f575-1f3fb_1f3fb.png" alt="Detective" className="w-20 h-20" />
                         </div>
                     </div>
                     
@@ -590,7 +664,8 @@
                                     <div className="w-full h-full absolute top-0 left-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
 
                                     <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-8 ring-1 ring-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                                        <i className="fa-solid fa-lock text-white/30 text-4xl group-hover:text-white/50 transition-colors"></i>
+                                        {/* Replaced fa-lock with image */}
+                                        <img src="https://em-content.zobj.net/source/microsoft-teams/337/locked_1f512.png" alt="Locked" className="w-12 h-12" />
                                     </div>
                                     <h3 className="text-white font-display font-bold text-2xl mb-2">TOP SECRET</h3>
                                     <p className="text-white/40 font-medium text-sm text-center tracking-wide">Tap or Swipe to decrypt</p>
