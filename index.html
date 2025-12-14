@@ -2,1607 +2,741 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Ultimate Analyst Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Imposter - Find the Spy</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Animation Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap');
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #121212;
-            color: #cbd5e1; 
-            background-image: radial-gradient(circle at 15% 15%, rgba(255,0,0,0.08), transparent 35%), radial-gradient(circle at 85% 95%, rgba(255,0,0,0.08), transparent 35%);
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617; /* Slate 950 */
+            color: #f8fafc;
+            overflow: hidden; /* Prevent pull-to-refresh on mobile */
+            -webkit-tap-highlight-color: transparent;
         }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #1a1a1a; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #6a6a6a; }
-
-        .glass-panel {
-            background: rgba(28, 28, 28, 0.6);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
+        /* Smooth Gradients */
+        .bg-glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
-        }
-        
-        .tab-btn.active {
-            color: #ef4444;
-            border-bottom: 2px solid #ef4444;
-            background: linear-gradient(to top, rgba(239, 68, 68, 0.1), transparent);
         }
 
-        /* --- Custom Spinners --- */
-        .loader-lg {
-            border: 4px solid rgba(255,255,255,0.1);
-            border-radius: 50%;
-            border-top: 4px solid #ef4444;
-            width: 48px;
-            height: 48px;
-            animation: spin 0.8s linear infinite;
+        /* Custom Animations */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
         }
-        .loader-sm {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-radius: 50%;
-            border-top: 3px solid #ef4444;
-            width: 24px;
-            height: 24px;
-            animation: spin 0.6s linear infinite;
+        .animate-blob {
+            animation: blob 10s infinite;
         }
-        .loader-btn { /* For buttons */
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 50%;
-            border-top: 2px solid #fff;
-            width: 18px;
-            height: 18px;
-            animation: spin 0.6s linear infinite;
+        .animation-delay-2000 {
+            animation-delay: 2s;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* --- Animations --- */
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .fade-in-fast { animation: fadeInFast 0.3s ease-out; }
-        @keyframes fadeInFast { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        
-		/* --- Video Modal & Custom Player --- */
-		#videoModal { 
-			transition: opacity 0.3s ease-in-out; 
-			opacity: 0; 
-			pointer-events: none; /* Hidden by default */
-		}
-
-		/* This makes the modal appear when the class is added */
-		body.modal-open #videoModal { 
-			opacity: 1; 
-			pointer-events: auto; 
-		}
-
-		#modalContent { 
-			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-			opacity: 0; 
-			transform: translateY(20px) scale(0.95);
-		}
-
-		body.modal-open #modalContent { 
-			opacity: 1; 
-			transform: translateY(0) scale(1); 
-		}
-
-		#iframeWrapper {
-			position: relative;
-			width: 100%;
-			background: #000;
-			border-radius: 0.75rem; 
-			overflow: hidden;
-			aspect-ratio: 16/9;
-		}
-
-		#videoIframe {
-			position: absolute;
-			top: 0; left: 0; width: 100%; height: 100%;
-			pointer-events: none;
-			transition: filter 0.3s ease; /* Smooth transition for the blur */
-		}
-
-		/* 
-		   THE BLUR FIX:
-		   We use a high blur (15px) to make text unreadable.
-		   We lower brightness (0.4) to make the white text fade away.
-		   This effectively hides the "More Videos" popup without turning the screen pitch black.
-		*/
-		#iframeWrapper.paused #videoIframe {
-			filter: blur(15px) brightness(0.4); 
-		}
-		
-        /* --- Custom Overlay --- */
-        #playerOverlay {
-            position: absolute;
-            inset: 0;
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            cursor: default; /* Reset cursor */
+        .animation-delay-4000 {
+            animation-delay: 4s;
         }
 
-        /* Top Bar & Controls fade logic */
-        #customControls, #customTopBar {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none; /* Let clicks pass to background for play/pause */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
         }
 
-        /* Show controls on hover OR when paused */
-        #iframeWrapper:hover #customControls, 
-        #iframeWrapper:hover #customTopBar, 
-        #iframeWrapper.paused #customControls, 
-        #iframeWrapper.paused #customTopBar {
-            opacity: 1;
+        @keyframes slide-up {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up {
+            animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Re-enable clicks on the actual buttons */
-        #customControls *, #customTopBar * {
-            pointer-events: auto;
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
-		/* Center Play Button (Only visible when paused) */
-		#centerPlayBtn {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%) scale(0.8);
-			opacity: 0;
-			transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* Slightly smoother transition */
-			pointer-events: none;
-			z-index: 25;
-			background: rgba(30, 30, 30, 0.85); /* Dark, semi-transparent background */
-			color: white;
-			width: 80px;
-			height: 80px;
-			border-radius: 50%;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-size: 32px;
-			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* A softer, more natural shadow */
-			backdrop-filter: blur(8px); /* Adds a frosted glass effect (optional) */
-			-webkit-backdrop-filter: blur(8px); /* Safari support */
-		}
-
-		/* When the video is paused, fade in the play button */
-		#iframeWrapper.paused #centerPlayBtn {
-			opacity: 1;
-			transform: translate(-50%, -50%) scale(1);
-			pointer-events: auto;
-			cursor: pointer;
-		}
-
-		/* A more subtle hover effect */
-		#centerPlayBtn:hover {
-			transform: translate(-50%, -50%) scale(1.1);
-			background: rgba(15, 15, 15, 0.9); /* Darken background slightly on hover */
-		}
-
-        /* --- Seeker UI --- */
-        #seekerContainer {
-            --seeker-handle-size: 14px;
-            --seeker-track-height: 4px;
-            height: 20px;
-            cursor: pointer;
-            padding-top: 8px;
-            padding-bottom: 8px;
-            margin-bottom: 4px; /* Space above controls */
+        /* 3D Card Effects */
+        .perspective-1000 {
+            perspective: 1000px;
         }
-        #seekerTrack {
-            height: var(--seeker-track-height);
-            background-color: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            position: relative;
-            transition: height 0.2s ease;
+        .preserve-3d {
+            transform-style: preserve-3d;
         }
-        #seekerProgress, #seekerBuffer {
-            position: absolute;
-            top: 0; left: 0; height: 100%;
-            border-radius: 2px; pointer-events: none;
+        .backface-hidden {
+            backface-visibility: hidden;
         }
-        #seekerProgress { background-color: #ef4444; z-index: 2; }
-        #seekerBuffer { background-color: rgba(255,255,255,0.4); z-index: 1; transition: width 0.2s linear; }
-        #seekerHandle {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%) translateX(-50%);
-            width: var(--seeker-handle-size);
-            height: var(--seeker-handle-size);
-            background-color: white; border-radius: 50%;
-            z-index: 3; opacity: 0;
-            transition: opacity 0.2s ease; pointer-events: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        .rotate-y-180 {
+            transform: rotateY(180deg);
         }
-        #seekerContainer:hover #seekerHandle, body.seeking #seekerHandle { opacity: 1; }
-        #seekerContainer:hover #seekerTrack { height: 6px; }
-
-        /* --- FIXED Volume UI --- */
-        .volume-container {
-            display: flex;
-            align-items: center;
-            background: rgba(0,0,0,0.4);
-            border-radius: 999px;
-            padding: 4px 12px 4px 6px;
-            transition: background 0.2s;
-        }
-        .volume-container:hover {
-            background: rgba(0,0,0,0.7);
-        }
-        #volumeBtn {
-            width: 32px; height: 32px;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff;
-            flex-shrink: 0;
-        }
-        .volume-slider-wrapper {
-            width: 0;
-            overflow: hidden;
-            transition: width 0.3s ease, margin 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-        /* Show slider on hover of the container */
-        .volume-container:hover .volume-slider-wrapper {
-            width: 80px;
-            margin-left: 8px;
-        }
-        
-        input[type=range].custom-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-            cursor: pointer;
-            height: 16px; /* Touch target */
-            margin: 0;
-        }
-        /* Track */
-        input[type=range].custom-slider::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 2px;
-        }
-        /* Thumb */
-        input[type=range].custom-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 12px;
-            width: 12px;
-            border-radius: 50%;
-            background: #ffffff;
-            margin-top: -4px; /* Center on track */
-            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-        }
-        input[type=range].custom-slider:focus { outline: none; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-2 sm:p-6 lg:p-8">
-    <script src="https://www.youtube.com/iframe_api"></script>
+<body>
+    <div id="root"></div>
 
-    <!-- Navbar / Header -->
-    <header class="w-full max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center shadow-lg shadow-red-500/20">
-                <i class="fab fa-youtube text-white text-2xl"></i>
-            </div>
-            <h1 class="text-2xl font-bold text-white tracking-tight">Ultimate<span class="text-red-500">Analyst</span></h1>
-        </div>
-        <div class="text-xs text-slate-500 font-mono bg-[#1f1f1f] px-3 py-1.5 rounded-full border border-slate-700">
-            v5.0.0 • True Chromeless Player
-        </div>
-    </header>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-    <main class="w-full max-w-7xl mx-auto space-y-6 flex-grow">
+        // --- ICONS (Inline SVGs) ---
+        const Icon = ({ path, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {path}
+            </svg>
+        );
 
-        <!-- Search Bar Area -->
-        <div class="glass-panel p-6 rounded-2xl relative z-20">
-            <!-- Mode Toggle -->
-            <div class="flex justify-center mb-4">
-                <div class="bg-[#111] border border-slate-700 rounded-full p-1 flex items-center text-sm">
-                    <button id="modeBtnPlaylist" onclick="switchMode('playlist')" class="px-4 py-1.5 rounded-full bg-red-600 text-white font-semibold transition-all">
-                        <i class="fas fa-list-ol mr-2"></i>Playlist
-                    </button>
-                    <button id="modeBtnVideo" onclick="switchMode('video')" class="px-4 py-1.5 rounded-full text-slate-400 font-semibold transition-all">
-                         <i class="fab fa-youtube mr-2"></i>Single Video
-                    </button>
-                </div>
-            </div>
-            
-            <div class="flex flex-col lg:flex-row gap-4">
-                <div class="flex-grow relative group">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-all duration-300">
-                        <i class="fas fa-link text-slate-500 group-focus-within:text-red-500"></i>
-                    </div>
-                    <input type="text" id="playlistInput" 
-                        class="w-full bg-[#111] border border-slate-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent block pl-11 p-4 shadow-inner transition-all placeholder-slate-600" 
-                        placeholder="Paste YouTube Playlist URL (e.g., https://youtube.com/playlist?list=...)"
-                    >
-                    <input type="text" id="videoInput" 
-                        class="w-full bg-[#111] border border-slate-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent block pl-11 p-4 shadow-inner transition-all placeholder-slate-600 hidden" 
-                        placeholder="Paste YouTube Video URL (e.g., https://www.youtube.com/watch?v=...)"
-                    >
-                </div>
-                
-                <div class="flex gap-2">
-                    <button onclick="toggleSettings()" class="w-14 h-14 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-slate-400 hover:text-white transition" title="API Settings">
-                        <i class="fas fa-cog"></i>
-                    </button>
-                    <button onclick="startAnalysis()" id="analyzeBtn" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold h-14 px-8 rounded-xl shadow-lg shadow-red-900/20 transform transition active:scale-95 whitespace-nowrap flex items-center justify-center gap-2">
-                        <span>Analyze</span> <i class="fas fa-bolt"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Hidden API Settings -->
-            <div id="settingsPanel" class="hidden mt-4 pt-4 border-t border-slate-700">
-                <label class="block text-xs text-slate-400 mb-2 uppercase tracking-wider font-semibold">Custom API Key (Optional)</label>
-                <input type="password" id="apiKeyInput" placeholder="Enter your Google Cloud API Key..." class="w-full bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-lg p-3 focus:border-red-500 outline-none focus:ring-1 focus:ring-red-500">
-                <p class="mt-2 text-[10px] text-slate-500">
-                    By default, this uses a demo key with limited quota. For heavy usage, create a key in Google Cloud Console with the "YouTube Data API v3".
-                </p>
-            </div>
-        </div>
-
-        <!-- Error Message -->
-        <div id="errorBox" class="hidden bg-red-900/20 border border-red-500/50 text-red-200 p-4 rounded-xl flex items-center gap-3">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span id="errorText">Error message</span>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loadingBox" class="hidden py-20 text-center">
-            <div class="loader-lg mx-auto mb-6"></div>
-            <h3 class="text-xl text-white font-medium mb-2" id="loadingTitle">Analyzing Data</h3>
-            <p class="text-slate-500 text-sm" id="loadingStatus">Fetching videos...</p>
-        </div>
-
-        <!-- MAIN DASHBOARD (Hidden by default) -->
-        <div id="dashboard" class="hidden space-y-6 fade-in">
-            
-            <!-- Playlist Header -->
-            <div class="flex flex-col md:flex-row gap-6 items-end pb-4 border-b border-slate-800">
-                <div class="relative w-full md:w-48 aspect-video rounded-xl overflow-hidden shadow-2xl group">
-                    <img id="headerThumb" src="https://placehold.co/600x400/0b1120/475569?text=Playlist" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                        <a id="headerLink" href="#" target="_blank" class="text-white text-3xl hover:text-red-500"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-                <div class="flex-grow">
-                    <h2 id="headerTitle" class="text-3xl font-bold text-white mb-2">Playlist Title</h2>
-                    <div class="flex flex-wrap gap-4 text-sm text-slate-400 items-center">
-                        <span class="flex items-center gap-2"><i class="fas fa-user-circle"></i> <span id="headerChannel">Channel</span></span>
-                        <span class="w-1 h-1 bg-slate-600 rounded-full hidden sm:block"></span>
-                        <span id="headerCount" class="text-white font-mono">0 videos</span>
-                        <span class="w-1 h-1 bg-slate-600 rounded-full hidden sm:block"></span>
-                        <span id="headerPrivacy" class="uppercase text-xs border border-slate-700 px-2 py-0.5 rounded">Public</span>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="exportCSV()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm transition border border-slate-700">
-                        <i class="fas fa-download mr-2"></i> CSV
-                    </button>
-                </div>
-            </div>
-
-            <!-- Tabs Navigation -->
-            <div class="flex overflow-x-auto border-b border-slate-800">
-                <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active px-6 py-4 text-sm font-medium text-slate-400 hover:text-white transition whitespace-nowrap">Overview</button>
-                <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn px-6 py-4 text-sm font-medium text-slate-400 hover:text-white transition whitespace-nowrap">Analytics & Trends</button>
-                <button onclick="switchTab('planner')" id="tab-planner" class="tab-btn px-6 py-4 text-sm font-medium text-slate-400 hover:text-white transition whitespace-nowrap">Binge Planner</button>
-                <button onclick="switchTab('list')" id="tab-list" class="tab-btn px-6 py-4 text-sm font-medium text-slate-400 hover:text-white transition whitespace-nowrap">Video Database</button>
-            </div>
-
-            <!-- TAB CONTENT: OVERVIEW -->
-            <div id="view-overview" class="space-y-6">
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="glass-panel p-5 rounded-xl border-t-2 border-red-500">
-                        <div class="flex items-center gap-3 mb-2">
-                            <i class="fas fa-clock text-red-500"></i>
-                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Duration</div>
-                        </div>
-                        <div class="text-2xl font-bold text-white" id="ovDuration">0h 0m</div>
-                        <div class="text-xs text-slate-500 mt-1" id="ovAvgDuration">Avg: 0m</div>
-                    </div>
-                    <div class="glass-panel p-5 rounded-xl border-t-2 border-blue-500">
-                        <div class="flex items-center gap-3 mb-2">
-                            <i class="fas fa-eye text-blue-500"></i>
-                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Views</div>
-                        </div>
-                        <div class="text-2xl font-bold text-white" id="ovViews">0</div>
-                        <div class="text-xs text-slate-500 mt-1" id="ovAvgViews">Avg: 0</div>
-                    </div>
-                    <div class="glass-panel p-5 rounded-xl border-t-2 border-green-500">
-                         <div class="flex items-center gap-3 mb-2">
-                            <i class="fas fa-thumbs-up text-green-500"></i>
-                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Likes</div>
-                        </div>
-                        <div class="text-2xl font-bold text-white" id="ovLikes">0</div>
-                        <div class="text-xs text-slate-500 mt-1" id="ovEngagement">0% Rate</div>
-                    </div>
-                    <div class="glass-panel p-5 rounded-xl border-t-2 border-purple-500">
-                        <div class="flex items-center gap-3 mb-2">
-                            <i class="fas fa-comments text-purple-500"></i>
-                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider">Comments</div>
-                        </div>
-                        <div class="text-2xl font-bold text-white" id="ovComments">0</div>
-                        <div class="text-xs text-slate-500 mt-1">Community Activity</div>
-                    </div>
-                </div>
-
-                <!-- Speed Matrix -->
-                <div class="glass-panel p-6 rounded-xl">
-                    <h3 class="text-white font-semibold mb-4 flex items-center gap-2"><i class="fas fa-tachometer-alt text-yellow-500"></i> Binge Speed Matrix</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <div class="bg-slate-900/50 p-3 rounded-lg text-center">
-                            <div class="text-slate-400 text-xs mb-1">1.0x (Normal)</div>
-                            <div class="text-white font-mono text-lg" id="speed100">00:00:00</div>
-                        </div>
-                        <div class="bg-slate-900/50 p-3 rounded-lg text-center">
-                            <div class="text-blue-400 text-xs mb-1">1.25x</div>
-                            <div class="text-white font-mono text-lg" id="speed125">00:00:00</div>
-                        </div>
-                        <div class="bg-slate-900/50 p-3 rounded-lg text-center">
-                            <div class="text-green-400 text-xs mb-1">1.50x</div>
-                            <div class="text-white font-mono text-lg" id="speed150">00:00:00</div>
-                        </div>
-                        <div class="bg-slate-900/50 p-3 rounded-lg text-center">
-                            <div class="text-yellow-400 text-xs mb-1">1.75x</div>
-                            <div class="text-white font-mono text-lg" id="speed175">00:00:00</div>
-                        </div>
-                        <div class="bg-slate-900/50 p-3 rounded-lg text-center border border-red-500/30">
-                            <div class="text-red-400 text-xs mb-1">2.00x</div>
-                            <div class="text-white font-mono text-lg" id="speed200">00:00:00</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Superlatives -->
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div id="cardPopular" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition-all duration-300"></div>
-                    <div id="cardLiked" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition-all duration-300"></div>
-                    <div id="cardCommented" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition-all duration-300"></div>
-                    <div id="cardOldest" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition-all duration-300"></div>
-                    <div id="cardNewest" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition-all duration-300"></div>
-                    <div id="cardLongest" class="glass-panel p-4 rounded-xl flex gap-4 items-center group hover:bg-slate-800/80 transition-all duration-300"></div>
-                </div>
-            </div>
-
-            <!-- TAB CONTENT: ANALYTICS -->
-            <div id="view-analytics" class="hidden space-y-6">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Chart: Top Videos -->
-                    <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-white font-semibold mb-4">Most Viewed Videos</h3>
-                        <canvas id="chartViews"></canvas>
-                    </div>
-                    <!-- Chart: Uploads over time -->
-                    <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-white font-semibold mb-4">Upload Frequency (Years)</h3>
-                        <canvas id="chartYears"></canvas>
-                    </div>
-                </div>
-
-                <!-- Keyword Cloud -->
-                <div class="glass-panel p-6 rounded-xl">
-                    <h3 class="text-white font-semibold mb-4">Common Keywords in Titles</h3>
-                    <div id="keywordCloud" class="flex flex-wrap gap-2">
-                        <!-- Filled by JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB CONTENT: PLANNER -->
-            <div id="view-planner" class="hidden">
-                <div class="glass-panel p-8 rounded-2xl max-w-3xl mx-auto">
-                    <h2 class="text-2xl font-bold text-white mb-6 text-center">Binge Watch Calculator</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                        <div>
-                            <label class="block text-sm text-slate-400 mb-2">How fast do you watch?</label>
-                            <!-- --- Custom Select Dropdown --- -->
-                            <div class="relative" id="customSelect" data-value="1">
-                                <button id="selectTrigger" type="button" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 flex justify-between items-center text-left focus:outline-none focus:ring-2 focus:ring-red-500">
-                                    <span id="selectValue">1.0x (Normal)</span>
-                                    <i class="fas fa-chevron-down text-slate-500 transition-transform duration-200"></i>
-                                </button>
-                                <div id="selectOptions" class="absolute z-10 w-full mt-1 glass-panel rounded-lg shadow-lg overflow-hidden hidden opacity-0 transform -translate-y-2">
-                                    <div class="select-option p-3 text-sm hover:bg-red-500/20 cursor-pointer" data-value="1">1.0x (Normal)</div>
-                                    <div class="select-option p-3 text-sm hover:bg-red-500/20 cursor-pointer" data-value="1.25">1.25x</div>
-                                    <div class="select-option p-3 text-sm hover:bg-red-500/20 cursor-pointer" data-value="1.5">1.50x</div>
-                                    <div class="select-option p-3 text-sm hover:bg-red-500/20 cursor-pointer" data-value="1.75">1.75x</div>
-                                    <div class="select-option p-3 text-sm hover:bg-red-500/20 cursor-pointer" data-value="2">2.00x</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-slate-400 mb-2">Time per day (Hours)</label>
-                            <input type="number" id="planDaily" oninput="calculatePlan()" value="2" min="0.5" step="0.5" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500">
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-800 text-center">
-                        <div class="text-slate-400 text-sm mb-1">It will take you approximately</div>
-                        <div class="text-4xl font-bold text-red-500 mb-1"><span id="planDays">0</span> Days</div>
-                        <div class="text-slate-500 text-xs">to finish this playlist.</div>
-                        <div class="mt-4 pt-4 border-t border-slate-700/50 text-white">
-                            If you start today, you finish on <span id="planDate" class="font-bold text-green-400">...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB CONTENT: VIDEO LIST -->
-            <div id="view-list" class="hidden space-y-4">
-                <div class="flex justify-between items-center">
-                    <div class="relative w-full max-w-md group">
-                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-white"></i>
-                        <input type="text" id="tableSearch" onkeyup="filterTable()" placeholder="Search videos..." class="bg-slate-800 border-none rounded-lg py-3 pl-11 pr-4 text-sm text-white w-full focus:ring-1 focus:ring-red-500 outline-none">
-                    </div>
-                </div>
-
-                <div class="glass-panel rounded-xl overflow-hidden">
-                    <div class="overflow-x-auto max-h-[70vh]">
-                        <table class="w-full text-sm text-left text-slate-400">
-                            <thead class="text-xs text-slate-300 uppercase bg-slate-800/80 sticky top-0 backdrop-blur-md z-10 cursor-pointer select-none">
-                                <tr>
-                                    <th class="px-6 py-4">#</th>
-                                    <th class="px-6 py-4" onclick="sortTable('title')">Title <i class="fas fa-sort ml-1 opacity-50"></i></th>
-                                    <th class="px-6 py-4 text-right" onclick="sortTable('duration')">Time <i class="fas fa-sort ml-1 opacity-50"></i></th>
-                                    <th class="px-6 py-4 text-right" onclick="sortTable('views')">Views <i class="fas fa-sort ml-1 opacity-50"></i></th>
-                                    <th class="px-6 py-4 text-right" onclick="sortTable('likes')">Likes <i class="fas fa-sort ml-1 opacity-50"></i></th>
-                                    <th class="px-6 py-4 text-center">Play</th>
-                                </tr>
-                            </thead>
-                            <tbody id="videoTableBody">
-                                <!-- JS Populated -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        
-        <!-- SINGLE VIDEO DASHBOARD (Hidden by default) -->
-        <div id="singleVideoDashboard" class="hidden space-y-6 fade-in">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2">
-                    <div id="svPlayerWrapper" class="relative aspect-video rounded-2xl overflow-hidden glass-panel mb-4 group">
-                        <img id="svThumb" src="https://placehold.co/1280x720/0F0F0F/475569?text=Video" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                             <button onclick="openModal(this, $('svPlayButton').dataset.videoid)" id="svPlayButton" data-videoid="" class="text-white text-6xl hover:text-red-500 transition transform hover:scale-110" title="Play Video">
-                                <i class="fas fa-play-circle"></i>
-                            </button>
-                            <button id="svDownloadBtn" class="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition border border-slate-700" title="Download Thumbnail">
-                                <i class="fas fa-download mr-2"></i> Download Thumbnail
-                            </button>
-                        </div>
-                    </div>
-                    <h2 id="svTitle" class="text-3xl font-bold text-white mb-2">Video Title</h2>
-                    <div class="flex items-center gap-4 text-sm text-slate-400 mb-4">
-                        <span id="svChannel" class="font-semibold">Channel</span>
-                        <span id="svPublished" class="font-mono">...</span>
-                    </div>
-                    <p id="svDescription" class="text-sm text-slate-300 whitespace-pre-wrap max-h-48 overflow-y-auto pr-2"></p>
-                </div>
-                <div class="space-y-4">
-                    <div class="glass-panel p-5 rounded-xl">
-                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-eye"></i> Views</div>
-                        <div id="svViews" class="text-3xl font-bold text-white">0</div>
-                    </div>
-                    <div class="glass-panel p-5 rounded-xl">
-                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-thumbs-up"></i> Likes</div>
-                        <div id="svLikes" class="text-3xl font-bold text-white">0</div>
-                    </div>
-                    <div class="glass-panel p-5 rounded-xl">
-                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-comments"></i> Comments</div>
-                        <div id="svComments" class="text-3xl font-bold text-white">0</div>
-                    </div>
-                    <div class="glass-panel p-5 rounded-xl">
-                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-chart-line"></i> Engagement Rate</div>
-                        <div id="svEngagement" class="text-3xl font-bold text-green-400">0%</div>
-                    </div>
-                     <div class="glass-panel p-5 rounded-xl">
-                        <div class="text-slate-400 text-sm mb-1 flex items-center gap-2"><i class="fas fa-tags"></i> Tags</div>
-                        <div id="svTags" class="flex flex-wrap gap-2 mt-2">
-                           <span class="text-slate-500 text-xs">No tags found.</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-    </main>
-
-    <footer class="text-center text-slate-600 text-xs py-8 border-t border-slate-800/50 mt-8">
-        <p>Uses YouTube Data API v3. Runs entirely in browser.</p>
-    </footer>
-
-<!-- --- Video Modal --- -->
-    <div id="videoModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none" onclick="closeModal()">
-        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm"></div>
-        <div id="modalContent" class="w-full max-w-5xl rounded-2xl space-y-2 opacity-0 transform -translate-y-4 scale-95" onclick="event.stopPropagation()">
-            
-            <div id="iframeWrapper" class="shadow-2xl shadow-black">
-                <!-- YouTube player injected here -->
-                <div id="videoIframe"></div> 
-                
-                <!-- Center Play Button (Visible on Pause) -->
-                <div id="centerPlayBtn" onclick="togglePlayPause()">
-                    <i class="fas fa-play pl-1"></i>
-                </div>
-
-                <!-- Full Overlay -->
-                <div id="playerOverlay">
-                    <!-- Top Bar -->
-                    <div id="customTopBar" class="p-6 bg-gradient-to-b from-black/80 via-black/40 to-transparent text-white flex items-center gap-4 select-none">
-                        <img id="modalChannelThumb" src="" class="w-10 h-10 rounded-full bg-slate-800 shadow-md flex-shrink-0">
-                        <div class="min-w-0 drop-shadow-md">
-                            <h3 id="modalVideoTitle" class="font-bold text-lg leading-tight truncate">Video Title</h3>
-                            <p id="modalChannelName" class="text-sm text-slate-300 opacity-90 truncate">Channel Name</p>
-                        </div>
-                    </div>
-
-                    <!-- Bottom Controls -->
-                    <div id="customControls" class="p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent select-none">
-                        <!-- Seeker -->
-                        <div id="seekerContainer">
-                            <div id="seekerTrack">
-                                <div id="seekerBuffer"></div>
-                                <div id="seekerProgress"></div>
-                                <div id="seekerHandle"></div>
-                            </div>
-                        </div>
-
-                        <!-- Buttons Row -->
-                        <div class="flex justify-between items-center text-white mt-1">
-                            <div class="flex items-center gap-4">
-                                <!-- Play/Pause (Bottom Left) -->
-                                <button id="playPauseBtn" class="text-xl w-8 h-8 flex items-center justify-center hover:text-red-500 transition">
-                                    <i class="fas fa-play"></i>
-                                </button>
-
-                                <!-- Volume Group -->
-                                <div class="volume-container">
-                                    <button id="volumeBtn">
-                                        <i class="fas fa-volume-high"></i>
-                                    </button>
-                                    <div class="volume-slider-wrapper">
-                                        <input type="range" min="0" max="100" value="100" id="volumeSlider" class="custom-slider">
-                                    </div>
-                                </div>
-
-                                <!-- Time -->
-                                <div class="font-mono text-xs text-slate-300 flex items-center gap-1 tracking-wide">
-                                    <span id="currentTime">0:00</span>
-                                    <span class="opacity-50">/</span>
-                                    <span id="totalTime">0:00</span>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-3">
-                                <button id="fullscreenBtn" class="text-lg w-8 h-8 flex items-center justify-center hover:text-white text-slate-300 transition"><i class="fas fa-expand"></i></button>
-                                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition ml-2">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-
-    <!-- LOGIC -->
-    <script>
-        // --- STATE MANAGEMENT ---
-        let GLOBAL_DATA = {
-            meta: {},
-            videos: [], // {id, title, views, etc...}
-            currentSingleVideo: {}, // Stores data for the single video being viewed
-            totalDuration: 0,
-            analysisMode: 'playlist' // 'playlist' or 'video'
-        };
-        let charts = {}; // Store chart instances
-        let lastFetchSuccess = true; 
-        
-        let player; // YouTube Iframe Player
-        let playerReady = false;
-        let progressInterval;
-        let playerLoadRetryInterval;
-
-        // --- UTILS ---
-        const $ = (id) => document.getElementById(id);
-        const formatNum = (n) => n ? n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "0";
-        const formatCompact = (n) => Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(n);
-        
-        const parseISO8601 = (duration) => {
-            if (!duration) return 0;
-            const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-            if (!match) return 0;
-            const h = (parseInt(match[1]) || 0);
-            const m = (parseInt(match[2]) || 0);
-            const s = (parseInt(match[3]) || 0);
-            return (h * 3600) + (m * 60) + s;
+        const Icons = {
+            Users: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
+            Play: (props) => <Icon {...props} path={<polygon points="5 3 19 12 5 21 5 3"/>} />,
+            Settings: (props) => <Icon {...props} path={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
+            Refresh: (props) => <Icon {...props} path={<><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></>} />,
+            Timer: (props) => <Icon {...props} path={<><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></>} />,
+            Film: (props) => <Icon {...props} path={<><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><line x1="7" x2="7" y1="2" y2="22"/><line x1="17" x2="17" y1="2" y2="22"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="2" x2="7" y1="7" y2="7"/><line x1="2" x2="7" y1="17" y2="17"/><line x1="17" x2="22" y1="17" y2="17"/><line x1="17" x2="22" y1="7" y2="7"/></>} />,
+            Utensils: (props) => <Icon {...props} path={<><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></>} />,
+            ShoppingBag: (props) => <Icon {...props} path={<><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></>} />,
+            Cpu: (props) => <Icon {...props} path={<><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/></>} />,
+            Briefcase: (props) => <Icon {...props} path={<><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>} />,
+            Ghost: (props) => <Icon {...props} path={<><path d="M9 22v-2c0-.6.4-1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M9 2h6"/><path d="M4 10v6a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-6"/><path d="M12 2a8 8 0 0 0-8 8v2"/><path d="M20 12v-2a8 8 0 0 0-8-8"/></>} />, 
+            Trophy: (props) => <Icon {...props} path={<><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></>} />,
+            Globe: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></>} />,
+            Music: (props) => <Icon {...props} path={<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>} />,
+            MapPin: (props) => <Icon {...props} path={<><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></>} />,
+            Zap: (props) => <Icon {...props} path={<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>} />,
+            ChevronUp: (props) => <Icon {...props} path={<polyline points="18 15 12 9 6 15"/>} />,
+            User: (props) => <Icon {...props} path={<><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>} />,
+            Eye: (props) => <Icon {...props} path={<><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
+            EyeOff: (props) => <Icon {...props} path={<><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></>} />,
+            Lock: (props) => <Icon {...props} path={<><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
+            Check: (props) => <Icon {...props} path={<polyline points="20 6 9 17 4 12"/>} />,
         };
 
-        const secondsToText = (seconds, verbose = false) => {
-            seconds = Math.floor(seconds);
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = Math.floor(seconds % 60);
-            if(verbose) return `${h}h ${m}m ${s}s`;
-            const pad = (n) => n.toString().padStart(2,'0');
-            if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
-            return `${m}:${pad(s)}`;
+        // --- DATA STORE ---
+        const WORD_BANK = {
+            Movies: ["The Godfather", "Titanic", "Avatar", "Star Wars", "Jurassic Park", "The Matrix", "Inception", "Forrest Gump", "The Lion King", "Avengers", "Pulp Fiction", "Frozen", "The Dark Knight", "Harry Potter", "Back to the Future", "Rocky", "Gladiator", "Shrek", "Toy Story", "Jaws", "Interstellar", "Parasite", "Coco", "Up", "Wall-E", "Alien", "Terminator", "Fight Club", "Goodfellas", "Spirited Away", "Barbie", "Oppenheimer", "Dune", "Spider-Man", "Black Panther", "Iron Man", "Wonder Woman", "Joker", "Top Gun", "The Shining", "Get Out", "Blade Runner", "E.T.", "Indiana Jones", "Schindler's List", "Lord of the Rings", "Silence of the Lambs", "Casablanca", "Citizen Kane"],
+            Food: ["Pizza", "Sushi", "Burger", "Tacos", "Pasta", "Curry", "Steak", "Salad", "Sandwich", "Soup", "Fried Chicken", "Ramen", "Dumplings", "Burrito", "Pancakes", "Waffles", "Ice Cream", "Chocolate", "Cheese", "Bread", "Donuts", "Croissant", "Bagel", "Hot Dog", "Fries", "Lasagna", "Paella", "Kebab", "Falafel", "Dim Sum", "Pho", "Pad Thai", "Biryani", "Sashimi", "Tiramisu", "Cheesecake", "Pie", "Brownie", "Popcorn", "Nachos", "Guacamole", "Hummus", "Omelette", "Yogurt", "Bacon", "Sausage", "Risotto", "Gnocchi", "Pretzel", "Macaron"],
+            Brands: ["Apple", "Nike", "Coca-Cola", "Samsung", "McDonalds", "Toyota", "Disney", "Amazon", "Google", "Tesla", "Adidas", "Pepsi", "Starbucks", "Netflix", "Microsoft", "Mercedes", "BMW", "Honda", "Sony", "Lego", "IKEA", "Zara", "H&M", "Gucci", "Louis Vuitton", "Rolex", "Canon", "Nikon", "PlayStation", "Xbox", "Spotify", "Uber", "Airbnb", "Facebook", "Instagram", "TikTok", "Twitter", "YouTube", "Visa", "Mastercard", "Ferrari", "Porsche", "Lamborghini", "Intel", "AMD", "Dell", "HP", "Adobe", "Slack", "Zoom"],
+            Technology: ["iPhone", "Laptop", "Drone", "Robot", "Bluetooth", "Wifi", "Keyboard", "Mouse", "Monitor", "Camera", "Headphones", "Smartwatch", "Tablet", "Printer", "Router", "Server", "Microchip", "Satellite", "Telescope", "Microscope", "VR Headset", "Console", "Battery", "Charger", "USB", "Cloud", "Algorithm", "Internet", "Software", "Hardware", "Smartphone", "GPS", "Laser", "Radar", "Scanner", "Projector", "Speaker", "Microphone", "Webcam", "Flash Drive"],
+            Jobs: ["Doctor", "Teacher", "Engineer", "Lawyer", "Chef", "Pilot", "Firefighter", "Police", "Artist", "Musician", "Actor", "Writer", "Scientist", "Programmer", "Designer", "Architect", "Nurse", "Dentist", "Vet", "Farmer", "Astronaut", "Athlete", "Judge", "Politician", "Journalist", "Photographer", "Mechanic", "Plumber", "Electrician", "Carpenter", "Librarian", "Accountant", "Manager", "CEO", "Secretary", "Receptionist", "Waiter", "Bartender", "Barber", "Soldier"],
+            Mythology: ["Zeus", "Thor", "Hercules", "Medusa", "Dragon", "Unicorn", "Phoenix", "Mermaid", "Centaur", "Griffin", "Poseidon", "Hades", "Athena", "Apollo", "Odin", "Loki", "Anubis", "Ra", "Sphinx", "Hydra", "Cyclops", "Minotaur", "Pegasus", "Vampire", "Werewolf", "Ghost", "Zombie", "Elf", "Dwarf", "Giant", "Kraken", "Chimera", "Cerberus", "Valkyrie", "Fairy", "Goblin", "Troll", "Witch", "Wizard", "Demon"],
+            Sport: ["Soccer", "Basketball", "Football", "Tennis", "Golf", "Cricket", "Rugby", "Baseball", "Volleyball", "Hockey", "Boxing", "MMA", "Wrestling", "Formula 1", "Swimming", "Athletics", "Gymnastics", "Cycling", "Skiing", "Surfing", "Skateboarding", "Snowboarding", "Table Tennis", "Badminton", "Bowling", "Pool", "Darts", "Archery", "Fencing", "Judo", "Karate", "Taekwondo", "Yoga", "Pilates", "Crossfit", "Marathon", "Triathlon", "Rowing", "Sailing", "Climbing"],
+            Places: ["School", "Hospital", "Library", "Airport", "Station", "Park", "Beach", "Forest", "Mountain", "Desert", "City", "Village", "Farm", "Zoo", "Museum", "Cinema", "Mall", "Restaurant", "Hotel", "Bank", "Office", "Factory", "Prison", "Church", "Temple", "Mosque", "Stadium", "Gym", "Pool", "Casino", "Castle", "Palace", "Bridge", "Tower", "Skyscraper", "Lighthouse", "Pyramid", "Cave", "Island", "Volcano"],
+            Instruments: ["Guitar", "Piano", "Drums", "Violin", "Flute", "Saxophone", "Trumpet", "Cello", "Harp", "Clarinet", "Trombone", "Tuba", "Banjo", "Ukulele", "Accordion", "Harmonica", "Xylophone", "Synthesizer", "Oboe", "Bass", "Microphone", "Turntable", "Speaker", "Amplifier", "Bongo", "Conga", "Tambourine", "Maracas", "Triangle", "Gong"],
+            Superheroes: ["Superman", "Batman", "Spider-Man", "Iron Man", "Wonder Woman", "Thor", "Hulk", "Captain America", "Black Panther", "Flash", "Aquaman", "Green Lantern", "Wolverine", "Deadpool", "Doctor Strange", "Black Widow", "Hawkeye", "Ant-Man", "Daredevil", "Cyclops", "Storm", "Jean Grey", "Professor X", "Magneto", "Joker", "Thanos", "Loki", "Venom", "Groot", "Rocket"]
         };
-        
-        function switchMode(mode) {
-            GLOBAL_DATA.analysisMode = mode;
-            if (mode === 'playlist') {
-                $('modeBtnPlaylist').classList.add('bg-red-600', 'text-white');
-                $('modeBtnPlaylist').classList.remove('text-slate-400');
-                $('modeBtnVideo').classList.remove('bg-red-600', 'text-white');
-                $('modeBtnVideo').classList.add('text-slate-400');
-                $('playlistInput').classList.remove('hidden');
-                $('videoInput').classList.add('hidden');
-            } else {
-                $('modeBtnVideo').classList.add('bg-red-600', 'text-white');
-                $('modeBtnVideo').classList.remove('text-slate-400');
-                $('modeBtnPlaylist').classList.remove('bg-red-600', 'text-white');
-                $('modeBtnPlaylist').classList.add('text-slate-400');
-                $('videoInput').classList.remove('hidden');
-                $('playlistInput').classList.add('hidden');
-            }
-        }
 
-        function toggleSettings() {
-            const panel = $('settingsPanel');
-            if (panel.classList.contains('hidden')) {
-                panel.classList.remove('hidden');
-                panel.classList.add('fade-in');
-            } else {
-                panel.classList.add('hidden');
-                panel.classList.remove('fade-in');
-            }
-        }
+        const CATEGORY_ICONS = {
+            Movies: Icons.Film,
+            Food: Icons.Utensils,
+            Brands: Icons.ShoppingBag,
+            Technology: Icons.Cpu,
+            Jobs: Icons.Briefcase,
+            Mythology: Icons.Ghost,
+            Sport: Icons.Trophy,
+            Places: Icons.MapPin,
+            Instruments: Icons.Music,
+            Superheroes: Icons.Zap
+        };
 
-        function switchTab(tabId) {
-            // Buttons
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            $(`tab-${tabId}`).classList.add('active');
-            
-            // Views
-            const views = ['overview', 'analytics', 'planner', 'list'];
-            views.forEach(v => $(`view-${v}`).classList.add('hidden'));
-            
-            const view = $(`view-${tabId}`);
-            view.classList.remove('hidden');
-            view.classList.add('fade-in');
+        // --- COMPONENTS ---
 
-            if(tabId === 'analytics') renderCharts();
-            if(tabId === 'planner') calculatePlan();
-        }
+        // 1. Setup Screen
+        const SetupScreen = ({ onStartGame }) => {
+            const DEFAULT_PLAYERS = ['Player 1', 'Player 2', 'Player 3'];
+            const MIN_PLAYERS = 3;
 
-        // --- MAIN FUNCTION ---
-        async function startAnalysis() {
-            // UI Reset
-            lastFetchSuccess = false;
-            GLOBAL_DATA.videos = [];
-            GLOBAL_DATA.currentSingleVideo = {};
-            $('errorBox').classList.add('hidden');
-            $('dashboard').classList.add('hidden');
-            $('singleVideoDashboard').classList.add('hidden');
-            $('loadingBox').classList.remove('hidden');
-            $('analyzeBtn').disabled = true;
-            $('analyzeBtn').innerHTML = `<div class="loader-sm"></div>`; 
-
-            if (GLOBAL_DATA.analysisMode === 'playlist') {
-                await analyzePlaylist();
-            } else {
-                await analyzeSingleVideo();
-            }
-        }
-        
-        function getApiKey() {
-            let apiKey = $('apiKeyInput').value.trim();
-            if (!apiKey) {
-                const keyParts = ['AIzaSy', 'B4z7Zd8m1Y', '7q2ZuwTcT', 'cWhxxOT', '-24BxIQ'];
-                apiKey = keyParts.join('');
-            }
-            return apiKey;
-        }
-
-        async function analyzePlaylist() {
-            $('loadingTitle').innerText = "Analyzing Playlist";
-            const apiKey = getApiKey();
-            const url = $('playlistInput').value;
-            const regex = /[?&]list=([^#\&\?]+)/;
-            const match = url.match(regex);
-            let plId = match ? match[1] : null;
-
-            if (!plId && url.length > 12 && !url.includes('/')) {
-                plId = url;
-            }
-            if (!plId) {
-                showError("Invalid Playlist Link. Please copy the URL from the address bar.");
-                return;
-            }
-
-            try {
-                updateStatus("Connecting to YouTube...");
-                const metaRes = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails,status&id=${plId}&key=${apiKey}`);
-                const metaJson = await metaRes.json();
-                
-                if (metaJson.error) throw new Error(metaJson.error.message);
-                if (!metaJson.items.length) throw new Error("Playlist not found or private.");
-                
-                const plItem = metaJson.items[0];
-                GLOBAL_DATA.meta = {
-                    id: plId,
-                    title: plItem.snippet.title,
-                    channel: plItem.snippet.channelTitle,
-                    thumb: plItem.snippet.thumbnails.standard?.url || plItem.snippet.thumbnails.high?.url || 'https://placehold.co/600x400/0b1120/475569?text=Playlist',
-                    privacy: plItem.status.privacyStatus,
-                    totalItems: plItem.contentDetails.itemCount
-                };
-
-                let videoBuffer = [];
-                let nextToken = '';
-                let hasMore = true;
-                let page = 1;
-                const MAX_PAGES = 10; 
-                
-                while(hasMore && page <= MAX_PAGES) { 
-                    updateStatus(`Fetching video list (Page ${page})...`);
-                    const listRes = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails,snippet&maxResults=50&playlistId=${plId}&key=${apiKey}&pageToken=${nextToken}`);
-                    const listJson = await listRes.json();
-                    
-                    if(listJson.error) throw new Error(listJson.error.message);
-
-                    const videoIds = listJson.items.map(i => i.contentDetails.videoId).filter(Boolean);
-                    if (!videoIds.length) { hasMore = false; break; }
-
-                    updateStatus(`Fetching video details (${videoBuffer.length + 1} - ${videoBuffer.length + videoIds.length})...`);
-                    const vidRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics,snippet&id=${videoIds.join(',')}&key=${apiKey}`);
-                    const vidJson = await vidRes.json();
-                    vidJson.items.forEach(v => videoBuffer.push(v));
-
-                    nextToken = listJson.nextPageToken;
-                    if(!nextToken) hasMore = false;
-                    page++;
-                }
-
-                if(videoBuffer.length === 0) throw new Error("No accessible videos found in this playlist.");
-                
-                // Fetch Channel Thumbs
-                updateStatus('Fetching channel details...');
-                const channelIds = [...new Set(videoBuffer.map(v => v.snippet.channelId))];
-                const channelRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelIds.join(',')}&key=${apiKey}`);
-                const channelJson = await channelRes.json();
-                const channelMap = new Map(channelJson.items.map(c => [c.id, c.snippet.thumbnails.default.url]));
-
-                // Final processing
-                GLOBAL_DATA.videos = videoBuffer.map(v => ({
-                    id: v.id,
-                    title: v.snippet.title,
-                    channel: v.snippet.channelTitle,
-                    channelId: v.snippet.channelId,
-                    channelThumb: channelMap.get(v.snippet.channelId) || null,
-                    publishedAt: new Date(v.snippet.publishedAt),
-                    thumb: v.snippet.thumbnails.medium?.url || v.snippet.thumbnails.default?.url,
-                    duration: parseISO8601(v.contentDetails.duration),
-                    views: parseInt(v.statistics.viewCount) || 0,
-                    likes: parseInt(v.statistics.likeCount) || 0,
-                    comments: parseInt(v.statistics.commentCount) || 0,
-                    favorites: parseInt(v.statistics.favoriteCount) || 0
-                }));
-                
-                lastFetchSuccess = true;
-                processData();
-                renderUI();
-
-            } catch (err) {
-                showError(err.message);
-            } finally {
-                completeAnalysis();
-            }
-        }
-
-        async function analyzeSingleVideo() {
-            $('loadingTitle').innerText = "Analyzing Video";
-            const apiKey = getApiKey();
-            const url = $('videoInput').value;
-            
-            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-            const match = url.match(regex);
-            const videoId = match ? match[1] : null;
-
-            if (!videoId) {
-                showError("Invalid YouTube Video URL.");
-                return;
-            }
-
-            try {
-                updateStatus("Fetching video details...");
-                const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoId}&key=${apiKey}`);
-                const json = await res.json();
-                
-                if (json.error) throw new Error(json.error.message);
-                if (!json.items || json.items.length === 0) throw new Error("Video not found or is private.");
-                
-                const videoData = json.items[0];
-                updateStatus("Fetching channel details...");
-                const channelRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${videoData.snippet.channelId}&key=${apiKey}`);
-                const channelJson = await channelRes.json();
-                const channelThumb = channelJson.items?.[0]?.snippet?.thumbnails?.default?.url || null;
-
-                // Store in dedicated single video object
-                GLOBAL_DATA.currentSingleVideo = {
-                    id: videoData.id,
-                    title: videoData.snippet.title,
-                    channel: videoData.snippet.channelTitle,
-                    channelThumb: channelThumb,
-                };
-
-                lastFetchSuccess = true;
-                renderSingleVideoUI(videoData);
-
-            } catch(err) {
-                showError(err.message);
-            } finally {
-                completeAnalysis();
-            }
-        }
-        
-        function completeAnalysis() {
-            $('loadingBox').classList.add('hidden');
-            $('analyzeBtn').disabled = false;
-            $('analyzeBtn').innerHTML = `<span>Analyze</span> <i class="fas fa-bolt"></i>`;
-            if (lastFetchSuccess) {
-                $('errorBox').classList.add('hidden');
-            }
-        }
-
-        function updateStatus(msg) {
-            $('loadingStatus').innerText = msg;
-        }
-
-        function showError(msg) {
-            $('errorText').innerText = `Error: ${msg}`;
-            $('errorBox').classList.remove('hidden');
-            $('loadingBox').classList.add('hidden');
-            $('analyzeBtn').disabled = false;
-            $('analyzeBtn').innerHTML = `<span>Analyze</span> <i class="fas fa-bolt"></i>`;
-        }
-        
-        async function downloadResource(url, filename, button) {
-            const originalHtml = button.innerHTML;
-            button.innerHTML = `<div class="loader-sm mx-auto"></div>`;
-            button.disabled = true;
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-                const blob = await response.blob();
-                const objectUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = objectUrl;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(objectUrl);
-            } catch (error) {
-                console.error('Download failed:', error);
-                // No need for an alert, the user will see the button revert.
-            } finally {
-                button.innerHTML = originalHtml;
-                button.disabled = false;
-            }
-        }
-
-        // --- PROCESSING & RENDERING ---
-        function processData() {
-            GLOBAL_DATA.totalDuration = GLOBAL_DATA.videos.reduce((acc, v) => acc + v.duration, 0);
-            GLOBAL_DATA.totalViews = GLOBAL_DATA.videos.reduce((acc, v) => acc + v.views, 0);
-            GLOBAL_DATA.totalLikes = GLOBAL_DATA.videos.reduce((acc, v) => acc + v.likes, 0);
-            GLOBAL_DATA.totalComments = GLOBAL_DATA.videos.reduce((acc, v) => acc + v.comments, 0);
-        }
-
-        function renderUI() {
-            const data = GLOBAL_DATA;
-            const count = data.videos.length;
-
-            // Header
-            $('headerTitle').innerText = data.meta.title;
-            $('headerChannel').innerText = data.meta.channel;
-            $('headerThumb').src = data.meta.thumb;
-            $('headerLink').href = `https://www.youtube.com/playlist?list=${data.meta.id}`;
-            $('headerCount').innerText = `${count} videos`;
-            $('headerPrivacy').innerText = data.meta.privacy;
-
-            // Overview Stats
-            $('ovDuration').innerText = secondsToText(data.totalDuration, true);
-            $('ovAvgDuration').innerText = "Avg: " + secondsToText(data.totalDuration/count, true);
-            
-            $('ovViews').innerText = formatCompact(data.totalViews);
-            $('ovAvgViews').innerText = "Avg: " + formatCompact(data.totalViews/count);
-
-            $('ovLikes').innerText = formatCompact(data.totalLikes);
-            const eng = data.totalViews > 0 ? ((data.totalLikes + data.totalComments) / data.totalViews * 100).toFixed(2) : 0;
-            $('ovEngagement').innerText = `${eng}% Engagement`;
-            $('ovComments').innerText = formatCompact(data.totalComments);
-
-            // Speed Matrix
-            $('speed100').innerText = secondsToText(data.totalDuration);
-            $('speed125').innerText = secondsToText(data.totalDuration / 1.25);
-            $('speed150').innerText = secondsToText(data.totalDuration / 1.5);
-            $('speed175').innerText = secondsToText(data.totalDuration / 1.75);
-            $('speed200').innerText = secondsToText(data.totalDuration / 2);
-
-            // Spotlight Cards
-            const sortedByViews = [...data.videos].sort((a,b) => b.views - a.views);
-            const sortedByLikes = [...data.videos].sort((a,b) => b.likes - a.likes);
-            const sortedByComments = [...data.videos].sort((a,b) => b.comments - a.comments);
-            const sortedByDate = [...data.videos].sort((a,b) => a.publishedAt - b.publishedAt);
-            const sortedByDur = [...data.videos].sort((a,b) => b.duration - a.duration);
-
-            renderSpotlight('cardPopular', sortedByViews[0], 'Most Popular', 'fas fa-fire text-orange-500', v => `${formatCompact(v.views)} views`);
-            renderSpotlight('cardLiked', sortedByLikes[0], 'Most Liked', 'fas fa-thumbs-up text-blue-500', v => `${formatCompact(v.likes)} likes`);
-            renderSpotlight('cardCommented', sortedByComments[0], 'Most Commented', 'fas fa-comments text-green-500', v => `${formatCompact(v.comments)} comments`);
-            renderSpotlight('cardOldest', sortedByDate[0], 'Oldest Video', 'fas fa-history text-indigo-400', v => v.publishedAt.toLocaleDateString());
-            renderSpotlight('cardNewest', sortedByDate[sortedByDate.length - 1], 'Newest Video', 'fas fa-calendar-alt text-teal-400', v => v.publishedAt.toLocaleDateString());
-            renderSpotlight('cardLongest', sortedByDur[0], 'Longest Video', 'fas fa-hourglass-half text-purple-500', v => secondsToText(v.duration));
-
-            // Populate Table
-            populateTable(data.videos);
-
-            // Keywords
-            generateKeywords();
-
-            // Show Dashboard
-            $('singleVideoDashboard').classList.add('hidden');
-            $('dashboard').classList.remove('hidden');
-            switchTab('overview'); // Set default tab
-        }
-        
-        function renderSingleVideoUI(video) {
-            const stats = video.statistics;
-            const snippet = video.snippet;
-            
-            const views = parseInt(stats.viewCount) || 0;
-            const likes = parseInt(stats.likeCount) || 0;
-            const comments = parseInt(stats.commentCount) || 0;
-            const engagement = views > 0 ? (((likes + comments) / views) * 100).toFixed(2) : 0;
-            
-            const thumbUrl = snippet.thumbnails.maxres?.url || snippet.thumbnails.standard?.url || snippet.thumbnails.high?.url || snippet.thumbnails.medium?.url;
-            const videoTitle = snippet.title;
-
-            $('svThumb').src = thumbUrl;
-            $('svPlayButton').dataset.videoid = video.id;
-            $('svTitle').innerText = videoTitle;
-            $('svChannel').innerText = snippet.channelTitle;
-            $('svPublished').innerText = `Published on ${new Date(snippet.publishedAt).toLocaleDateString()}`;
-            $('svDescription').innerText = snippet.description;
-            
-            $('svViews').innerText = formatNum(views);
-            $('svLikes').innerText = formatNum(likes);
-            $('svComments').innerText = formatNum(comments);
-            $('svEngagement').innerText = `${engagement}%`;
-
-            const downloadBtn = $('svDownloadBtn');
-            const safeFilename = videoTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            downloadBtn.onclick = () => downloadResource(thumbUrl, `${safeFilename}_thumbnail.jpg`, downloadBtn);
-            
-            const tags = snippet.tags;
-            const tagsContainer = $('svTags');
-            if (tags && tags.length > 0) {
-                tagsContainer.innerHTML = tags.slice(0, 15).map(tag => `<span class="bg-slate-700/50 text-slate-300 text-xs px-2 py-1 rounded">${tag}</span>`).join('');
-            } else {
-                tagsContainer.innerHTML = `<span class="text-slate-500 text-xs">No tags found.</span>`;
-            }
-
-            $('dashboard').classList.add('hidden');
-            $('singleVideoDashboard').classList.remove('hidden');
-        }
-
-
-        function renderSpotlight(elementId, video, label, iconClass, subtextFn) {
-            if (!video) {
-                $(elementId).innerHTML = `<div class="text-slate-500 p-4">N/A</div>`;
-                return;
-            }
-            $(elementId).innerHTML = `
-                <div class="w-20 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-slate-900">
-                    <img src="${video.thumb}" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
-                </div>
-                <div class="min-w-0">
-                    <div class="text-xs text-slate-400 font-bold uppercase mb-0.5 flex items-center gap-2"><i class="${iconClass}"></i> ${label}</div>
-                    <div class="text-sm font-semibold text-white truncate" title="${video.title}">${video.title}</div>
-                    <div class="text-xs text-slate-500">${subtextFn(video)}</div>
-                </div>
-            `;
-        }
-
-        // --- CHARTS & ANALYTICS ---
-        function renderCharts() {
-            // Destroy existing if re-rendering
-            if(charts.views) charts.views.destroy();
-            if(charts.years) charts.years.destroy();
-
-            Chart.defaults.color = '#94a3b8';
-            Chart.defaults.borderColor = '#334155';
-            
-            const topVideos = [...GLOBAL_DATA.videos].sort((a,b) => b.views - a.views).slice(0, 10).reverse();
-            
-            const ctxViews = $('chartViews').getContext('2d');
-            charts.views = new Chart(ctxViews, {
-                type: 'bar',
-                data: {
-                    labels: topVideos.map(v => v.title.substring(0, 20) + '...'),
-                    datasets: [{
-                        label: 'Views',
-                        data: topVideos.map(v => v.views),
-                        backgroundColor: 'rgba(239, 68, 68, 0.6)',
-                        borderColor: 'rgba(239, 68, 68, 1)',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        y: { grid: { display: false } }, 
-                        x: { grid: { color: '#334155' }, ticks: { callback: (v) => formatCompact(v) } } 
-                    }
+            const [players, setPlayers] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('imposter_players');
+                    const loadedPlayers = saved ? JSON.parse(saved) : DEFAULT_PLAYERS;
+                    return loadedPlayers.length >= MIN_PLAYERS ? loadedPlayers : DEFAULT_PLAYERS;
+                } catch (e) {
+                    return DEFAULT_PLAYERS;
                 }
             });
 
-            const years = {};
-            GLOBAL_DATA.videos.forEach(v => {
-                const y = v.publishedAt.getFullYear();
-                years[y] = (years[y] || 0) + 1;
-            });
-            
-            const ctxYears = $('chartYears').getContext('2d');
-            charts.years = new Chart(ctxYears, {
-                type: 'line',
-                data: {
-                    labels: Object.keys(years).sort(),
-                    datasets: [{
-                        label: 'Videos Uploaded',
-                        data: Object.keys(years).sort().map(y => years[y]),
-                        borderColor: '#3b82f6',
-                        tension: 0.3,
-                        fill: true,
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        y: { grid: { color: '#334155' }, beginAtZero: true }, 
-                        x: { grid: { color: '#334155' } } 
-                    }
+            const [newPlayerName, setNewPlayerName] = useState('');
+            const [selectedCategories, setSelectedCategories] = useState(['Movies', 'Food', 'Technology']);
+            const [timerMinutes, setTimerMinutes] = useState(3);
+            const [timerEnabled, setTimerEnabled] = useState(true);
+
+            useEffect(() => {
+                localStorage.setItem('imposter_players', JSON.stringify(players));
+            }, [players]);
+
+            const addPlayer = () => {
+                if (newPlayerName.trim()) {
+                    setPlayers([...players, newPlayerName.trim()]);
+                    setNewPlayerName('');
+                    if (navigator.vibrate) navigator.vibrate(10);
                 }
-            });
-        }
-
-        function generateKeywords() {
-            const stopWords = new Set(['the','and','a','in','to','for','of','on','with','is','at','that','this','it','com','how','what','why','tutorial','playlist','part','official','feat','full','video','new','best','top']);
-            const counts = {};
-            GLOBAL_DATA.videos.forEach(v => {
-                const words = v.title.toLowerCase().replace(/[^\w\s]|_/g, '').replace(/\s+/g, ' ').split(' ');
-                words.forEach(w => {
-                    if(w.length > 2 && !stopWords.has(w) && isNaN(w)) {
-                        counts[w] = (counts[w] || 0) + 1;
-                    }
-                });
-            });
-
-            const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 20);
-            if (!sorted.length) {
-                $('keywordCloud').innerHTML = `<span class="text-slate-500">No common keywords found.</span>`;
-                return;
-            }
-            const html = sorted.map(([word, count]) => `
-                <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-300 border border-slate-700 shadow-sm">
-                    ${word} <span class="text-red-500 ml-1 font-mono">${count}</span>
-                </span>
-            `).join('');
-            $('keywordCloud').innerHTML = html;
-        }
-
-        // --- BINGE PLANNER ---
-        function calculatePlan() {
-            const speed = parseFloat($('customSelect').dataset.value || 1);
-            const hoursPerDay = parseFloat($('planDaily').value);
-            
-            if(!hoursPerDay || hoursPerDay <= 0) {
-                $('planDays').innerText = '-';
-                $('planDate').innerText = '...';
-                return;
-            }
-
-            const totalHoursNeeded = (GLOBAL_DATA.totalDuration / speed) / 3600;
-            const daysNeeded = Math.ceil(totalHoursNeeded / hoursPerDay);
-            
-            $('planDays').innerText = daysNeeded;
-            
-            const finishDate = new Date();
-            finishDate.setDate(finishDate.getDate() + daysNeeded);
-            $('planDate').innerText = finishDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-        }
-
-        // --- TABLE & FILTERING ---
-        let currentSort = { col: 'none', asc: false };
-
-        function populateTable(videos) {
-            const tbody = $('videoTableBody');
-            tbody.innerHTML = '';
-            
-            videos.forEach((v, i) => {
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-800/50 transition border-b border-slate-800";
-                
-                row.innerHTML = `
-                    <td class="px-6 py-4 font-mono text-slate-500">${i+1}</td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <img src="${v.thumb}" class="w-10 h-10 rounded object-cover hidden sm:block bg-slate-800">
-                            <div class="min-w-0">
-                                <div class="text-white text-sm font-medium truncate" title="${v.title}">${v.title}</div>
-                                <div class="text-[10px] text-slate-500">${v.channel}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-right font-mono text-slate-400">${secondsToText(v.duration)}</td>
-                    <td class="px-6 py-4 text-right text-slate-300">${formatCompact(v.views)}</td>
-                    <td class="px-6 py-4 text-right text-slate-300">
-                        <span class="mr-2"><i class="fas fa-thumbs-up text-[10px] text-slate-500"></i> ${formatCompact(v.likes)}</span>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <button onclick="openModal(this, '${v.id}')" class="text-red-500 hover:text-red-400 transition transform hover:scale-110 w-8 h-8 flex items-center justify-center" title="Play Video">
-                            <i class="fas fa-play-circle text-lg"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function filterTable() {
-            const query = $('tableSearch').value.toLowerCase();
-            const filtered = GLOBAL_DATA.videos.filter(v => v.title.toLowerCase().includes(query) || v.channel.toLowerCase().includes(query));
-            populateTable(filtered);
-        }
-
-        function sortTable(col) {
-            document.querySelectorAll('th i.fa-sort').forEach(icon => icon.className = "fas fa-sort ml-1 opacity-50");
-            const icon = document.querySelector(`th[onclick="sortTable('${col}')"] i`);
-
-            if(currentSort.col === col) {
-                currentSort.asc = !currentSort.asc;
-            } else { 
-                currentSort.col = col; 
-                currentSort.asc = true; 
-            }
-            
-            icon.className = `fas ${currentSort.asc ? 'fa-sort-up' : 'fa-sort-down'} ml-1 opacity-100`;
-
-            const filtered = GLOBAL_DATA.videos.filter(v => v.title.toLowerCase().includes($('tableSearch').value.toLowerCase()));
-
-            const sorted = [...filtered].sort((a,b) => {
-                let valA = col === 'title' ? a.title.toLowerCase() : a[col];
-                let valB = col === 'title' ? b.title.toLowerCase() : b[col];
-                
-                if (valA < valB) return currentSort.asc ? -1 : 1;
-                if (valA > valB) return currentSort.asc ? 1 : -1;
-                return 0;
-            });
-            populateTable(sorted);
-        }
-
-        function exportCSV() {
-            let csv = "Title,Channel,Duration(s),Views,Likes,Comments,Favorites,URL\n";
-            GLOBAL_DATA.videos.forEach(v => {
-                const title = `"${v.title.replace(/"/g, '""')}"`;
-                csv += `${title},"${v.channel}",${v.duration},${v.views},${v.likes},${v.comments},${v.favorites},https://youtu.be/${v.id}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${GLOBAL_DATA.meta.title.replace(/[^a-z0-9]/gi, '_')}_analysis.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        // --- Modal & Player Logic ---
-        function onYouTubeIframeAPIReady() { 
-            playerReady = true; 
-        }
-
-        function openModal(btn, videoId) {
-            if (!playerReady) {
-                const originalContent = btn.innerHTML;
-                btn.innerHTML = `<div class="loader-btn mx-auto"></div>`;
-                btn.disabled = true;
-
-                let attempts = 0;
-                clearInterval(playerLoadRetryInterval); // Clear any previous attempts
-                playerLoadRetryInterval = setInterval(() => {
-                    attempts++;
-                    if (playerReady) {
-                        clearInterval(playerLoadRetryInterval);
-                        btn.innerHTML = originalContent;
-                        btn.disabled = false;
-                        openModal(btn, videoId); // Re-call the function now that the player is ready
-                    } else if (attempts > 20) { // Timeout after ~5 seconds
-                        clearInterval(playerLoadRetryInterval);
-                        btn.innerHTML = originalContent;
-                        btn.disabled = false;
-                        showError("The YouTube player could not be loaded. Please check your connection or browser extensions and refresh the page.");
-                    }
-                }, 250);
-                return;
-            }
-
-            // Find video data
-            let videoData = GLOBAL_DATA.videos.find(v => v.id === videoId);
-            if (!videoData) { // Fallback for single video mode
-                videoData = GLOBAL_DATA.currentSingleVideo;
-            }
-
-            if (videoData) {
-                $('modalVideoTitle').innerText = videoData.title || 'Loading...';
-                $('modalChannelName').innerText = videoData.channel || '...';
-                $('modalChannelThumb').src = videoData.channelThumb || 'https://placehold.co/40x40/1f2937/475569?text=?';
-            }
-
-            document.body.classList.add('modal-open');
-
-            if (player) {
-                player.loadVideoById(videoId);
-            } else {
-                player = new YT.Player('videoIframe', {
-					height: '100%',
-					width: '100%',
-					videoId: videoId,
-					playerVars: {
-						'autoplay': 1,
-						'controls': 0,       // Hides bottom bar
-						'disablekb': 1,      // Disables YouTube keyboard shortcuts (use your own)
-						'fs': 0,             // Hides fullscreen button
-						'iv_load_policy': 3, // Hides annotations
-						'modestbranding': 1, // Minimal logo
-						'rel': 0,            // Limits related videos (but doesn't hide shelf)
-						'showinfo': 0,       // (Deprecated but good to have)
-						'ecver': 2           // Helps with clean UI on some browsers
-					},
-					events: {
-						'onReady': onPlayerReady,
-						'onStateChange': onPlayerStateChange
-					}
-				});
-            }
-        }
-        
-        // ---[FIX START]--- Player Control Functions
-        function togglePlayPause() {
-            if (!player || typeof player.getPlayerState !== 'function') return;
-            const playerState = player.getPlayerState();
-            if (playerState === YT.PlayerState.PLAYING) {
-                player.pauseVideo();
-            } else {
-                player.playVideo();
-            }
-        }
-
-        function closeModal() {
-            document.body.classList.remove('modal-open');
-            if (player && typeof player.pauseVideo === 'function') {
-                player.pauseVideo();
-            }
-        }
-        
-        function updateTimeDisplay() {
-            if (!player || typeof player.getCurrentTime !== 'function' || !player.getDuration) return;
-            $('currentTime').textContent = secondsToText(player.getCurrentTime());
-            $('totalTime').textContent = secondsToText(player.getDuration());
-        }
-
-        function updateSeekerUI() {
-            if (!player || typeof player.getDuration !== 'function' || player.getDuration() <= 0) return;
-            const currentTime = player.getCurrentTime();
-            const duration = player.getDuration();
-            const progressPercent = (currentTime / duration) * 100;
-            const bufferPercent = (player.getVideoLoadedFraction() || 0) * 100;
-
-            $('seekerProgress').style.width = `${progressPercent}%`;
-            $('seekerHandle').style.left = `${progressPercent}%`;
-            $('seekerBuffer').style.width = `${bufferPercent}%`;
-            
-            updateTimeDisplay();
-        }
-
-        function updateVolumeIcon() {
-            if (!player) return;
-            const icon = $('volumeBtn').querySelector('i');
-            const volume = player.getVolume();
-            const isMuted = player.isMuted();
-
-            if (isMuted || volume === 0) {
-                icon.className = 'fas fa-volume-mute';
-            } else if (volume < 50) {
-                icon.className = 'fas fa-volume-low';
-            } else {
-                icon.className = 'fas fa-volume-high';
-            }
-        }
-        // ---[FIX END]---
-
-        function onPlayerReady(event) {
-            event.target.playVideo();
-            updateTimeDisplay();
-            $('volumeSlider').value = player.getVolume();
-            updateVolumeIcon();
-        }
-
-        function onPlayerStateChange(event) {
-            const playPauseIcon = $('playPauseBtn').querySelector('i');
-            const wrapper = $('iframeWrapper');
-            
-            clearInterval(progressInterval);
-
-            if (event.data == YT.PlayerState.PLAYING) {
-                playPauseIcon.className = 'fas fa-pause';
-                wrapper.classList.remove('paused');
-                progressInterval = setInterval(updateSeekerUI, 250);
-            } else {
-                playPauseIcon.className = 'fas fa-play';
-                wrapper.classList.add('paused');
-                // Update time display one last time when paused or ended
-                updateTimeDisplay();
-            }
-        }
-
-        function setupPlayerControls() {
-            let isSeeking = false;
-            const seeker = $('seekerContainer');
-            const volumeSlider = $('volumeSlider');
-            const overlay = $('playerOverlay');
-
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay || e.target.id === 'customTopBar' || e.target.id === 'playerOverlay') {
-                    togglePlayPause();
-                }
-            });
-
-            const performSeek = (e) => {
-                if (!player || typeof player.getDuration !== 'function' || player.getDuration() <= 0) return;
-                const rect = seeker.getBoundingClientRect();
-                let x = e.clientX - rect.left;
-                const width = rect.width;
-                x = Math.max(0, Math.min(x, width)); 
-                const percentage = x / width;
-                const newTime = player.getDuration() * percentage;
-                
-                $('seekerProgress').style.width = `${percentage * 100}%`;
-                $('seekerHandle').style.left = `${percentage * 100}%`;
-                $('currentTime').textContent = secondsToText(newTime);
-                
-                player.seekTo(newTime, true);
             };
 
-            seeker.addEventListener('mousedown', (e) => {
-                isSeeking = true; document.body.classList.add('seeking'); performSeek(e);
-            });
-            document.addEventListener('mousemove', (e) => { if (isSeeking) { performSeek(e); } });
-            document.addEventListener('mouseup', () => { isSeeking = false; document.body.classList.remove('seeking'); });
-
-            $('playPauseBtn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                togglePlayPause();
-            });
-            
-            $('volumeBtn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (!player) return;
-                player.isMuted() ? player.unMute() : player.mute();
-                updateVolumeIcon(); // <-- FIX
-            });
-
-            volumeSlider.addEventListener('input', (e) => {
-                e.stopPropagation();
-                if (!player) return;
-                player.setVolume(volumeSlider.value);
-                if (player.isMuted()) player.unMute();
-                updateVolumeIcon(); // <-- FIX
-            });
-            
-            document.querySelector('.volume-container').addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-
-            $('fullscreenBtn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                const iframe = $('iframeWrapper');
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                } else {
-                    iframe.requestFullscreen().catch(err => console.error(`Fullscreen error: ${err.message}`));
+            const removePlayer = (index) => {
+                if (players.length > MIN_PLAYERS) {
+                    setPlayers(players.filter((_, i) => i !== index));
+                    if (navigator.vibrate) navigator.vibrate(10);
                 }
+            };
+
+            const toggleCategory = (cat) => {
+                if (selectedCategories.includes(cat)) {
+                    if (selectedCategories.length > 1) {
+                        setSelectedCategories(selectedCategories.filter(c => c !== cat));
+                        if (navigator.vibrate) navigator.vibrate(5);
+                    }
+                } else {
+                    setSelectedCategories([...selectedCategories, cat]);
+                    if (navigator.vibrate) navigator.vibrate(5);
+                }
+            };
+
+            return (
+                <div className="flex flex-col h-full overflow-y-auto bg-slate-950 text-white p-6 pb-28 no-scrollbar relative">
+                    {/* Background Blobs */}
+                    <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                         <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob"></div>
+                         <div className="absolute top-0 -right-4 w-72 h-72 bg-teal-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob animation-delay-2000"></div>
+                         <div className="absolute -bottom-8 left-20 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob animation-delay-4000"></div>
+                    </div>
+
+                    <div className="relative z-10 max-w-lg mx-auto w-full">
+                        <div className="mb-8 text-center pt-8">
+                            <h1 className="text-6xl font-black text-white mb-2 tracking-tighter drop-shadow-lg">IMPOSTER</h1>
+                            <p className="text-slate-400 text-xs font-bold tracking-[0.4em] uppercase">Trust No One</p>
+                        </div>
+
+                        {/* Players Section */}
+                        <section className="mb-6 bg-glass rounded-[2rem] p-6">
+                            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-purple-300">
+                                <Icons.Users size={20} /> <span className="tracking-tight">PLAYERS</span>
+                                <span className="ml-auto text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-400">{players.length} / {MIN_PLAYERS}+</span>
+                            </h2>
+                            <div className="flex gap-2 mb-4">
+                                <input
+                                    type="text"
+                                    value={newPlayerName}
+                                    onChange={(e) => setNewPlayerName(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && addPlayer()}
+                                    placeholder="Enter name..."
+                                    className="flex-1 bg-slate-800/50 rounded-2xl px-5 py-3.5 outline-none border border-slate-700/50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600 font-medium text-sm"
+                                />
+                                <button 
+                                    onClick={addPlayer}
+                                    className="bg-purple-600 hover:bg-purple-500 w-12 h-[50px] flex items-center justify-center rounded-2xl font-bold transition shadow-lg shadow-purple-900/20 active:scale-95"
+                                >
+                                    <span className="text-xl leading-none">+</span>
+                                </button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {players.map((p, i) => (
+                                    <div key={i} className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 pl-4 pr-1.5 py-1.5 rounded-full animate-fadeIn group">
+                                        <span className="text-sm font-semibold text-slate-200">{p}</span>
+                                        <button 
+                                            onClick={() => removePlayer(i)}
+                                            disabled={players.length <= MIN_PLAYERS}
+                                            className={`w-6 h-6 flex items-center justify-center rounded-full text-xs transition-colors 
+                                                ${players.length > MIN_PLAYERS 
+                                                    ? 'bg-slate-700 hover:bg-red-500 text-slate-400 hover:text-white' 
+                                                    : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                                                }`}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* Timer Section */}
+                        <section className="mb-6 bg-glass rounded-[2rem] p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-bold flex items-center gap-2 text-blue-300">
+                                    <Icons.Timer size={20} /> <span className="tracking-tight">TIMER</span>
+                                </h2>
+                                <button 
+                                    onClick={() => {
+                                        setTimerEnabled(!timerEnabled);
+                                        if(navigator.vibrate) navigator.vibrate(10);
+                                    }}
+                                    className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ${timerEnabled ? 'bg-blue-600' : 'bg-slate-700'}`}
+                                >
+                                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${timerEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                                </button>
+                            </div>
+                            
+                            <div className={`transition-all duration-300 overflow-hidden ${timerEnabled ? 'opacity-100 max-h-40' : 'opacity-30 max-h-0'}`}>
+                                <div className="flex justify-between items-center mb-4 bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
+                                    <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Duration</span>
+                                    <span className="font-mono text-xl font-bold text-white">{timerMinutes} min</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="15"
+                                    value={timerMinutes}
+                                    onChange={(e) => setTimerMinutes(parseInt(e.target.value))}
+                                    className="w-full h-3 bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-500"
+                                />
+                            </div>
+                        </section>
+
+                        {/* Categories Section */}
+                        <section className="mb-8">
+                            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-teal-300 px-2">
+                                <Icons.Settings size={20} /> <span className="tracking-tight">CATEGORIES</span>
+                            </h2>
+                            <div className="grid grid-cols-2 gap-3">
+                                {Object.keys(WORD_BANK).map(cat => {
+                                    const IconComp = CATEGORY_ICONS[cat] || Icons.Globe;
+                                    const isSelected = selectedCategories.includes(cat);
+                                    return (
+                                        <button
+                                            key={cat}
+                                            onClick={() => toggleCategory(cat)}
+                                            className={`flex flex-col items-center justify-center gap-2 p-4 rounded-[1.5rem] border transition-all duration-200 active:scale-95 ${
+                                                isSelected 
+                                                    ? 'bg-teal-500/10 border-teal-500/50 text-teal-100 shadow-[0_0_15px_rgba(45,212,191,0.1)]' 
+                                                    : 'bg-slate-900/40 border-slate-800 text-slate-500 hover:bg-slate-800'
+                                            }`}
+                                        >
+                                            <IconComp size={24} className={isSelected ? "text-teal-400" : "text-slate-600"} />
+                                            <span className="text-xs font-bold tracking-wide">{cat}</span>
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </section>
+                    </div>
+
+                    {/* Start Button */}
+                    <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
+                        <div className="max-w-lg mx-auto">
+                            <button
+                                onClick={() => {
+                                    if (players.length >= MIN_PLAYERS && selectedCategories.length > 0) {
+                                        if (navigator.vibrate) navigator.vibrate(30);
+                                        onStartGame(players, selectedCategories, timerEnabled ? timerMinutes * 60 : null);
+                                    }
+                                }}
+                                disabled={players.length < MIN_PLAYERS || selectedCategories.length === 0}
+                                className="w-full bg-white text-slate-950 font-black text-lg py-5 rounded-[1.5rem] shadow-xl shadow-white/10 disabled:opacity-50 disabled:shadow-none active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                            >
+                                <Icons.Play fill="currentColor" size={24} /> 
+                                START GAME
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 2. Enhanced Card Reveal Flow
+        const CardRevealScreen = ({ player, word, onNext, isLastPlayer }) => {
+            // Steps: 'handover' -> 'identify' -> 'reveal'
+            const [step, setStep] = useState('handover'); 
+            const [isRevealed, setIsRevealed] = useState(false);
+            const [swipeY, setSwipeY] = useState(0);
+
+            // Reset state when player changes
+            useEffect(() => {
+                setStep('handover');
+                setIsRevealed(false);
+                setSwipeY(0);
+            }, [player]);
+
+            const handleTouchMove = (e) => {
+                if (step !== 'identify') return;
+                const touch = e.touches[0];
+                // Simple logic: if user drags down significantly, reveal
+                // Or if we want a "hold" button, we can do that too. 
+                // Let's do a tap logic for simplicity but robust UI
+            };
+
+            const renderHandover = () => (
+                <div className="flex flex-col items-center justify-center h-full text-center p-6 animate-slide-up">
+                    <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-8 border border-slate-700">
+                         <Icons.User size={48} className="text-slate-400" />
+                    </div>
+                    <h2 className="text-slate-500 text-sm font-bold uppercase tracking-[0.3em] mb-4">Pass Device To</h2>
+                    <h1 className="text-5xl font-black text-white mb-12">{player}</h1>
+                    
+                    <div className="absolute bottom-10 w-full max-w-sm px-6">
+                        <button 
+                            onClick={() => {
+                                setStep('identify');
+                                if (navigator.vibrate) navigator.vibrate(20);
+                            }}
+                            className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-5 rounded-[1.5rem] transition-all active:scale-95 flex items-center justify-center gap-3"
+                        >
+                            <Icons.Check size={20} /> I am {player}
+                        </button>
+                    </div>
+                </div>
+            );
+
+            const renderIdentity = () => (
+                <div className="flex flex-col items-center justify-center h-full w-full p-6 relative">
+                    <div className="absolute top-0 left-0 w-full h-full bg-slate-900/50 backdrop-blur-sm z-0"></div>
+                    
+                    {/* The Card */}
+                    <div 
+                        className="relative w-full max-w-xs aspect-[3/4] perspective-1000 z-10"
+                        onClick={() => {
+                            if (!isRevealed) {
+                                setIsRevealed(true);
+                                setStep('reveal');
+                                if (navigator.vibrate) navigator.vibrate([30, 50]);
+                            }
+                        }}
+                    >
+                         <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d preserve-3d cursor-pointer ${isRevealed ? 'rotate-y-180' : ''}`}>
+                            
+                            {/* Front (Hidden State) */}
+                            <div className="absolute inset-0 backface-hidden">
+                                <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] border border-slate-700 shadow-2xl flex flex-col items-center justify-center p-8 group">
+                                    <div className="w-20 h-2 bg-slate-700 rounded-full mb-12 opacity-50"></div>
+                                    <div className="w-32 h-32 bg-slate-800 rounded-full flex items-center justify-center mb-8 ring-4 ring-slate-800/50 group-hover:scale-105 transition-transform duration-500">
+                                        <Icons.Lock size={48} className="text-slate-400" />
+                                    </div>
+                                    <h3 className="text-white font-black text-2xl mb-2">SECRET ROLE</h3>
+                                    <p className="text-slate-400 font-medium text-sm">Tap card to reveal</p>
+                                    <div className="absolute bottom-8 animate-bounce opacity-50">
+                                        <Icons.Eye size={24} className="text-slate-400" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Back (Revealed State) - Logic is handled in renderReveal to keep DOM clean, but for 3D flip effect we put content here visually if needed. 
+                                However, to keep it simple and sleek, we will transition to renderReveal state fully. 
+                                Actually, for the flip to work, we need the backface here.
+                            */}
+                             <div className="absolute inset-0 rotate-y-180 backface-hidden">
+                                <div className={`w-full h-full rounded-[2.5rem] border shadow-2xl flex flex-col items-center justify-center p-8 ${
+                                    word === "IMPOSTER" ? 'bg-red-950 border-red-500/30' : 'bg-teal-950 border-teal-500/30'
+                                }`}>
+                                     {/* Content mirrors renderReveal but just for the flip animation */}
+                                     <div className="text-center">
+                                        <p className="text-xs uppercase tracking-widest font-bold mb-4 opacity-50">Your Role</p>
+                                        <h2 className="text-3xl font-black">{word}</h2>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const renderReveal = () => (
+                 <div className="flex flex-col items-center justify-center h-full p-6 animate-fadeIn">
+                    <div className={`w-full max-w-sm aspect-[3/4] rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-center relative overflow-hidden shadow-2xl border ${
+                         word === "IMPOSTER" 
+                            ? 'bg-gradient-to-br from-red-950 to-slate-950 border-red-500/30' 
+                            : 'bg-gradient-to-br from-teal-950 to-slate-950 border-teal-500/30'
+                    }`}>
+                        {/* Background Effects */}
+                        <div className={`absolute top-0 w-full h-1/2 opacity-20 blur-3xl ${word === 'IMPOSTER' ? 'bg-red-500' : 'bg-teal-500'}`}></div>
+
+                        <p className={`text-xs uppercase tracking-[0.3em] font-bold mb-8 ${word === 'IMPOSTER' ? 'text-red-300' : 'text-teal-300'}`}>Your Secret Role</p>
+                        
+                        {word === "IMPOSTER" ? (
+                            <>
+                                <div className="w-32 h-32 bg-red-500/10 rounded-full flex items-center justify-center mb-8 ring-1 ring-red-500/50 shadow-[0_0_40px_rgba(239,68,68,0.2)]">
+                                    <span className="text-6xl">🤫</span>
+                                </div>
+                                <h2 className="text-5xl font-black text-red-500 tracking-tighter mb-4 drop-shadow-sm">IMPOSTER</h2>
+                                <p className="text-red-200/70 text-sm font-medium leading-relaxed max-w-[200px]">Blend in. Don't let them know you don't know the word.</p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="w-32 h-32 bg-teal-500/10 rounded-full flex items-center justify-center mb-8 ring-1 ring-teal-500/50 shadow-[0_0_40px_rgba(20,184,166,0.2)]">
+                                    <span className="text-6xl">📝</span>
+                                </div>
+                                <h2 className="text-4xl font-black text-white mb-4 drop-shadow-sm">{word}</h2>
+                                <p className="text-teal-200/70 text-sm font-medium leading-relaxed max-w-[200px]">This is the secret word. Remember it.</p>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="w-full max-w-sm mt-8 px-2">
+                        <button 
+                            onClick={() => {
+                                if(navigator.vibrate) navigator.vibrate(20);
+                                onNext();
+                            }}
+                            className="w-full bg-white text-slate-950 py-5 rounded-[1.5rem] font-black shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3"
+                        >
+                            <Icons.EyeOff size={20} />
+                            {isLastPlayer ? "HIDE & START GAME" : "HIDE & PASS"}
+                        </button>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="h-full bg-slate-950 relative overflow-hidden">
+                    {/* Persistent Background */}
+                    <div className="absolute inset-0 pointer-events-none">
+                        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/5 rounded-full blur-[100px]"></div>
+                        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[100px]"></div>
+                    </div>
+
+                    <div className="relative z-10 h-full">
+                        {step === 'handover' && renderHandover()}
+                        {step === 'identify' && renderIdentity()}
+                        {step === 'reveal' && renderReveal()}
+                    </div>
+                </div>
+            );
+        };
+
+        // 3. Game Timer Screen
+        const GameTimerScreen = ({ duration, onEndGame, firstPlayer }) => {
+            const [timeLeft, setTimeLeft] = useState(duration || 0);
+            const [active, setActive] = useState(!!duration);
+
+            useEffect(() => {
+                if (!active || !duration) return;
+                if (timeLeft <= 0) {
+                    setActive(false);
+                    if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
+                    return;
+                }
+                const interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
+                return () => clearInterval(interval);
+            }, [active, timeLeft, duration]);
+
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m}:${s < 10 ? '0' : ''}${s}`;
+            };
+
+            const progress = duration ? timeLeft / duration : 0;
+            const strokeDasharray = 2 * Math.PI * 120;
+            const strokeDashoffset = strokeDasharray * (1 - progress);
+
+            return (
+                <div className="h-full flex flex-col items-center justify-between bg-slate-950 p-6 text-white overflow-hidden relative">
+                    {/* Background */}
+                    <div className="absolute inset-0 pointer-events-none">
+                        <div className={`absolute inset-0 bg-red-600/10 transition-opacity duration-1000 ${timeLeft < 30 && active ? 'opacity-100 animate-pulse' : 'opacity-0'}`}></div>
+                    </div>
+
+                    {/* Header: First Questioner Only - NO CATEGORY */}
+                    <div className="w-full mt-8 bg-glass p-5 rounded-[1.5rem] flex items-center gap-4 z-10">
+                        <div className="bg-indigo-500/20 p-3 rounded-full">
+                            <Icons.Users size={24} className="text-indigo-300" />
+                        </div>
+                        <div>
+                            <p className="text-indigo-300 text-[10px] uppercase font-bold tracking-wider mb-0.5">First Questioner</p>
+                            <p className="text-white font-bold text-xl">{firstPlayer}</p>
+                        </div>
+                    </div>
+
+                    {/* Main Timer Display */}
+                    <div className="flex-1 flex flex-col items-center justify-center z-10 w-full relative">
+                        {duration ? (
+                            <div className="relative">
+                                {/* Glow Effect */}
+                                <div className={`absolute inset-0 rounded-full blur-[80px] transition-all duration-1000 ${timeLeft < 30 ? 'bg-red-500/20' : 'bg-blue-500/10'}`}></div>
+                                
+                                <div className="relative">
+                                    <svg className="w-72 h-72 transform -rotate-90 drop-shadow-2xl">
+                                        <circle cx="144" cy="144" r="120" stroke="#1e293b" strokeWidth="8" fill="transparent" />
+                                        <circle 
+                                            cx="144" cy="144" r="120" stroke="currentColor" strokeWidth="8" fill="transparent" 
+                                            className={`${timeLeft < 30 ? 'text-red-500' : 'text-blue-500'} transition-colors duration-1000`}
+                                            strokeDasharray={strokeDasharray}
+                                            strokeDashoffset={strokeDashoffset}
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className={`text-7xl font-mono font-black tracking-tighter tabular-nums ${timeLeft < 30 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+                                            {formatTime(timeLeft)}
+                                        </span>
+                                        <span className="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] mt-4">
+                                            {timeLeft === 0 ? "TIME'S UP" : "REMAINING"}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 px-6 bg-slate-900/50 rounded-[2rem] border border-slate-800">
+                                <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Icons.Timer size={32} className="text-slate-400" />
+                                </div>
+                                <h2 className="text-3xl font-black mb-3 text-white">Untimed Mode</h2>
+                                <p className="text-slate-400 text-sm font-medium leading-relaxed max-w-xs mx-auto">Take your time. Ask questions. Watch for nervous habits.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="w-full z-10 pb-6">
+                        <button 
+                            onClick={() => {
+                                if(navigator.vibrate) navigator.vibrate(50);
+                                onEndGame();
+                            }}
+                            className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-black text-xl py-5 rounded-[1.5rem] shadow-xl shadow-red-900/20 transition-all active:scale-[0.98] flex items-center justify-center gap-3 border border-red-500/20"
+                        >
+                            <Icons.Trophy size={24} fill="currentColor" />
+                            REVEAL IMPOSTER
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. Results Screen
+        const ResultScreen = ({ imposterName, word, onRestart }) => {
+            return (
+                <div className="h-full flex flex-col items-center justify-center bg-slate-950 p-6 text-white text-center overflow-hidden relative">
+                    
+                    <div className="relative mb-12 animate-float w-full max-w-sm">
+                        <div className="absolute inset-0 bg-red-600 rounded-[3rem] blur-[60px] opacity-20"></div>
+                        <div className="relative bg-gradient-to-br from-slate-900 to-slate-950 p-10 rounded-[2.5rem] border border-red-500/20 shadow-2xl">
+                            <div className="text-xs font-bold text-red-400 uppercase tracking-[0.3em] mb-8">The Imposter Was</div>
+                            <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span className="text-5xl">🤫</span>
+                            </div>
+                            <span className="text-4xl font-black text-white block break-words leading-tight">
+                                {imposterName}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="bg-glass p-6 rounded-[1.5rem] w-full max-w-sm mb-8">
+                        <p className="text-slate-500 text-[10px] uppercase tracking-widest font-bold mb-2">The Secret Word</p>
+                        <p className="text-2xl font-black text-teal-400">{word}</p>
+                    </div>
+
+                    <button 
+                        onClick={() => {
+                            if(navigator.vibrate) navigator.vibrate(20);
+                            onRestart();
+                        }}
+                        className="w-full max-w-sm bg-white text-slate-950 py-5 rounded-[1.5rem] font-black text-lg shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3"
+                    >
+                        <Icons.Refresh size={20} /> PLAY AGAIN
+                    </button>
+                </div>
+            );
+        };
+
+        // --- MAIN APP ---
+        const App = () => {
+            const [gameState, setGameState] = useState('setup'); 
+            const [gameData, setGameData] = useState({
+                players: [],
+                imposterIndex: -1,
+                secretWord: '',
+                category: '',
+                duration: null,
+                firstPlayer: ''
             });
-            
-            document.addEventListener('fullscreenchange', () => {
-                const icon = $('fullscreenBtn').querySelector('i');
-                icon.className = document.fullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
-            });
-        }
+            const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
 
-        // --- Custom Select Logic ---
-        function setupCustomSelect() {
-            const select = $('customSelect');
-            const trigger = $('selectTrigger');
-            const valueSpan = $('selectValue');
-            const optionsPanel = $('selectOptions');
-            const options = document.querySelectorAll('.select-option');
-            const icon = trigger.querySelector('i');
+            const startGame = (players, categories, duration) => {
+                const randomCat = categories[Math.floor(Math.random() * categories.length)];
+                const words = WORD_BANK[randomCat] || WORD_BANK['Movies'];
+                const secretWord = words[Math.floor(Math.random() * words.length)];
+                const imposterIndex = Math.floor(Math.random() * players.length);
+                
+                let potentialFirst = Math.floor(Math.random() * players.length);
+                if (players.length > 2 && potentialFirst === imposterIndex) {
+                    potentialFirst = (potentialFirst + 1) % players.length;
+                }
 
-            const openSelect = () => {
-                optionsPanel.classList.remove('hidden', 'opacity-0', '-translate-y-2');
-                icon.classList.add('rotate-180');
-            }
-            const closeSelect = () => {
-                optionsPanel.classList.add('opacity-0', '-translate-y-2');
-                icon.classList.remove('rotate-180');
-                setTimeout(() => optionsPanel.classList.add('hidden'), 200);
-            }
-
-            trigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (optionsPanel.classList.contains('hidden')) openSelect(); else closeSelect();
-            });
-
-            options.forEach(option => {
-                option.addEventListener('click', (e) => {
-                    select.dataset.value = e.currentTarget.dataset.value;
-                    valueSpan.innerText = e.currentTarget.innerText;
-                    closeSelect();
-                    calculatePlan();
+                setGameData({
+                    players,
+                    imposterIndex,
+                    secretWord,
+                    category: randomCat, // Stored but hidden during game
+                    duration,
+                    firstPlayer: players[potentialFirst]
                 });
-            });
+                
+                setCurrentPlayerIndex(0);
+                setGameState('pass');
+            };
 
-            document.addEventListener('click', (e) => { if (!select.contains(e.target)) closeSelect(); });
-        }
-        
-        // --- Init ---
-        document.addEventListener('DOMContentLoaded', () => {
-            setupCustomSelect();
-            setupPlayerControls();
-        });
+            const handleNextPlayer = () => {
+                if (currentPlayerIndex < gameData.players.length - 1) {
+                    setCurrentPlayerIndex(prev => prev + 1);
+                } else {
+                    setGameState('active');
+                }
+            };
 
+            const handleEndGame = () => setGameState('result');
+            const handleRestart = () => setGameState('setup');
+
+            return (
+                <div className="w-full h-screen overflow-hidden bg-slate-950 font-sans select-none text-slate-100">
+                    {gameState === 'setup' && (
+                        <SetupScreen onStartGame={startGame} />
+                    )}
+
+                    {gameState === 'pass' && (
+                        <CardRevealScreen 
+                            key={currentPlayerIndex} // Forces remount for state reset
+                            player={gameData.players[currentPlayerIndex]}
+                            word={currentPlayerIndex === gameData.imposterIndex ? "IMPOSTER" : gameData.secretWord}
+                            onNext={handleNextPlayer}
+                            isLastPlayer={currentPlayerIndex === gameData.players.length - 1}
+                        />
+                    )}
+
+                    {gameState === 'active' && (
+                        <GameTimerScreen 
+                            duration={gameData.duration}
+                            onEndGame={handleEndGame}
+                            firstPlayer={gameData.firstPlayer}
+                        />
+                    )}
+
+                    {gameState === 'result' && (
+                        <ResultScreen 
+                            imposterName={gameData.players[gameData.imposterIndex]}
+                            word={gameData.secretWord}
+                            onRestart={handleRestart}
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
