@@ -310,6 +310,8 @@
             switchOn: "https://www.dropbox.com/scl/fi/wttc9l7ujwjfjw8wuif7z/01HWD5XAV5T7SNYPM79JSPYJTP-1.mp3?rlkey=no7fuxmbz3bcgmtvaje61l5vy&raw=1",
             switchOff: "https://www.dropbox.com/scl/fi/ypnd4hikcnj69qi9y205k/01HWD5XB1GFY4G3Y4AZTC1GN2R.mp3?rlkey=m04pff93t90o6xkoktwqlv6wb&raw=1",
             uiClick: "https://www.dropbox.com/scl/fi/ww27xdd3abq3ozc0heds8/01HWD5XBKANVPZVCCTP7THR7Q2.mp3?rlkey=6httxc42qx2h3e7cfj16jvpbr&raw=1",
+            openInfo: "https://www.dropbox.com/scl/fi/z3o61q4zqex0d4081r6ej/01HWD5XB2JFXRPXHS6VSGTFTMG.mp3?rlkey=o4j1j0zroc5tpseqa0z9stbdz&raw=1",
+            toggleMode: "https://www.dropbox.com/scl/fi/a0csiwttotrzam52xos84/01HWD5XBNZEHSRDXY96T1W5E18.mp3?rlkey=wgjt1yzesree78p5bzroum1cd&raw=1",
             categories: {
                 Supercell: "https://www.dropbox.com/scl/fi/8ebrjg08up658r0r1l20r/ElevenLabs_2025-12-15T08_16_40_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=5e4wyoyeueev4zw5m0hsnn5kn&raw=1",
                 Celebs: "https://www.dropbox.com/scl/fi/hzt3egh9lr83ua2qbzots/ElevenLabs_2025-12-15T08_18_49_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=ox4hhf4k01vqeub4n92rusbtt&raw=1",
@@ -330,9 +332,9 @@
                 Clothing: "https://www.dropbox.com/scl/fi/j9ufwciweptnoezljo8ut/ElevenLabs_2025-12-15T08_45_27_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=edhoon9hrhxm8k46t1rao01rp&raw=1",
                 Home: "https://www.dropbox.com/scl/fi/d833xr5wu9aonnpj2guv1/ElevenLabs_2025-12-15T08_47_02_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=kxugvsnlwtofbke9bcn1gwxl0&raw=1",
                 People: "https://www.dropbox.com/scl/fi/4nqyxqkzkihhay2ocqx3x/ElevenLabs_2025-12-15T08_47_55_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=0bcjbnbv1vzlyj7q53hiyb9et&raw=1",
-                "Historical Figures": "https://www.dropbox.com/scl/fi/y87l1w8q715kdsg8xp4j8/ElevenLabs_2025-12-15T10_55_01_Rachel_pvc_sp100_s50_sb75_v3.mp3?rlkey=t0g2v7j7sjf5f3b7qj07w0x4g&raw=1",
-                "Board Games": "https://www.dropbox.com/scl/fi/0qdxxbp2kpsg715q6x4a7/ElevenLabs_2025-12-15T10_56_10_Rachel_pvc_sp100_s50_sb75_v3.mp3?rlkey=083k84h74g7j6s8m7znd0h6z0&raw=1",
-                "Famous Landmarks": "https://www.dropbox.com/scl/fi/z9e4f5h789n4k6k1e5y2j/ElevenLabs_2025-12-15T10_57_25_Rachel_pvc_sp100_s50_sb75_v3.mp3?rlkey=7j9g3q09f1l5p4y3n9i7l1d2m&raw=1"
+                "Historical Figures": "https://www.dropbox.com/scl/fi/loo1iw5wyh8bpv5lmoygo/ElevenLabs_2025-12-15T14_24_36_Cornelius_pvc_sp100_s50_sb75_v3-1.mp3?rlkey=1fca4p6w65i6mm0eu10x299qk&raw=1",
+                "Board Games": "https://www.dropbox.com/scl/fi/g591eqdqmeb3f7b5tkk9c/ElevenLabs_2025-12-15T14_28_29_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=pb4ni2jbejp3ipm1ukshbqskn&raw=1",
+                "Famous Landmarks": "https://www.dropbox.com/scl/fi/r626enpj8238gm2y1pbe2/ElevenLabs_2025-12-15T14_29_34_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=cl0l16f5prizvydvcutl6gk5c&raw=1"
             }
         };
         
@@ -346,7 +348,7 @@
             "Pay attention to hesitation. The Imposter might need extra time to think of a lie.",
             "Try to ask a question only a true agent would know the answer to.",
             "Long-press on a category card during setup to see example words.",
-            "The first player to ask a question is chosen randomly and is never the Imposter.",
+            "The first player on the turn order list asks the first question.",
             "Innocent agents should try to prove they know the word without giving it away.",
             "Random Mode chooses a category from the entire word bank for an extra challenge."
         ];
@@ -607,6 +609,7 @@
             const handleCategoryTouchStart = (cat) => {
                 categoryLongPressTimerRef.current = setTimeout(() => {
                     setInspectedCategory(cat);
+                    audioManager.playSound('openInfo');
                     if (navigator.vibrate) navigator.vibrate(30);
                 }, 600);
             };
@@ -647,6 +650,13 @@
                     if (navigator.vibrate) navigator.vibrate(30);
                     audioManager.playSound(isRandomMode ? 'startRandomMission' : 'startMission');
                     onStartGame(players, isRandomMode ? [] : selectedCategories, timerEnabled ? timerMinutes * 60 : null, isRandomMode, speakCategory);
+                }
+            };
+            
+            const handleModeChange = (newModeIsRandom) => {
+                if (isRandomMode !== newModeIsRandom) {
+                    audioManager.playSound('toggleMode');
+                    setIsRandomMode(newModeIsRandom);
                 }
             };
 
@@ -801,13 +811,13 @@
                                     {/* Mode Toggle */}
                                     <div className="flex bg-slate-950/50 p-1 rounded-lg border border-white/5">
                                         <button 
-                                            onClick={() => setIsRandomMode(false)}
+                                            onClick={() => handleModeChange(false)}
                                             className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all ${!isRandomMode ? 'bg-white/10 text-white shadow-sm' : 'text-white/30 hover:text-white/60'}`}
                                         >
                                             Select
                                         </button>
                                         <button 
-                                            onClick={() => setIsRandomMode(true)}
+                                            onClick={() => handleModeChange(true)}
                                             className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all ${isRandomMode ? 'bg-gradient-to-r from-brand-600 to-fuchsia-600 text-white shadow-sm' : 'text-white/30 hover:text-white/60'}`}
                                         >
                                             Random
@@ -1387,6 +1397,8 @@
                 manager.initSound('switchOn', AUDIO_URLS.switchOn);
                 manager.initSound('switchOff', AUDIO_URLS.switchOff);
                 manager.initSound('uiClick', AUDIO_URLS.uiClick);
+                manager.initSound('openInfo', AUDIO_URLS.openInfo);
+                manager.initSound('toggleMode', AUDIO_URLS.toggleMode);
                 
                 manager.sounds.categories = {};
                 for (const cat in AUDIO_URLS.categories) {
@@ -1446,6 +1458,8 @@
                     AUDIO_URLS.switchOn,
                     AUDIO_URLS.switchOff,
                     AUDIO_URLS.uiClick,
+                    AUDIO_URLS.openInfo,
+                    AUDIO_URLS.toggleMode,
                     ...Object.values(AUDIO_URLS.categories)
                 ];
 
@@ -1487,16 +1501,14 @@
                 const secretWord = words[Math.floor(Math.random() * words.length)];
                 const imposterIndex = Math.floor(Math.random() * shuffledPlayers.length);
                 
-                let potentialFirst = Math.floor(Math.random() * shuffledPlayers.length);
-                if (shuffledPlayers.length > 2 && potentialFirst === imposterIndex) {
-                    potentialFirst = (potentialFirst + 1) % shuffledPlayers.length;
-                }
-
                 setGameData({
                     players: shuffledPlayers, 
-                    imposterIndex, secretWord, duration,
-                    firstPlayer: shuffledPlayers[potentialFirst].name,
-                    category: finalCategory, speakCategory
+                    imposterIndex, 
+                    secretWord, 
+                    duration,
+                    firstPlayer: shuffledPlayers[0].name, // The first player is now the first in the shuffled list.
+                    category: finalCategory, 
+                    speakCategory
                 });
                 
                 setCurrentPlayerIndex(0);
