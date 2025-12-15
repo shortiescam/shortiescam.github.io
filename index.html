@@ -466,7 +466,7 @@
 
         // 1. Setup Screen
         const SetupScreen = ({ onStartGame, audioManager }) => {
-            const DEFAULT_PLAYERS = [{ name: 'Player 1', audioUrl: null }, { name: 'Player 2', audioUrl: null }, { name: 'Player 3', audioUrl: null }];
+            const DEFAULT_PLAYERS = [{ name: 'Player 1', audioData: null }, { name: 'Player 2', audioData: null }, { name: 'Player 3', audioData: null }];
             const MIN_PLAYERS = 3;
 
             // --- State Persistence Logic ---
@@ -474,11 +474,21 @@
                 try {
                     const saved = localStorage.getItem('imposter_players');
                     if (saved) {
-                        const names = JSON.parse(saved);
-                        return names.map(name => ({ name, audioUrl: null }));
+                        let parsed = JSON.parse(saved);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            // Migration check: if old format (array of strings) exists, convert it.
+                            if (typeof parsed[0] === 'string') {
+                                parsed = parsed.map(name => ({ name, audioData: null }));
+                            }
+                            return parsed;
+                        }
                     }
+                    // If nothing is saved or saved data is empty/invalid, return defaults.
                     return DEFAULT_PLAYERS;
-                } catch { return DEFAULT_PLAYERS; }
+                } catch {
+                    // If JSON parsing fails, return defaults.
+                    return DEFAULT_PLAYERS;
+                }
             });
 
             const [selectedCategories, setSelectedCategories] = useState(() => {
@@ -509,15 +519,18 @@
             
             // Voice recording state
             const [isRecording, setIsRecording] = useState(false);
-            const [recordedAudioUrl, setRecordedAudioUrl] = useState(null);
+            const [recordedAudioData, setRecordedAudioData] = useState(null);
+            const [showMicTooltip, setShowMicTooltip] = useState(false);
             const mediaRecorderRef = useRef(null);
             const audioChunksRef = useRef([]);
+            const micTooltipTimer = useRef(null);
 
             // Long press logic
-            const timerRef = useRef(null);
+            const categoryLongPressTimerRef = useRef(null);
+            const playerPressTimerRef = useRef(null);
             
             // --- Save effects ---
-            useEffect(() => { localStorage.setItem('imposter_players', JSON.stringify(players.map(p => p.name))); }, [players]);
+            useEffect(() => { localStorage.setItem('imposter_players', JSON.stringify(players)); }, [players]);
             useEffect(() => { localStorage.setItem('imposter_categories', JSON.stringify(selectedCategories)); }, [selectedCategories]);
             useEffect(() => { localStorage.setItem('imposter_random_mode', JSON.stringify(isRandomMode)); }, [isRandomMode]);
             useEffect(() => { localStorage.setItem('imposter_speak_category', JSON.stringify(speakCategory)); }, [speakCategory]);
@@ -539,13 +552,17 @@
 
                         mediaRecorder.onstop = () => {
                             const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                            const audioUrl = URL.createObjectURL(audioBlob);
-                            setRecordedAudioUrl(audioUrl);
+                            const reader = new FileReader();
+                            reader.readAsDataURL(audioBlob);
+                            reader.onloadend = () => {
+                                setRecordedAudioData(reader.result); // Save as Base64 data URL
+                            };
                             stream.getTracks().forEach(track => track.stop());
                         };
 
                         mediaRecorder.start();
                         setIsRecording(true);
+                        setRecordedAudioData(null); // Clear previous recording
                     } catch (err) {
                         console.error("Error accessing microphone:", err);
                         alert("Microphone access was denied. Please allow it in your browser settings.");
@@ -556,9 +573,9 @@
             const addPlayer = () => {
                 if (newPlayerName.trim()) {
                     audioManager.playSound('uiClick');
-                    setPlayers([...players, { name: newPlayerName.trim(), audioUrl: recordedAudioUrl }]);
+                    setPlayers([...players, { name: newPlayerName.trim(), audioData: recordedAudioData }]);
                     setNewPlayerName('');
-                    setRecordedAudioUrl(null); // Reset for the next player
+                    setRecordedAudioData(null); // Reset for the next player
                     if (navigator.vibrate) navigator.vibrate(10);
                 }
             };
@@ -585,19 +602,43 @@
                     if (navigator.vibrate) navigator.vibrate(5);
                 }
             };
-
-            const handleTouchStart = (cat) => {
-                timerRef.current = setTimeout(() => {
+            
+            const handleCategoryTouchStart = (cat) => {
+                categoryLongPressTimerRef.current = setTimeout(() => {
                     setInspectedCategory(cat);
                     if (navigator.vibrate) navigator.vibrate(30);
                 }, 600);
             };
 
-            const handleTouchEnd = () => {
-                if (timerRef.current) {
-                    clearTimeout(timerRef.current);
-                    timerRef.current = null;
+            const handleCategoryTouchEnd = () => {
+                if (categoryLongPressTimerRef.current) {
+                    clearTimeout(categoryLongPressTimerRef.current);
+                    categoryLongPressTimerRef.current = null;
                 }
+            };
+            
+            const handlePlayerPress = (player) => {
+                if (player.audioData) {
+                    playerPressTimerRef.current = setTimeout(() => {
+                        const audio = new Audio(player.audioData);
+                        audio.play().catch(e => console.error("Failed to play custom audio:", e));
+                        if (navigator.vibrate) navigator.vibrate(20);
+                    }, 300);
+                }
+            };
+
+            const handlePlayerRelease = () => {
+                if (playerPressTimerRef.current) {
+                    clearTimeout(playerPressTimerRef.current);
+                }
+            };
+
+            const handleMicPress = () => {
+                micTooltipTimer.current = setTimeout(() => setShowMicTooltip(true), 500);
+            };
+            const handleMicRelease = () => {
+                clearTimeout(micTooltipTimer.current);
+                setShowMicTooltip(false);
             };
 
             const handleStartClick = () => {
@@ -629,35 +670,58 @@
                                     <i className="fa-solid fa-users"></i> Agents
                                     <span className="ml-auto text-[10px] bg-white/5 px-2 py-1 rounded-md text-white/50">{players.length} / {MIN_PLAYERS}+</span>
                                 </h2>
-                                <div className="flex gap-2 mb-4">
+                                <div className="flex flex-col gap-3 mb-4">
                                     <input
                                         type="text"
                                         value={newPlayerName}
                                         onChange={(e) => setNewPlayerName(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && addPlayer()}
                                         placeholder="Enter codename..."
-                                        className="flex-1 bg-slate-950/50 rounded-xl px-5 py-4 outline-none border border-white/5 focus:border-brand-500/50 focus:bg-slate-950/80 transition-all placeholder:text-white/20 font-medium text-sm text-white"
+                                        className="w-full bg-slate-950/50 rounded-xl px-5 py-4 outline-none border border-white/5 focus:border-brand-500/50 focus:bg-slate-950/80 transition-all placeholder:text-white/20 font-medium text-sm text-white"
                                     />
-                                    <button 
-                                        onClick={handleMicClick}
-                                        className={`w-16 flex items-center justify-center rounded-xl font-bold transition-all shadow-lg active:scale-95 border border-white/10 ${isRecording ? 'bg-red-500 animate-pulse' : (recordedAudioUrl ? 'bg-green-500' : 'bg-white/10 hover:bg-white/20')}`}
-                                    >
-                                        <i className={`fa-solid ${recordedAudioUrl && !isRecording ? 'fa-check' : 'fa-microphone'} text-white text-lg ${isRecording ? '' : 'opacity-70'}`}></i>
-                                    </button>
-                                    <button 
-                                        onClick={addPlayer}
-                                        className="bg-brand-600 hover:bg-brand-500 w-20 flex items-center justify-center rounded-xl font-bold transition shadow-lg shadow-brand-900/20 active:scale-95 border border-white/10"
-                                    >
-                                        <i className="fa-solid fa-plus text-white text-lg"></i>
-                                    </button>
+                                    <div className="flex gap-3 relative">
+                                        <button 
+                                            onClick={handleMicClick}
+                                            onMouseDown={handleMicPress}
+                                            onMouseUp={handleMicRelease}
+                                            onMouseLeave={handleMicRelease}
+                                            onTouchStart={handleMicPress}
+                                            onTouchEnd={handleMicRelease}
+                                            className={`flex-1 flex items-center justify-center rounded-xl font-bold transition-all shadow-lg active:scale-95 border border-white/10 h-14 ${isRecording ? 'bg-red-500 animate-pulse' : (recordedAudioData ? 'bg-green-500' : 'bg-white/10 hover:bg-white/20')}`}
+                                        >
+                                            <i className={`fa-solid ${recordedAudioData && !isRecording ? 'fa-check' : 'fa-microphone'} text-white text-lg ${isRecording ? '' : 'opacity-70'}`}></i>
+                                        </button>
+                                        
+                                        {showMicTooltip && (
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs bg-slate-800 text-white text-xs rounded-md px-3 py-2 shadow-lg animate-fadeIn z-20">
+                                                Record a custom "It's your turn" voice note!
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-800"></div>
+                                            </div>
+                                        )}
+                                        
+                                        <button 
+                                            onClick={addPlayer}
+                                            className="bg-brand-600 hover:bg-brand-500 flex-1 flex items-center justify-center rounded-xl font-bold transition shadow-lg shadow-brand-900/20 active:scale-95 border border-white/10 h-14"
+                                        >
+                                            <i className="fa-solid fa-plus text-white text-lg"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {players.map((p, i) => (
-                                        <div key={i} className="flex items-center gap-2 bg-white/5 border border-white/5 pl-4 pr-1.5 py-1.5 rounded-full animate-fadeIn group hover:bg-white/10 transition-colors">
-                                            {p.audioUrl && <i className="fa-solid fa-volume-high text-brand-400/50 text-xs"></i>}
+                                        <div 
+                                            key={i} 
+                                            className="flex items-center gap-2 bg-white/5 border border-white/5 pl-4 pr-1.5 py-1.5 rounded-full animate-fadeIn group hover:bg-white/10 transition-colors cursor-pointer"
+                                            onMouseDown={() => handlePlayerPress(p)}
+                                            onMouseUp={handlePlayerRelease}
+                                            onMouseLeave={handlePlayerRelease}
+                                            onTouchStart={() => handlePlayerPress(p)}
+                                            onTouchEnd={handlePlayerRelease}
+                                        >
+                                            {p.audioData && <i className="fa-solid fa-volume-high text-brand-400/50 text-xs"></i>}
                                             <span className="text-xs font-bold text-slate-300">{p.name}</span>
                                             <button 
-                                                onClick={() => removePlayer(i)}
+                                                onClick={(e) => { e.stopPropagation(); removePlayer(i); }}
                                                 disabled={players.length <= MIN_PLAYERS}
                                                 className={`w-6 h-6 flex items-center justify-center rounded-full text-[10px] transition-colors 
                                                     ${players.length > MIN_PLAYERS 
@@ -791,11 +855,11 @@
                                                 <button
                                                     key={cat}
                                                     onClick={() => toggleCategory(cat)}
-                                                    onMouseDown={() => handleTouchStart(cat)}
-                                                    onMouseUp={handleTouchEnd}
-                                                    onMouseLeave={handleTouchEnd}
-                                                    onTouchStart={() => handleTouchStart(cat)}
-                                                    onTouchEnd={handleTouchEnd}
+                                                    onMouseDown={() => handleCategoryTouchStart(cat)}
+                                                    onMouseUp={handleCategoryTouchEnd}
+                                                    onMouseLeave={handleCategoryTouchEnd}
+                                                    onTouchStart={() => handleCategoryTouchStart(cat)}
+                                                    onTouchEnd={handleCategoryTouchEnd}
                                                     className={cardClasses}
                                                 >
                                                     {/* Supercell Background Layers */}
@@ -863,8 +927,8 @@
             }, [player]);
             
             useEffect(() => {
-                if (step === 'handover' && player.audioUrl) {
-                    const audio = new Audio(player.audioUrl);
+                if (step === 'handover' && player.audioData) {
+                    const audio = new Audio(player.audioData);
                     audio.play().catch(e => console.error("Custom audio playback failed:", e));
                 }
             }, [player, step]);
