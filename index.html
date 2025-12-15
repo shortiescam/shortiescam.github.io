@@ -170,29 +170,87 @@
         const { useState, useEffect, useRef } = React;
 
         // --- DATA ---
-        const WORD_BANK = {
-            Supercell: ["Barbarian", "Archer", "Giant", "Goblin", "Wall Breaker", "Balloon", "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", "Miner", "Electro Dragon", "Yeti", "Ice Golem", "Headhunter", "Barbarian King", "Archer Queen", "Grand Warden", "Royal Champion", "Knight", "Musketeer", "Prince", "Skeleton Army", "Goblin Barrel", "Giant Skeleton", "Royal Giant", "Elite Barbarians", "Mega Minion", "Ice Wizard", "Electro Wizard", "Inferno Dragon", "Night Witch", "Bandit", "Royal Ghost", "Magic Archer", "Lumberjack", "Ram Rider", "Fisherman", "Mother Witch", "Electro Giant", "Phoenix", "Monk", "Little Prince", "Cannon", "Tesla", "Mortar", "X-Bow", "Inferno Tower", "Bomb Tower", "Elixir Collector"],
-            Movies: ["The Godfather", "Titanic", "Avatar", "Star Wars", "Jurassic Park", "The Matrix", "Inception", "Forrest Gump", "The Lion King", "Avengers", "Pulp Fiction", "Frozen", "The Dark Knight", "Harry Potter", "Back to the Future", "Rocky", "Gladiator", "Shrek", "Toy Story", "Jaws", "Interstellar", "Parasite", "Coco", "Up", "Wall-E", "Alien", "Terminator", "Fight Club", "Goodfellas", "Spirited Away", "Barbie", "Oppenheimer", "Dune", "Spider-Man", "Black Panther", "Iron Man", "Wonder Woman", "Joker", "Top Gun", "The Shining", "Get Out", "Blade Runner", "E.T.", "Indiana Jones", "Schindler's List", "Lord of the Rings", "Silence of the Lambs", "Casablanca", "Citizen Kane", "The Prestige", "Memento", "Se7en", "Zootopia", "Moana", "Inside Out", "Finding Nemo", "Ratatouille", "The Incredibles"],
-            Food: ["Pizza", "Sushi", "Burger", "Tacos", "Pasta", "Curry", "Steak", "Salad", "Sandwich", "Soup", "Fried Chicken", "Ramen", "Dumplings", "Burrito", "Pancakes", "Waffles", "Ice Cream", "Chocolate", "Cheese", "Bread", "Donuts", "Croissant", "Bagel", "Hot Dog", "Fries", "Lasagna", "Paella", "Kebab", "Falafel", "Dim Sum", "Pho", "Pad Thai", "Biryani", "Sashimi", "Tiramisu", "Cheesecake", "Pie", "Brownie", "Popcorn", "Nachos", "Guacamole", "Hummus", "Omelette", "Yogurt", "Bacon", "Sausage", "Risotto", "Gnocchi", "Pretzel", "Macaron", "Tofu", "Kimchi", "Spring Roll", "Fish and Chips", "Meatballs", "Chili", "Stew", "Cereal", "Toast", "Jam", "Honey", "Butter", "Smoothie", "Milkshake"],
-            Brands: ["Apple", "Nike", "Coca-Cola", "Samsung", "McDonalds", "Toyota", "Disney", "Amazon", "Google", "Tesla", "Adidas", "Pepsi", "Starbucks", "Netflix", "Microsoft", "Mercedes", "BMW", "Honda", "Sony", "Lego", "IKEA", "Zara", "H&M", "Gucci", "Louis Vuitton", "Rolex", "Canon", "Nikon", "PlayStation", "Xbox", "Spotify", "Uber", "Airbnb", "Facebook", "Instagram", "TikTok", "Twitter", "YouTube", "Visa", "Mastercard", "Ferrari", "Porsche", "Lamborghini", "Intel", "AMD", "Dell", "HP", "Adobe", "Slack", "Zoom", "Ford", "Chevrolet", "Jeep", "Nissan", "Hyundai", "Kia", "Volkswagon", "Audi", "Prada", "Chanel", "Hermes", "Versace", "Burberry", "Tiffany", "Cartier", "Omega"],
-            Technology: ["iPhone", "Laptop", "Drone", "Robot", "Bluetooth", "Wifi", "Keyboard", "Mouse", "Monitor", "Camera", "Headphones", "Smartwatch", "Tablet", "Printer", "Router", "Server", "Microchip", "Satellite", "Telescope", "Microscope", "VR Headset", "Console", "Battery", "Charger", "USB", "Cloud", "Algorithm", "Internet", "Software", "Hardware", "Smartphone", "GPS", "Laser", "Radar", "Scanner", "Projector", "Speaker", "Microphone", "Webcam", "Flash Drive", "Hard Drive", "Processor", "Graphics Card", "Motherboard", "Fan", "Screen", "Pixel", "Code", "Database", "Network", "Firewall", "Encryption", "Hacker", "Virus", "AI", "Blockchain", "Crypto", "Nft"],
-            Jobs: ["Doctor", "Teacher", "Engineer", "Lawyer", "Chef", "Pilot", "Firefighter", "Police", "Artist", "Musician", "Actor", "Writer", "Scientist", "Programmer", "Designer", "Architect", "Nurse", "Dentist", "Vet", "Farmer", "Astronaut", "Athlete", "Judge", "Politician", "Journalist", "Photographer", "Mechanic", "Plumber", "Electrician", "Carpenter", "Librarian", "Accountant", "Manager", "CEO", "Secretary", "Receptionist", "Waiter", "Bartender", "Barber", "Soldier", "Detective", "Spy", "Pilot", "Stewardess", "Captain", "Sailor", "Miner", "Baker", "Butcher", "Tailor", "Cleaner", "Gardener", "Driver", "Postman", "Courier", "Guard", "Coach", "Referee"],
-            Mythology: ["Zeus", "Thor", "Hercules", "Medusa", "Dragon", "Unicorn", "Phoenix", "Mermaid", "Centaur", "Griffin", "Poseidon", "Hades", "Athena", "Apollo", "Odin", "Loki", "Anubis", "Ra", "Sphinx", "Hydra", "Cyclops", "Minotaur", "Pegasus", "Vampire", "Werewolf", "Ghost", "Zombie", "Elf", "Dwarf", "Giant", "Kraken", "Chimera", "Cerberus", "Valkyrie", "Fairy", "Goblin", "Troll", "Witch", "Wizard", "Demon", "Angel", "Spirit", "Titan", "Nymph", "Satyr", "Basilisk", "Yeti", "Bigfoot", "Loch Ness", "Mummy", "Alien", "Genie", "Leprechaun", "Banshee", "Siren"],
-            Sport: ["Soccer", "Basketball", "Football", "Tennis", "Golf", "Cricket", "Rugby", "Baseball", "Volleyball", "Hockey", "Boxing", "MMA", "Wrestling", "Formula 1", "Swimming", "Athletics", "Gymnastics", "Cycling", "Skiing", "Surfing", "Skateboarding", "Snowboarding", "Table Tennis", "Badminton", "Bowling", "Pool", "Darts", "Archery", "Fencing", "Judo", "Karate", "Taekwondo", "Yoga", "Pilates", "Crossfit", "Marathon", "Triathlon", "Rowing", "Sailing", "Climbing", "Hiking", "Fishing", "Hunting", "Horse Riding", "Polo", "Lacrosse", "Handball", "Squash", "Racquetball", "Softball", "Kickball", "Dodgeball", "Frisbee", "Parkour", "Cheerleading", "Ballet"],
-            Places: ["School", "Hospital", "Library", "Airport", "Station", "Park", "Beach", "Forest", "Mountain", "Desert", "City", "Village", "Farm", "Zoo", "Museum", "Cinema", "Mall", "Restaurant", "Hotel", "Bank", "Office", "Factory", "Prison", "Church", "Temple", "Mosque", "Stadium", "Gym", "Pool", "Casino", "Castle", "Palace", "Bridge", "Tower", "Skyscraper", "Lighthouse", "Pyramid", "Cave", "Island", "Volcano", "Jungle", "Swamp", "River", "Lake", "Ocean", "Space", "Moon", "Mars", "Sun", "Star", "Galaxy", "Universe", "Heaven", "Hell", "Garden", "Garage", "Basement", "Attic"],
-            Instruments: ["Guitar", "Piano", "Drums", "Violin", "Flute", "Saxophone", "Trumpet", "Cello", "Harp", "Clarinet", "Trombone", "Tuba", "Banjo", "Ukulele", "Accordion", "Harmonica", "Xylophone", "Synthesizer", "Oboe", "Bass", "Microphone", "Turntable", "Speaker", "Amplifier", "Bongo", "Conga", "Tambourine", "Maracas", "Triangle", "Gong", "Cymbal", "Organ", "Keyboard", "Bagpipes", "Didgeridoo", "Sitar", "Lute", "Mandolin", "Recorder", "Whistle", "Bell", "Chime", "Castanets", "Cowbell", "Kazoo", "Theremin", "Viola", "Double Bass", "Bassoon", "French Horn"],
-            Superheroes: ["Superman", "Batman", "Spider-Man", "Iron Man", "Wonder Woman", "Thor", "Hulk", "Captain America", "Black Panther", "Flash", "Aquaman", "Green Lantern", "Wolverine", "Deadpool", "Doctor Strange", "Black Widow", "Hawkeye", "Ant-Man", "Daredevil", "Cyclops", "Storm", "Jean Grey", "Professor X", "Magneto", "Joker", "Thanos", "Loki", "Venom", "Groot", "Rocket", "Star-Lord", "Gamora", "Drax", "Nebula", "Mantis", "Vision", "Scarlet Witch", "Falcon", "Winter Soldier", "War Machine", "Nick Fury", "Captain Marvel", "Shazam", "Green Arrow", "Supergirl", "Batgirl", "Robin", "Nightwing", "Cyborg", "Beast Boy", "Raven", "Starfire"],
-            Animals: ["Lion", "Tiger", "Elephant", "Giraffe", "Penguin", "Dolphin", "Whale", "Shark", "Eagle", "Parrot", "Dog", "Cat", "Hamster", "Snake", "Lizard", "Frog", "Bear", "Wolf", "Fox", "Deer", "Zebra", "Kangaroo", "Koala", "Panda", "Gorilla", "Monkey", "Rabbit", "Mouse", "Rat", "Bat", "Owl", "Hawk", "Crocodile", "Alligator", "Turtle", "Octopus", "Jellyfish", "Crab", "Lobster", "Spider", "Bee", "Ant", "Butterfly", "Moth", "Dragonfly", "Mosquito", "Fly", "Beetle", "Worm", "Snail", "Cheetah", "Leopard", "Rhino", "Hippo", "Camel", "Llama", "Alpaca", "Sheep", "Goat", "Cow", "Pig", "Horse", "Chicken", "Duck", "Goose", "Turkey", "Peacock", "Swan", "Flamingo"],
-            Countries: ["USA", "Canada", "Mexico", "Brazil", "Argentina", "UK", "France", "Germany", "Italy", "Spain", "Russia", "China", "Japan", "India", "Australia", "Egypt", "South Africa", "Nigeria", "Kenya", "Morocco", "Turkey", "Saudi Arabia", "Iran", "Israel", "Sweden", "Norway", "Finland", "Denmark", "Netherlands", "Belgium", "Switzerland", "Austria", "Poland", "Greece", "Portugal", "Ireland", "Scotland", "Wales", "Thailand", "Vietnam", "Indonesia", "Philippines", "Malaysia", "Singapore", "South Korea", "North Korea", "Pakistan", "Bangladesh", "New Zealand", "Fiji", "Cuba", "Jamaica", "Peru", "Chile", "Colombia", "Venezuela", "Ukraine", "Romania", "Hungary", "Czech Republic", "Croatia", "Serbia"],
-            VideoGames: ["Mario", "Zelda", "Pokemon", "Minecraft", "Fortnite", "Roblox", "Call of Duty", "GTA", "Halo", "God of War", "The Witcher", "Skyrim", "Fallout", "Overwatch", "League of Legends", "Dota", "World of Warcraft", "Counter-Strike", "Valorant", "Apex Legends", "Tetris", "Pac-Man", "Sonic", "Street Fighter", "Mortal Kombat", "Tekken", "Final Fantasy", "Resident Evil", "Silent Hill", "Metal Gear Solid", "Uncharted", "The Last of Us", "Red Dead Redemption", "Cyberpunk", "Elden Ring", "Dark Souls", "Bloodborne", "Sekiro", "Animal Crossing", "Stardew Valley", "Among Us", "Rocket League", "FIFA", "NBA 2K", "Madden", "Sims", "Civilization", "Portal", "Half-Life", "Doom", "Quake", "Bioshock", "Mass Effect", "Assassins Creed", "Far Cry", "Destiny"],
-            Science: ["Atom", "Molecule", "Cell", "DNA", "Gravity", "Magnetism", "Electricity", "Light", "Sound", "Heat", "Energy", "Force", "Motion", "Planet", "Star", "Galaxy", "Black Hole", "Comet", "Asteroid", "Meteor", "Element", "Compound", "Acid", "Base", "Bacteria", "Virus", "Fungus", "Plant", "Animal", "Human", "Brain", "Heart", "Lungs", "Stomach", "Bone", "Muscle", "Nerve", "Blood", "Skin", "Evolution", "Photosynthesis", "Respiration", "Digestion", "Reproduction", "Genetics", "Chemistry", "Physics", "Biology", "Astronomy", "Geology", "Microscope", "Telescope", "Thermometer", "Barometer", "Compass", "Magnet", "Battery", "Circuit", "Prism", "Lens", "Mirror", "Laser", "Robot", "Satellite", "Rocket"],
-            Clothing: ["Shirt", "T-Shirt", "Pants", "Jeans", "Shorts", "Skirt", "Dress", "Suit", "Coat", "Jacket", "Sweater", "Hoodie", "Vest", "Scarf", "Gloves", "Hat", "Cap", "Beanie", "Socks", "Shoes", "Boots", "Sandals", "Sneakers", "Heels", "Slippers", "Belt", "Tie", "Bowtie", "Watch", "Glasses", "Sunglasses", "Ring", "Necklace", "Bracelet", "Earrings", "Wallet", "Purse", "Backpack", "Bag", "Umbrella", "Raincoat", "Swimsuit", "Bikini", "Pajamas", "Robe", "Uniform", "Costume", "Mask", "Helmet", "Crown", "Tiara", "Cape", "Apron", "Overalls", "Leggings", "Tights", "Stockings", "Underwear", "Bra", "Boxers", "Briefs", "Diaper", "Bib"],
-            Home: ["Table", "Chair", "Sofa", "Bed", "Desk", "Shelf", "Cabinet", "Cupboard", "Wardrobe", "Lamp", "Light", "Fan", "Heater", "AC", "Fridge", "Stove", "Oven", "Microwave", "Toaster", "Blender", "Mixer", "Kettle", "Pot", "Pan", "Plate", "Bowl", "Cup", "Glass", "Mug", "Fork", "Spoon", "Knife", "Napkin", "Towel", "Soap", "Shampoo", "Toothbrush", "Toothpaste", "Comb", "Brush", "Mirror", "Clock", "Calendar", "Painting", "Vase", "Rug", "Carpet", "Curtains", "Blinds", "Pillow", "Blanket", "Sheet", "Mattress", "Cushion", "Door", "Window", "Wall", "Floor", "Ceiling", "Roof", "Stairs", "Ladder", "Broom", "Mop", "Bucket", "Trash Can"],
-            People: ["President", "King", "Queen", "Athlete", "Celebrity", "Artist", "Musician", "Scientist", "Teacher", "Student", "Child", "Elderly", "Baby", "Tourist", "Police Officer", "Doctor", "Firefighter", "Chef", "Astronaut", "Villain", "Hero", "Neighbor", "Friend", "Boss", "Employee", "Stranger", "Beggar", "Model", "Guard", "Priest", "Nun", "Monk", "Philosopher", "Inventor", "Explorer", "Pirate", "Ninja", "Samurai", "Viking", "Knight", "Jester", "Clown", "Magician", "Detective", "Spy", "Ghost", "Alien", "Robot", "Vampire", "Werewolf", "Zombie", "Mermaid", "Dwarf", "Elf", "Giant", "Wizard", "Witch"],
-        };
+		const WORD_BANK = {
+		  Supercell: [
+			"Barbarian", "Archer", "Giant", "Goblin", "Wall Breaker", "Balloon", "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", "Miner", "Electro Dragon", "Yeti", "Ice Golem", "Headhunter", "Barbarian King", "Archer Queen", "Grand Warden", "Royal Champion", "Knight", "Musketeer", "Prince", "Skeleton Army", "Goblin Barrel", "Giant Skeleton", "Royal Giant", "Elite Barbarians", "Mega Minion", "Ice Wizard", "Electro Wizard", "Inferno Dragon", "Night Witch", "Bandit", "Royal Ghost", "Magic Archer", "Lumberjack", "Ram Rider", "Fisherman", "Mother Witch", "Electro Giant", "Phoenix", "Monk", "Little Prince", "Cannon", "Tesla", "Mortar", "X-Bow", "Inferno Tower", "Bomb Tower", "Elixir Collector", "Skeletons", "Bats", "Fire Spirit", "Ice Spirit", "Electro Spirit", "Heal Spirit", "Rage", "Freeze", "Poison", "Fireball", "Arrows", "Zap", "Lightning", "Earthquake", "Clone", "Mirror", "Tornado", "Rocket", "Super Barbarian", "Super Archer", "Super Giant", "Super Wall Breaker", "Super Wizard", "Super Dragon", "Super Valkyrie", "Super Witch", "Super Minion", "Super Bowler", "Ice Hound", "Flying Machine", "Battle Ram", "Sparky", "Mega Knight", "Hunter", "Executioner", "Dart Goblin", "Princess", "Log", "Graveyard", "Mirror", "Giant Snowball", "Royal Delivery", "Heal", "Tombstone", "Bomb", "Hidden Tesla", "Air Defense", "Bomb Tower", "Seeking Air Mine", "Spring Trap", "Giant Bomb", "Red Air Bomb", "Town Hall", "Clan Castle", "Gold Mine", "Elixir Pump", "Barracks", "Laboratory", "Spell Factory", "Workshop", "Seige Machine", "Battle Machine", "Electrofire Wizard"
+		  ],
+
+          Celebs: [
+			"Leonardo DiCaprio", "Brad Pitt", "Angelina Jolie", "Tom Cruise", "Johnny Depp", "Will Smith", "Dwayne Johnson", "Scarlett Johansson", "Robert Downey Jr", "Jennifer Lawrence", "Chris Hemsworth", "Emma Watson", "Ryan Reynolds", "Keanu Reeves", "Tom Hanks", "Meryl Streep", "Morgan Freeman", "Samuel L Jackson", "Denzel Washington", "Viola Davis", "Oprah Winfrey", "Beyonce", "Taylor Swift", "Cristiano Ronaldo", "Lionel Messi", "Elon Musk", "Mark Zuckerberg", "Bill Gates", "Jeff Bezos", "Barack Obama", "Donald Trump", "Queen Elizabeth", "Princess Diana", "Marilyn Monroe", "Elvis Presley", "Michael Jackson", "Madonna", "Lady Gaga", "Rihanna", "Justin Bieber", "Ariana Grande", "Kylie Jenner", "Kim Kardashian", "Kendall Jenner", "Selena Gomez", "Zendaya", "Tom Holland", "Chris Evans", "Chris Pratt", "Gal Gadot", "Margot Robbie", "Henry Cavill", "Ben Affleck", "Matt Damon", "George Clooney", "Julia Roberts", "Sandra Bullock", "Nicole Kidman", "Halle Berry", "Reese Witherspoon", "Al Pacino", "Robert De Niro", "Jack Nicholson", "Marlon Brando", "Dustin Hoffman", "Anthony Hopkins", "Gary Oldman", "Daniel Day-Lewis", "Christian Bale", "Joaquin Phoenix", "Philip Seymour Hoffman", "Heath Ledger", "Clint Eastwood", "Sean Connery", "Harrison Ford", "Cillian Murphy", "Idris Elba", "Mahershala Ali", "Cate Blanchett", "Kate Winslet", "Jessica Chastain", "Amy Adams", "Emma Stone", "Anne Hathaway", "Natalie Portman", "Charlize Theron", "Tilda Swinton", "Frances McDormand", "Judi Dench", "Helen Mirren", "Maggie Smith", "Audrey Hepburn", "Grace Kelly", "Elizabeth Taylor", "Katharine Hepburn", "Bette Davis", "Ingrid Bergman", "Humphrey Bogart", "Cary Grant", "James Stewart", "Gregory Peck", "Charlie Chaplin", "Buster Keaton", "Laurence Olivier", "Orson Welles", "Kirk Douglas", "Burt Lancaster", "Sidney Poitier", "Paul Newman", "Steve McQueen", "James Dean", "Michelle Yeoh", "Ke Huy Quan", "Brendan Fraser", "Austin Butler", "Florence Pugh", "Anya Taylor-Joy", "Timothée Chalamet", "Pedro Pascal", "Jenna Ortega", "The Beatles", "The Rolling Stones", "Led Zeppelin", "Queen", "Pink Floyd", "Bob Dylan", "David Bowie", "Elton John", "Freddie Mercury", "John Lennon", "Paul McCartney", "George Harrison", "Ringo Starr", "Bruce Springsteen", "Jimi Hendrix", "Eric Clapton", "Prince", "Stevie Wonder", "Aretha Franklin", "Whitney Houston", "Mariah Carey", "Celine Dion", "Frank Sinatra", "Dean Martin", "Sammy Davis Jr.", "Ray Charles", "James Brown", "Johnny Cash", "Bob Marley", "U2", "Nirvana", "Guns N' Roses", "Metallica", "AC/DC", "Eminem", "Dr. Dre", "Snoop Dogg", "Tupac Shakur", "The Notorious B.I.G.", "Jay-Z", "Kanye West", "Adele", "Ed Sheeran", "Coldplay", "Drake", "The Weeknd", "Billie Eilish", "Olivia Rodrigo", "Harry Styles", "Dua Lipa", "Bad Bunny", "J Balvin", "Shakira", "BTS", "BLACKPINK", "Mozart", "Beethoven", "Bach", "Tchaikovsky", "Pavarotti", "Andrea Bocelli", "Dolly Parton", "Willie Nelson", "Michael Jordan", "LeBron James", "Kobe Bryant", "Shaquille O'Neal", "Stephen Curry", "Tom Brady", "Joe Montana", "Peyton Manning", "Serena Williams", "Venus Williams", "Roger Federer", "Rafael Nadal", "Novak Djokovic", "Tiger Woods", "Jack Nicklaus", "Arnold Palmer", "Muhammad Ali", "Mike Tyson", "Floyd Mayweather", "Conor McGregor", "Usain Bolt", "Michael Phelps", "Simone Biles", "Wayne Gretzky", "Pele", "Diego Maradona", "David Beckham", "Neymar Jr.", "Kylian Mbappé", "Lewis Hamilton", "Michael Schumacher", "Ayrton Senna", "Babe Ruth", "Jackie Robinson", "Lionel Richie", "Megan Rapinoe", "Ronda Rousey", "Steven Spielberg", "Martin Scorsese", "Quentin Tarantino", "Christopher Nolan", "James Cameron", "Alfred Hitchcock", "Stanley Kubrick", "Francis Ford Coppola", "Ridley Scott", "Tim Burton", "George Lucas", "Peter Jackson", "The Coen Brothers", "Wes Anderson", "Spike Lee", "Guillermo del Toro", "Akira Kurosawa", "Ingmar Bergman", "Federico Fellini", "Woody Allen", "Clint Eastwood", "Greta Gerwig", "Sofia Coppola", "Chloé Zhao", "Bong Joon-ho", "William Shakespeare", "Charles Dickens", "Jane Austen", "Mark Twain", "Leo Tolstoy", "Fyodor Dostoevsky", "George Orwell", "J.R.R. Tolkien", "C.S. Lewis", "J.K. Rowling", "Stephen King", "George R.R. Martin", "Agatha Christie", "Arthur Conan Doyle", "Ernest Hemingway", "F. Scott Fitzgerald", "Virginia Woolf", "James Joyce", "Gabriel García Márquez", "Haruki Murakami", "Margaret Atwood", "Toni Morrison", "Maya Angelou", "Edgar Allan Poe", "Leonardo da Vinci", "Michelangelo", "Vincent van Gogh", "Pablo Picasso", "Rembrandt", "Claude Monet", "Salvador Dalí", "Frida Kahlo", "Andy Warhol", "Georgia O'Keeffe", "Jackson Pollock", "Banksy", "Coco Chanel", "Christian Dior", "Yves Saint Laurent", "Giorgio Armani", "Ralph Lauren", "Calvin Klein", "Donatella Versace", "Karl Lagerfeld", "Tom Ford", "Alexander McQueen", "Albert Einstein", "Isaac Newton", "Galileo Galilei", "Charles Darwin", "Marie Curie", "Nikola Tesla", "Thomas Edison", "Alexander Graham Bell", "Stephen Hawking", "Carl Sagan", "Neil deGrasse Tyson", "Jane Goodall", "Steve Jobs", "Tim Cook", "Sundar Pichai", "Satya Nadella", "Richard Branson", "Warren Buffett", "Charlie Munger", "Julius Caesar", "Cleopatra", "Alexander the Great", "Napoleon Bonaparte", "Winston Churchill", "Franklin D. Roosevelt", "John F. Kennedy", "Martin Luther King Jr.", "Malcolm X", "Nelson Mandela", "Mahatma Gandhi", "Abraham Lincoln", "George Washington", "Thomas Jefferson", "Queen Victoria", "Joan of Arc", "Vladimir Putin", "Xi Jinping", "Joe Biden", "Kamala Harris", "Angela Merkel", "Justin Trudeau", "Jacinda Ardern", "Volodymyr Zelenskyy", "Dalai Lama", "Pope Francis", "Johnny Carson", "David Letterman", "Jay Leno", "Conan O'Brien", "Ellen DeGeneres", "Jimmy Fallon", "Stephen Colbert", "Jimmy Kimmel", "John Oliver", "Trevor Noah", "Jon Stewart", "Howard Stern", "Joe Rogan", "Larry King", "Barbara Walters", "Walter Cronkite", "Anderson Cooper", "Christiane Amanpour", "Richard Pryor", "George Carlin", "Robin Williams", "Eddie Murphy", "Chris Rock", "Dave Chappelle", "Jerry Seinfeld", "Kevin Hart", "Ricky Gervais", "Gordon Ramsay", "Jamie Oliver", "Anthony Bourdain", "Julia Child", "Martha Stewart", "PewDiePie", "MrBeast (Jimmy Donaldson)", "Charli D'Amelio", "Addison Rae", "Logan Paul", "Jake Paul", "Ninja (Richard Tyler Blevins)", "Emma Chamberlain", "David Dobrik", "Liza Koshy"
+		  ],
+
+		  Movies: [
+			"The Godfather", "Titanic", "Avatar", "Star Wars", "Jurassic Park", "The Matrix", "Inception", "Forrest Gump", "The Lion King", "Avengers", "Pulp Fiction", "Frozen", "The Dark Knight", "Harry Potter", "Back to the Future", "Rocky", "Gladiator", "Shrek", "Toy Story", "Jaws", "Interstellar", "Parasite", "Coco", "Up", "Wall-E", "Alien", "Terminator", "Fight Club", "Goodfellas", "Spirited Away", "Barbie", "Oppenheimer", "Dune", "Spider-Man", "Black Panther", "Iron Man", "Wonder Woman", "Joker", "Top Gun", "The Shining", "Get Out", "Blade Runner", "E.T.", "Indiana Jones", "Schindler's List", "Lord of the Rings", "Silence of the Lambs", "Casablanca", "Citizen Kane", "The Prestige", "Memento", "Se7en", "Zootopia", "Moana", "Inside Out", "Finding Nemo", "Ratatouille", "The Incredibles", "Whiplash", "La La Land", "The Social Network", "Her", "Gravity", "Mad Max", "Logan", "The Batman", "No Country for Old Men", "The Departed", "Heat", "Scarface", "Die Hard", "Mission Impossible", "John Wick", "Matrix Reloaded", "Matrix Revolutions", "Pulp Fiction", "Kill Bill", "Reservoir Dogs", "Inglourious Basterds", "Django Unchained", "Once Upon a Time in Hollywood", "The Good the Bad and the Ugly", "A Fistful of Dollars", "For A Few Dollars More", "2001: A Space Odyssey", "Apocalypse Now", "Taxi Driver", "One Flew Over the Cuckoo's Nest", "Amadeus", "Chinatown", "Fargo", "No Country for Old Men", "Eternal Sunshine of the Spotless Mind", "Requiem for a Dream", "Pan's Labyrinth", "Oldboy", "Crouching Tiger Hidden Dragon", "Drive", "Donnie Darko", "The Grand Budapest Hotel", "Whiplash", "Boyhood", "Mad Max: Fury Road", "Room", "Spotlight", "Moonlight", "Call Me By Your Name", "Get Out", "Nomadland", "Everything Everywhere All at Once", "Poor Things"
+		  ],
+
+		  Food: [
+			"Pizza", "Sushi", "Burger", "Tacos", "Pasta", "Curry", "Steak", "Salad", "Sandwich", "Soup", "Fried Chicken", "Ramen", "Dumplings", "Burrito", "Pancakes", "Waffles", "Ice Cream", "Chocolate", "Cheese", "Bread", "Donuts", "Croissant", "Bagel", "Hot Dog", "Fries", "Lasagna", "Paella", "Kebab", "Falafel", "Dim Sum", "Pho", "Pad Thai", "Biryani", "Sashimi", "Tiramisu", "Cheesecake", "Pie", "Brownie", "Popcorn", "Nachos", "Guacamole", "Hummus", "Omelette", "Yogurt", "Bacon", "Sausage", "Risotto", "Gnocchi", "Pretzel", "Macaron", "Tofu", "Kimchi", "Spring Roll", "Fish and Chips", "Meatballs", "Chili", "Stew", "Cereal", "Toast", "Jam", "Honey", "Butter", "Smoothie", "Milkshake", "Cupcake", "Muffin", "Pudding", "Custard", "Gelato", "Sorbet", "Noodles", "Udon", "Soba", "Tempura", "Katsu", "Ribs", "Hot Wings", "BBQ", "Fajitas", "Quesadilla", "Empanada", "Arepa", "Chow Mein", "Fried Rice", "Tikka Masala", "Goulash", "Ceviche", "Moussaka", "Pierogi", "Schnitzel", "Tapas", "Wonton", "Lumpia", "Jambalaya", "Gumbo", "Beignets", "Baklava", "Cannoli", "Crepe", "Panna Cotta", "Scone", "Biscotti", "Mochi", "Churro", "Eclair", "Souffle", "Fondue", "Pesto", "Salsa", "Relish", "Mustard", "Ketchup", "Mayonnaise", "Vinegar", "Olive Oil", "Saffron", "Cinnamon", "Basil", "Oregano", "Thyme", "Rosemary", "Garlic", "Onion", "Ginger", "Pepper", "Salt", "Sugar", "Flour", "Egg", "Milk", "Coffee", "Tea", "Juice", "Water", "Soda", "Wine", "Beer", "Cocktail", "Whiskey", "Vodka", "Gin", "Rum", "Tequila"
+		  ],
+
+		  Brands: [
+			"Apple", "Nike", "Coca-Cola", "Samsung", "McDonalds", "Toyota", "Disney", "Amazon", "Google", "Tesla", "Adidas", "Pepsi", "Starbucks", "Netflix", "Microsoft", "Mercedes", "BMW", "Honda", "Sony", "Lego", "IKEA", "Zara", "H&M", "Gucci", "Louis Vuitton", "Rolex", "Canon", "Nikon", "PlayStation", "Xbox", "Spotify", "Uber", "Airbnb", "Facebook", "Instagram", "TikTok", "Twitter", "YouTube", "Visa", "Mastercard", "Ferrari", "Porsche", "Lamborghini", "Intel", "AMD", "Dell", "HP", "Adobe", "Slack", "Zoom", "Ford", "Chevrolet", "Jeep", "Nissan", "Hyundai", "Kia", "Volkswagen", "Audi", "Prada", "Chanel", "Hermes", "Versace", "Burberry", "Tiffany", "Cartier", "Omega", "Asus", "Acer", "Lenovo", "Huawei", "Xiaomi", "Red Bull", "Monster", "Shell", "BP", "Total", "Pfizer", "Moderna", "LG", "Panasonic", "Philips", "Bosch", "Siemens", "General Electric", "Caterpillar", "Boeing", "SpaceX", "Virgin Galactic", "Nintendo", "Electronic Arts", "Activision Blizzard", "Ubisoft", "Rockstar Games", "Square Enix", "Capcom", "Sega", "Bandai Namco", "Puma", "Under Armour", "New Balance", "Reebok", "Converse", "Vans", "Doc Martens", "Ray-Ban", "Oakley", "Fender", "Gibson", "Yamaha", "Bose", "JBL", "Harman Kardon", "Dyson", "SharkNinja", "Whirlpool", "Electrolux", "KitchenAid", "Tefal", "Logitech", "Razer", "Corsair", "Seagate", "Western Digital", "Kingston", "SanDisk"
+		  ],
+
+		  Technology: [
+			"iPhone", "Laptop", "Drone", "Robot", "Bluetooth", "Wifi", "Keyboard", "Mouse", "Monitor", "Camera", "Headphones", "Smartwatch", "Tablet", "Printer", "Router", "Server", "Microchip", "Satellite", "Telescope", "Microscope", "VR Headset", "Console", "Battery", "Charger", "USB", "Cloud", "Algorithm", "Internet", "Software", "Hardware", "Smartphone", "GPS", "Laser", "Radar", "Scanner", "Projector", "Speaker", "Microphone", "Webcam", "Flash Drive", "Hard Drive", "Processor", "Graphics Card", "Motherboard", "Fan", "Screen", "Pixel", "Code", "Database", "Network", "Firewall", "Encryption", "Hacker", "Virus", "AI", "Blockchain", "Crypto", "NFT", "API", "Framework", "Library", "Compiler", "Terminal", "Shell", "Kernel", "Operating System", "Linux", "Windows", "MacOS", "Android", "iOS", "Ethernet", "5G", "4G", "Fiber", "Quantum Computer", "VR", "AR", "Mixed Reality", "Biometrics", "Cybernetics", "Nanotechnology", "Supercomputer", "Mainframe", "Modem", "Switch", "Hub", "Gateway", "Protocol", "TCP/IP", "HTTP", "HTML", "CSS", "JavaScript", "Python", "Java", "C++", "C#", "SQL", "Big Data", "Machine Learning", "Deep Learning", "Neural Network", "IoT", "Smart Home", "Smart Grid", "Automation", "Robotics", "Interface", "User Experience", "User Interface", "Touchscreen", "Gesture Control", "Voice Recognition", "Speech Synthesis", "Teleportation", "Hologram", "Transistor", "Capacitor", "Resistor", "Diode", "Semiconductor"
+		  ],
+
+		  Jobs: [
+			"Doctor", "Teacher", "Engineer", "Lawyer", "Chef", "Pilot", "Firefighter", "Police", "Artist", "Musician", "Actor", "Writer", "Scientist", "Programmer", "Designer", "Architect", "Nurse", "Dentist", "Vet", "Farmer", "Astronaut", "Athlete", "Judge", "Politician", "Journalist", "Photographer", "Mechanic", "Plumber", "Electrician", "Carpenter", "Librarian", "Accountant", "Manager", "CEO", "Secretary", "Receptionist", "Waiter", "Bartender", "Barber", "Soldier", "Detective", "Spy", "Stewardess", "Captain", "Sailor", "Miner", "Baker", "Butcher", "Tailor", "Cleaner", "Gardener", "Driver", "Postman", "Courier", "Guard", "Coach", "Referee", "Data Analyst", "Data Scientist", "DevOps Engineer", "Cybersecurity Analyst", "Product Manager", "QA Tester", "Game Designer", "Animator", "3D Artist", "Sound Engineer", "Video Editor", "Therapist", "Counselor", "Social Worker", "Lobbyist", "Economist", "Statistician", "Mathematician", "Historian", "Archaeologist", "Geologist", "Meteorologist", "Biochemist", "Chemist", "Physicist", "Actuary", "Stockbroker", "Banker", "Real Estate Agent", "Broker", "Goldsmith", "Silversmith", "Welder", "Roofer", "Mason", "Crane Operator", "Truck Driver", "Taxi Driver", "Bus Driver", "Flight Attendant", "Customs Officer", "Border Patrol Agent", "Park Ranger", "Zookeeper", "Fisherman", "Forester", "Model", "Blogger", "Vlogger", "Influencer", "Tattoo Artist", "Florist", "Upholsterer", "Locksmith", "Mortician", "Embalmer"
+		  ],
+
+		  Mythology: [
+			"Zeus", "Thor", "Hercules", "Medusa", "Dragon", "Unicorn", "Phoenix", "Mermaid", "Centaur", "Griffin", "Poseidon", "Hades", "Athena", "Apollo", "Odin", "Loki", "Anubis", "Ra", "Sphinx", "Hydra", "Cyclops", "Minotaur", "Pegasus", "Vampire", "Werewolf", "Ghost", "Zombie", "Elf", "Dwarf", "Giant", "Kraken", "Chimera", "Cerberus", "Valkyrie", "Fairy", "Goblin", "Troll", "Witch", "Wizard", "Demon", "Angel", "Spirit", "Titan", "Nymph", "Satyr", "Basilisk", "Yeti", "Bigfoot", "Loch Ness", "Mummy", "Alien", "Genie", "Leprechaun", "Banshee", "Siren", "Frost Giant", "Fire Giant", "Dryad", "Gorgon", "Harpy", "Ifrit", "Djinn", "Rakshasa", "Asura", "Deva", "Aphrodite", "Ares", "Artemis", "Hephaestus", "Hera", "Hermes", "Dionysus", "Demeter", "Persephone", "Gaia", "Ouranos", "Cronus", "Atlas", "Prometheus", "Achilles", "Aeneas", "Romulus", "Remus", "Quetzalcoatl", "Tlaloc", "Amaterasu", "Susanoo", "Huitzilopochtli", "King Arthur", "Merlin", "Ganesha", "Vishnu", "Shiva", "Brahma", "Kali", "Cthulhu", "Wendigo", "Chupacabra", "Kappa", "Yōkai", "Jiangshi", "Succubus", "Incubus", "Banshee", "Brownie", "Imp", "Kobold", "Nixie", "Selkie", "Sköll", "Hati", "Fenrir", "Jörmungandr", "Sleipnir"
+		  ],
+
+		  Sport: [
+			"Soccer", "Basketball", "Football", "Tennis", "Golf", "Cricket", "Rugby", "Baseball", "Volleyball", "Hockey", "Boxing", "MMA", "Wrestling", "Formula 1", "Swimming", "Athletics", "Gymnastics", "Cycling", "Skiing", "Surfing", "Skateboarding", "Snowboarding", "Table Tennis", "Badminton", "Bowling", "Pool", "Darts", "Archery", "Fencing", "Judo", "Karate", "Taekwondo", "Yoga", "Pilates", "Crossfit", "Marathon", "Triathlon", "Rowing", "Sailing", "Climbing", "Hiking", "Fishing", "Hunting", "Horse Riding", "Polo", "Lacrosse", "Handball", "Squash", "Racquetball", "Softball", "Kickball", "Dodgeball", "Frisbee", "Parkour", "Cheerleading", "Ballet", "Weightlifting", "Powerlifting", "Strongman", "eSports", "Chess", "Go", "Poker", "Snooker", "Curling", "Bobsleigh", "Netball", "Korfball", "Water Polo", "Field Hockey", "Ice Skating", "Figure Skating", "Speed Skating", "Luge", "Skeleton", "Javelin", "Discus", "Shot Put", "Hurdles", "Steeplechase", "Decathlon", "Heptathlon", "Motocross", "NASCAR", "IndyCar", "Skeet Shooting", "Trap Shooting", "Kite Surfing", "Windsurfing", "Canoeing", "Kayaking", "Synchronized Swimming", "Trampolining", "Tumbling", "Bodybuilding", "Ultimate Frisbee", "Tug of War", "Rock Climbing", "Mountaineering", "Orienteering"
+		  ],
+
+		  Places: [
+			"School", "Hospital", "Library", "Airport", "Station", "Park", "Beach", "Forest", "Mountain", "Desert", "City", "Village", "Farm", "Zoo", "Museum", "Cinema", "Mall", "Restaurant", "Hotel", "Bank", "Office", "Factory", "Prison", "Church", "Temple", "Mosque", "Stadium", "Gym", "Pool", "Casino", "Castle", "Palace", "Bridge", "Tower", "Skyscraper", "Lighthouse", "Pyramid", "Cave", "Island", "Volcano", "Jungle", "Swamp", "River", "Lake", "Ocean", "Space", "Moon", "Mars", "Sun", "Star", "Galaxy", "Universe", "Heaven", "Hell", "Garden", "Garage", "Basement", "Attic", "Playground", "Harbor", "Port", "Dock", "Subway", "Tunnel", "Highway", "Village", "Town", "Capitol", "Embassy", "Laboratory", "Observatory", "Canyon", "Glacier", "Tundra", "Meadow", "Savanna", "Delta", "Peninsula", "Archipelago", "Reef", "Fjord", "Grotto", "Wasteland", "Oasis", "Labyrinth", "Cathedral", "Synagogue", "Pagoda", "Bunker", "Hangar", "Silo", "Warehouse", "Apartment", "Condo", "Cottage", "Cabin", "Mansion", "Shack", "Tent", "Caravan", "Motorhome", "Bazaar", "Market", "Flea Market", "Bookstore", "Bakery", "Pharmacy", "Post Office", "Courtroom", "Jail", "Campground", "Amusement Park", "Water Park", "Bowling Alley", "Ice Rink", "Recording Studio", "Data Center"
+		  ],
+
+		  Instruments: [
+			"Guitar", "Piano", "Drums", "Violin", "Flute", "Saxophone", "Trumpet", "Cello", "Harp", "Clarinet", "Trombone", "Tuba", "Banjo", "Ukulele", "Accordion", "Harmonica", "Xylophone", "Synthesizer", "Oboe", "Bass", "Microphone", "Turntable", "Speaker", "Amplifier", "Bongo", "Conga", "Tambourine", "Maracas", "Triangle", "Gong", "Cymbal", "Organ", "Keyboard", "Bagpipes", "Didgeridoo", "Sitar", "Lute", "Mandolin", "Recorder", "Whistle", "Bell", "Chime", "Castanets", "Cowbell", "Kazoo", "Theremin", "Viola", "Double Bass", "Bassoon", "French Horn", "Piccolo", "Melodica", "Steel Drum", "Clave", "Guiro", "Shakuhachi", "Erhu", "Timbales", "Vibraphone", "Marimba", "Glockenspiel", "Handpan", "Djembe", "Cajón", "Bodhrán", "Zither", "Harpsichord", "Celesta", "Spinet", "Vielle", "Hurdy-Gurdy", "Balalaika", "Bouzouki", "Sheng", "Pipa", "Koto", "Shamisen", "Duduk", "Kaval", "Cornet", "Flugelhorn", "Sousaphone", "Euphonium", "Piccolo Trumpet", "Alto Saxophone", "Tenor Saxophone", "Baritone Saxophone", "Bass Clarinet", "English Horn", "Contrabassoon", "Timpani", "Snare Drum", "Bass Drum", "Hi-Hat", "Drum Kit"
+		  ],
+
+		  Superheroes: [
+			"Superman", "Batman", "Spider-Man", "Iron Man", "Wonder Woman", "Thor", "Hulk", "Captain America", "Black Panther", "Flash", "Aquaman", "Green Lantern", "Wolverine", "Deadpool", "Doctor Strange", "Black Widow", "Hawkeye", "Ant-Man", "Daredevil", "Cyclops", "Storm", "Jean Grey", "Professor X", "Magneto", "Joker", "Thanos", "Loki", "Venom", "Groot", "Rocket", "Star-Lord", "Gamora", "Drax", "Nebula", "Mantis", "Vision", "Scarlet Witch", "Falcon", "Winter Soldier", "War Machine", "Nick Fury", "Captain Marvel", "Shazam", "Green Arrow", "Supergirl", "Batgirl", "Robin", "Nightwing", "Cyborg", "Beast Boy", "Raven", "Starfire", "Blue Beetle", "Moon Knight", "Ms Marvel", "She-Hulk", "Punisher", "Blade", "Ghost Rider", "Iron Fist", "Luke Cage", "Martian Manhunter", "Zatanna", "Booster Gold", "Hawkman", "Hawkgirl", "Firestorm", "Plastic Man", "Hellboy", "Spawn", "Judge Dredd", "Silver Surfer", "Human Torch", "Thing", "Invisible Woman", "Mr Fantastic", "Elektra", "Cable", "Domino", "Rogue", "Gambit", "Iceman", "Beast", "Angel", "Colossus", "Psylocke", "Bishop", "Emma Frost", "Deadshot", "Harley Quinn", "Poison Ivy", "Catwoman", "Riddler", "Penguin", "Two-Face", "Bane", "Lex Luthor", "General Zod", "Ultron", "Galactus", "Doctor Doom", "Apocalypse", "Kang", "Red Skull", "Green Goblin", "Doctor Octopus", "Vulture", "Kraven", "Mysterio"
+		  ],
+
+		  Animals: [
+			"Lion", "Tiger", "Elephant", "Giraffe", "Penguin", "Dolphin", "Whale", "Shark", "Eagle", "Parrot", "Dog", "Cat", "Hamster", "Snake", "Lizard", "Frog", "Bear", "Wolf", "Fox", "Deer", "Zebra", "Kangaroo", "Koala", "Panda", "Gorilla", "Monkey", "Rabbit", "Mouse", "Rat", "Bat", "Owl", "Hawk", "Crocodile", "Alligator", "Turtle", "Octopus", "Jellyfish", "Crab", "Lobster", "Spider", "Bee", "Ant", "Butterfly", "Moth", "Dragonfly", "Mosquito", "Fly", "Beetle", "Worm", "Snail", "Cheetah", "Leopard", "Rhino", "Hippo", "Camel", "Llama", "Alpaca", "Sheep", "Goat", "Cow", "Pig", "Horse", "Chicken", "Duck", "Goose", "Turkey", "Peacock", "Swan", "Flamingo", "Otter", "Seal", "Walrus", "Moose", "Reindeer", "Bison", "Buffalo", "Chimpanzee", "Orangutan", "Gibbon", "Sloth", "Armadillo", "Hedgehog", "Shrew", "Mole", "Badger", "Weasel", "Ferret", "Skunk", "Coyote", "Jackal", "Hyena", "Bobcat", "Lynx", "Cougar", "Ocelot", "Dingo", "Cobra", "Viper", "Python", "Boa", "Gecko", "Iguana", "Chameleon", "Salamander", "Newt", "Toad", "Tuna", "Salmon", "Cod", "Herring", "Mackerel", "Seahorse", "Starfish", "Eel", "Wasp", "Hornet", "Termite", "Scorpion", "Centipede", "Millipede", "Marten", "Mink", "Racoon", "Opossum", "Wombat", "Platypus", "Echidna", "Dodo", "Mammoth"
+		  ],
+
+		  Countries: [
+			"USA", "Canada", "Mexico", "Brazil", "Argentina", "UK", "France", "Germany", "Italy", "Spain", "Russia", "China", "Japan", "India", "Australia", "Egypt", "South Africa", "Nigeria", "Kenya", "Morocco", "Turkey", "Saudi Arabia", "Iran", "Israel", "Sweden", "Norway", "Finland", "Denmark", "Netherlands", "Belgium", "Switzerland", "Austria", "Poland", "Greece", "Portugal", "Ireland", "Scotland", "Wales", "Thailand", "Vietnam", "Indonesia", "Philippines", "Malaysia", "Singapore", "South Korea", "North Korea", "Pakistan", "Bangladesh", "New Zealand", "Fiji", "Cuba", "Jamaica", "Peru", "Chile", "Colombia", "Venezuela", "Ukraine", "Romania", "Hungary", "Czech Republic", "Croatia", "Serbia", "Slovakia", "Slovenia", "Latvia", "Lithuania", "Estonia", "Iceland", "Luxembourg", "Qatar", "UAE", "Oman", "Jordan", "Iraq", "Syria", "Lebanon", "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Armenia", "Azerbaijan", "Bahamas", "Bahrain", "Barbados", "Belarus", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia", "Botswana", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Central African Republic", "Chad", "Comoros", "Congo", "Costa Rica", "Cyprus", "Djibouti", "Dominica", "Ecuador", "El Salvador", "Eritrea", "Ethiopia", "Gabon", "Gambia", "Georgia", "Ghana", "Guatemala", "Guinea", "Guyana", "Haiti", "Honduras", "Kazakhstan", "Kuwait", "Laos", "Malta", "Monaco", "Mongolia", "Nepal", "Panama", "Paraguay", "Tanzania", "Uganda", "Uruguay", "Uzbekistan", "Yemen", "Zambia", "Zimbabwe"
+		  ],
+
+		  VideoGames: [
+			"Mario", "Zelda", "Pokemon", "Minecraft", "Fortnite", "Roblox", "Call of Duty", "GTA", "Halo", "God of War", "The Witcher", "Skyrim", "Fallout", "Overwatch", "League of Legends", "Dota", "World of Warcraft", "Counter-Strike", "Valorant", "Apex Legends", "Tetris", "Pac-Man", "Sonic", "Street Fighter", "Mortal Kombat", "Tekken", "Final Fantasy", "Resident Evil", "Silent Hill", "Metal Gear Solid", "Uncharted", "The Last of Us", "Red Dead Redemption", "Cyberpunk", "Elden Ring", "Dark Souls", "Bloodborne", "Sekiro", "Animal Crossing", "Stardew Valley", "Among Us", "Rocket League", "FIFA", "NBA 2K", "Madden", "Sims", "Civilization", "Portal", "Half-Life", "Doom", "Quake", "Bioshock", "Mass Effect", "Assassins Creed", "Far Cry", "Destiny", "Hades", "Dead Cells", "Cuphead", "Undertale", "Terraria", "Subnautica", "Valheim", "No Mans Sky", "Starcraft", "Diablo", "Warcraft", "Guild Wars", "Runescape", "Eve Online", "Genshin Impact", "Honkai Star Rail", "Monster Hunter", "Kingdom Hearts", "Metroid", "Castlevania", "Donkey Kong", "Kirby", "Smash Bros", "Bayonetta", "Devil May Cry", "Ninja Gaiden", "Persona", "Dragon Quest", "Grand Turismo", "Forza", "Need for Speed", "Burnout", "Tomb Raider", "Dishonored", "Prey", "Deus Ex", "Saints Row", "Borderlands", "Gears of War", "Battlefield", "Crysis", "Rime", "Limbo", "Inside", "Celeste", "Shovel Knight", "Hollow Knight", "Disco Elysium", "Outer Wilds", "Returnal", "Deathloop", "Ghost of Tsushima"
+		  ],
+
+		  Science: [
+			"Atom", "Molecule", "Cell", "DNA", "Gravity", "Magnetism", "Electricity", "Light", "Sound", "Heat", "Energy", "Force", "Motion", "Planet", "Star", "Galaxy", "Black Hole", "Comet", "Asteroid", "Meteor", "Element", "Compound", "Acid", "Base", "Bacteria", "Virus", "Fungus", "Plant", "Animal", "Human", "Brain", "Heart", "Lungs", "Stomach", "Bone", "Muscle", "Nerve", "Blood", "Skin", "Evolution", "Photosynthesis", "Respiration", "Digestion", "Reproduction", "Genetics", "Chemistry", "Physics", "Biology", "Astronomy", "Geology", "Microscope", "Telescope", "Thermometer", "Barometer", "Compass", "Magnet", "Battery", "Circuit", "Prism", "Lens", "Mirror", "Laser", "Robot", "Satellite", "Rocket", "Quantum", "Relativity", "Entropy", "Neutrino", "Photon", "Proton", "Electron", "Neutron", "Ecosystem", "Habitat", "Ecology", "Biotechnology", "Thermodynamics", "Mechanics", "Optics", "Acoustics", "Fission", "Fusion", "Tsunami", "Earthquake", "Volcano", "Fossil", "Sediment", "Igneous", "Metamorphic", "Wavelength", "Frequency", "Amplitude", "Current", "Voltage", "Resistance", "Capacitance", "Inductance", "Superconductivity", "Semiconductor", "Crystal", "Alloy", "Isotope", "Enzyme", "Hormone", "Antibody", "Vaccine", "Pathogen", "Amoeba", "Organism", "Substance", "Mass", "Volume", "Density", "Pressure", "Velocity", "Acceleration", "Momentum"
+		  ],
+
+		  Clothing: [
+			"Shirt", "T-Shirt", "Pants", "Jeans", "Shorts", "Skirt", "Dress", "Suit", "Coat", "Jacket", "Sweater", "Hoodie", "Vest", "Scarf", "Gloves", "Hat", "Cap", "Beanie", "Socks", "Shoes", "Boots", "Sandals", "Sneakers", "Heels", "Slippers", "Belt", "Tie", "Bowtie", "Watch", "Glasses", "Sunglasses", "Ring", "Necklace", "Bracelet", "Earrings", "Wallet", "Purse", "Backpack", "Bag", "Umbrella", "Raincoat", "Swimsuit", "Bikini", "Pajamas", "Robe", "Uniform", "Costume", "Mask", "Helmet", "Crown", "Tiara", "Cape", "Apron", "Overalls", "Leggings", "Tights", "Stockings", "Underwear", "Bra", "Boxers", "Briefs", "Diaper", "Bib", "Cardigan", "Blazer", "Poncho", "Cloak", "Kimono", "Sari", "Jumpsuit", "Romper", "Tunic", "Polo Shirt", "Tank Top", "Blouse", "Cami", "Drawers", "Chinos", "Cords", "Trousers", "Culottes", "Kilt", "Shawl", "Stole", "Mittens", "Earmuffs", "Fedora", "Beret", "Visor", "Loafers", "Espadrilles", "Wedges", "Stilettos", "Moccasins", "Garter", "Suspenders", "Cummerbund", "Cufflinks", "Brooch", "Pin", "Locket", "Fanny Pack", "Tote Bag", "Duffel Bag", "Satchel", "Briefcase", "Gown", "Tuxedo", "Smoking Jacket", "Parka", "Anorak", "Trench Coat"
+		  ],
+
+		  Home: [
+			"Table", "Chair", "Sofa", "Bed", "Desk", "Shelf", "Cabinet", "Cupboard", "Wardrobe", "Lamp", "Light", "Fan", "Heater", "AC", "Fridge", "Stove", "Oven", "Microwave", "Toaster", "Blender", "Mixer", "Kettle", "Pot", "Pan", "Plate", "Bowl", "Cup", "Glass", "Mug", "Fork", "Spoon", "Knife", "Napkin", "Towel", "Soap", "Shampoo", "Toothbrush", "Toothpaste", "Comb", "Brush", "Mirror", "Clock", "Calendar", "Painting", "Vase", "Rug", "Carpet", "Curtains", "Blinds", "Pillow", "Blanket", "Sheet", "Mattress", "Cushion", "Door", "Window", "Wall", "Floor", "Ceiling", "Roof", "Stairs", "Ladder", "Broom", "Mop", "Bucket", "Trash Can", "Vacuum", "Iron", "Ironing Board", "Dishwasher", "Washing Machine", "Dryer", "Radiator", "Thermostat", "Dresser", "Nightstand", "Bookcase", "Armoire", "Hutch", "Coffee Table", "End Table", "Bar Stool", "Rocker", "Recliner", "Lounge Chair", "Faucet", "Sink", "Toilet", "Shower", "Tub", "Detergent", "Bleach", "Sponge", "Scrubber", "Dustpan", "Hose", "Sprinkler", "Shovel", "Rake", "Trowel", "Hammer", "Screwdriver", "Wrench", "Pliers", "Drill", "Saw", "Level", "Tape Measure", "Toolbox", "Outlet", "Switch", "Fuse", "Circuit Breaker", "Gutter", "Shingle", "Chimney", "Patio", "Deck", "Balcony", "Porch", "Hallway", "Utility Room", "Pantry", "Fireplace", "Hearth", "Mantle"
+		  ],
+
+		  People: [
+			"President", "King", "Queen", "Athlete", "Celebrity", "Artist", "Musician", "Scientist", "Teacher", "Student", "Child", "Elderly", "Baby", "Tourist", "Police Officer", "Doctor", "Firefighter", "Chef", "Astronaut", "Villain", "Hero", "Neighbor", "Friend", "Boss", "Employee", "Stranger", "Beggar", "Model", "Guard", "Priest", "Nun", "Monk", "Philosopher", "Inventor", "Explorer", "Pirate", "Ninja", "Samurai", "Viking", "Knight", "Jester", "Clown", "Magician", "Detective", "Spy", "Ghost", "Alien", "Robot", "Vampire", "Werewolf", "Zombie", "Mermaid", "Dwarf", "Elf", "Giant", "Wizard", "Witch", "Engineer", "Farmer", "Merchant", "Trader", "Sailor", "Captain", "Hunter", "Siblings", "Parent", "Grandparent", "Cousin", "Aunt", "Uncle", "Nephew", "Niece", "Spouse", "Partner", "Fiancé", "Groom", "Bride", "Best Man", "Maid of Honor", "Godparent", "Roommate", "Landlord", "Tenant", "Client", "Customer", "Vendor", "Supplier", "Consumer", "Patient", "Commuter", "Pedestrian", "Audience", "Spectator", "Witness", "Suspect", "Victim", "Heir", "Royal", "Emperor", "Duchess", "Duke", "Count", "Earl", "Baron", "Bishop", "Deacon", "Rabbi", "Imam", "Shaman", "Oracle", "Seer", "Prophet", "Barbarian", "Gladiator", "Centurion", "Scribe", "Herald", "Courier"
+		  ]
+		};
 
         const CATEGORY_ICONS = {
             Supercell: "https://twitch.supercell.com/supercell-logo.png",
+            Celebs: "https://em-content.zobj.net/source/microsoft-teams/337/smiling-face-with-sunglasses_1f60e.png",
             Movies: "https://em-content.zobj.net/source/microsoft-teams/337/popcorn_1f37f.png",
             Food: "https://em-content.zobj.net/source/microsoft-teams/363/hamburger_1f354.png",
             Brands: "https://em-content.zobj.net/source/microsoft-teams/337/shopping-bags_1f6cd-fe0f.png",
@@ -300,6 +358,7 @@
             const DEFAULT_PLAYERS = ['Player 1', 'Player 2', 'Player 3'];
             const MIN_PLAYERS = 3;
 
+            // --- State Persistence Logic ---
             const [players, setPlayers] = useState(() => {
                 try {
                     const saved = localStorage.getItem('imposter_players');
@@ -307,19 +366,40 @@
                 } catch { return DEFAULT_PLAYERS; }
             });
 
+            const [selectedCategories, setSelectedCategories] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('imposter_categories');
+                    return saved ? JSON.parse(saved) : ['Movies', 'Food', 'Animals'];
+                } catch { return ['Movies', 'Food', 'Animals']; }
+            });
+
+            const [isRandomMode, setIsRandomMode] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('imposter_random_mode');
+                    return saved ? JSON.parse(saved) : false;
+                } catch { return false; }
+            });
+            
+            const [speakCategory, setSpeakCategory] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('imposter_speak_category');
+                    return saved ? JSON.parse(saved) : false;
+                } catch { return false; }
+            });
+
             const [newPlayerName, setNewPlayerName] = useState('');
-            const [selectedCategories, setSelectedCategories] = useState(['Movies', 'Food', 'Animals']);
             const [timerMinutes, setTimerMinutes] = useState(3);
             const [timerEnabled, setTimerEnabled] = useState(true);
-            const [isRandomMode, setIsRandomMode] = useState(false);
             const [inspectedCategory, setInspectedCategory] = useState(null);
 
             // Long press logic
             const timerRef = useRef(null);
             
-            useEffect(() => {
-                localStorage.setItem('imposter_players', JSON.stringify(players));
-            }, [players]);
+            // --- Save effects ---
+            useEffect(() => { localStorage.setItem('imposter_players', JSON.stringify(players)); }, [players]);
+            useEffect(() => { localStorage.setItem('imposter_categories', JSON.stringify(selectedCategories)); }, [selectedCategories]);
+            useEffect(() => { localStorage.setItem('imposter_random_mode', JSON.stringify(isRandomMode)); }, [isRandomMode]);
+            useEffect(() => { localStorage.setItem('imposter_speak_category', JSON.stringify(speakCategory)); }, [speakCategory]);
 
             const addPlayer = () => {
                 if (newPlayerName.trim()) {
@@ -451,6 +531,25 @@
                                         className="w-full h-2 bg-slate-950 rounded-full appearance-none cursor-pointer accent-sky-500"
                                     />
                                 </div>
+
+                                {/* Divider */}
+                                <div className="h-px bg-white/5 my-4"></div>
+
+                                {/* Speak Category Toggle */}
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-sm font-bold tracking-widest text-purple-400 flex items-center gap-2 uppercase">
+                                        <i className="fa-solid fa-volume-high"></i> Speak Category
+                                    </h2>
+                                    <button 
+                                        onClick={() => {
+                                            setSpeakCategory(!speakCategory);
+                                            if(navigator.vibrate) navigator.vibrate(10);
+                                        }}
+                                        className={`w-12 h-7 rounded-full p-1 transition-all duration-300 ${speakCategory ? 'bg-purple-500/80' : 'bg-white/10'}`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${speakCategory ? 'translate-x-5' : 'translate-x-0'}`} />
+                                    </button>
+                                </div>
                             </section>
 
                             {/* Categories */}
@@ -564,7 +663,8 @@
                                 onClick={() => {
                                     if (players.length >= MIN_PLAYERS && (isRandomMode || selectedCategories.length > 0)) {
                                         if (navigator.vibrate) navigator.vibrate(30);
-                                        onStartGame(players, isRandomMode ? [] : selectedCategories, timerEnabled ? timerMinutes * 60 : null, isRandomMode);
+                                        // Pass the settings to start game
+                                        onStartGame(players, isRandomMode ? [] : selectedCategories, timerEnabled ? timerMinutes * 60 : null, isRandomMode, speakCategory);
                                     }
                                 }}
                                 disabled={players.length < MIN_PLAYERS || (!isRandomMode && selectedCategories.length === 0)}
@@ -746,20 +846,77 @@
         };
 
         // 3. Game Timer Screen
-        const GameTimerScreen = ({ duration, onEndGame, firstPlayer }) => {
+        const GameTimerScreen = ({ duration, onEndGame, firstPlayer, category, speakCategory }) => {
             const [timeLeft, setTimeLeft] = useState(duration || 0);
             const [active, setActive] = useState(!!duration);
+            
+            // Audio Refs (Lazy Initialization)
+            const alarmRef = useRef(null);
+            const identifyRef = useRef(null);
+
+            // Initialize audio loop on mount
+            useEffect(() => {
+                // Initialize audio objects once
+                if (!alarmRef.current) {
+                    alarmRef.current = new Audio("https://www.dropbox.com/scl/fi/tdwfnelbxoo06kn1za6on/01HSGT2Z9YWSYE1X5KRHAEH9G3.mp3?rlkey=btqqywkoto0v6xbrc3w758qde&raw=1");
+                    alarmRef.current.loop = true;
+                }
+                if (!identifyRef.current) {
+                    identifyRef.current = new Audio("https://www.dropbox.com/scl/fi/l9k4wr93e20eb9v1c86c2/01JB990HCJZNAKJDSE9R0ZF2CQ.mp3?rlkey=mti7p26vh1j0hvvyapr0aly89&raw=1");
+                }
+                
+                // Speak Category
+                if (speakCategory && category) {
+                    const utterance = new SpeechSynthesisUtterance(`The category is ${category}`);
+                    utterance.rate = 0.9;
+                    window.speechSynthesis.speak(utterance);
+                }
+
+                // Cleanup audio on unmount - Stops ALL music when leaving this screen
+                return () => {
+                    if (alarmRef.current) {
+                        alarmRef.current.pause();
+                        alarmRef.current.currentTime = 0;
+                    }
+                    if (identifyRef.current) {
+                        identifyRef.current.pause();
+                        identifyRef.current.currentTime = 0;
+                    }
+                };
+            }, [category, speakCategory]);
 
             useEffect(() => {
                 if (!active || !duration) return;
+                
                 if (timeLeft <= 0) {
                     setActive(false);
+                    // Trigger Alarm
+                    if (alarmRef.current) {
+                        alarmRef.current.play().catch(e => console.log("Audio autoplay prevented"));
+                    }
                     if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
                     return;
                 }
                 const interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
                 return () => clearInterval(interval);
             }, [active, timeLeft, duration]);
+
+            const handleIdentifyImposter = () => {
+                if(navigator.vibrate) navigator.vibrate(50);
+                
+                // Stop alarm
+                if (alarmRef.current) {
+                    alarmRef.current.pause();
+                    alarmRef.current.currentTime = 0;
+                }
+                
+                // Play identify sound
+                if (identifyRef.current) {
+                    identifyRef.current.play().catch(e => console.log("Audio play prevented"));
+                }
+                
+                onEndGame();
+            };
 
             const formatTime = (seconds) => {
                 const m = Math.floor(seconds / 60);
@@ -832,10 +989,7 @@
                     {/* Action */}
                     <div className="w-full z-10 pb-[env(safe-area-inset-bottom)] mb-6">
                         <button 
-                            onClick={() => {
-                                if(navigator.vibrate) navigator.vibrate(50);
-                                onEndGame();
-                            }}
+                            onClick={handleIdentifyImposter}
                             className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_40px_rgba(220,38,38,0.4)] transition-all active:scale-[0.98] flex items-center justify-center gap-3 border border-red-400/30"
                         >
                             <i className="fa-solid fa-fingerprint text-xl"></i>
@@ -893,11 +1047,13 @@
                 imposterIndex: -1,
                 secretWord: '',
                 duration: null,
-                firstPlayer: ''
+                firstPlayer: '',
+                category: '',
+                speakCategory: false
             });
             const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
 
-            const startGame = (players, selectedCategories, duration, isRandomMode) => {
+            const startGame = (players, selectedCategories, duration, isRandomMode, speakCategory) => {
                 // If random mode or user picked 'Random' explicitly (backwards compat), select one randomly
                 const useRandom = isRandomMode || (selectedCategories && selectedCategories.length === 0);
 
@@ -923,7 +1079,9 @@
                     imposterIndex,
                     secretWord,
                     duration,
-                    firstPlayer: players[potentialFirst]
+                    firstPlayer: players[potentialFirst],
+                    category: finalCategory,
+                    speakCategory
                 });
                 
                 setCurrentPlayerIndex(0);
@@ -960,6 +1118,8 @@
                             duration={gameData.duration}
                             onEndGame={handleEndGame}
                             firstPlayer={gameData.firstPlayer}
+                            category={gameData.category}
+                            speakCategory={gameData.speakCategory}
                         />
                     )}
                     {gameState === 'result' && (
