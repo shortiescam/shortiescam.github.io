@@ -49,6 +49,7 @@
                         'float': 'float 6s ease-in-out infinite',
                         'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'shine': 'shine 1.5s ease-in-out infinite',
                     },
                     keyframes: {
                         float: {
@@ -62,6 +63,10 @@
                         fadeIn: {
                             'from': { opacity: '0' },
                             'to': { opacity: '1' },
+                        },
+                        shine: {
+                            '0%': { transform: 'translateX(-100%) translateY(-100%) rotate(45deg)' },
+                            '100%': { transform: 'translateX(100%) translateY(100%) rotate(45deg)' }
                         }
                     }
                 }
@@ -81,12 +86,10 @@
             -webkit-tap-highlight-color: transparent;
             touch-action: pan-x pan-y;
             height: 100dvh;
-            /* Disable text highlighting globally */
             user-select: none;
             -webkit-user-select: none;
         }
         
-        /* Disable image dragging and long-press menus */
         img {
             -webkit-user-drag: none;
             user-drag: none;
@@ -109,15 +112,15 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* Scrollbar hiding */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 3D Transform Utilities */
+        /* 3D Flip Animation Classes */
         .perspective-1000 { perspective: 1000px; }
         .transform-style-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
+        .rotate-y-0 { transform: rotateY(0deg); }
 
         /* Supercell Background Animation */
         .supercell-container {
@@ -145,7 +148,7 @@
         .supercell-bg-2 {
             background-image: url('https://static0.srcdn.com/wordpress/wp-content/uploads/2021/04/Three-new-Clash-of-Clans-games-announced.jpg');
             opacity: 0;
-            animation: supercellFade 10s infinite; /* 5s for one image, 5s for the other = 10s cycle */
+            animation: supercellFade 10s infinite;
         }
 
         @keyframes supercellFade {
@@ -187,7 +190,7 @@
 		  ],
 
 		  Movies: [
-			"The Godfather", "Titanic", "Avatar", "Star Wars", "Jurassic Park", "The Matrix", "Inception", "Forrest Gump", "The Lion King", "Avengers", "Pulp Fiction", "Frozen", "The Dark Knight", "Harry Potter", "Back to the Future", "Rocky", "Gladiator", "Shrek", "Toy Story", "Jaws", "Interstellar", "Parasite", "Coco", "Up", "Wall-E", "Alien", "Terminator", "Fight Club", "Goodfellas", "Spirited Away", "Barbie", "Oppenheimer", "Dune", "Spider-Man", "Black Panther", "Iron Man", "Wonder Woman", "Joker", "Top Gun", "The Shining", "Get Out", "Blade Runner", "E.T.", "Indiana Jones", "Schindler's List", "Lord of the Rings", "Silence of the Lambs", "Casablanca", "Citizen Kane", "The Prestige", "Memento", "Se7en", "Zootopia", "Moana", "Inside Out", "Finding Nemo", "Ratatouille", "The Incredibles", "Whiplash", "La La Land", "The Social Network", "Her", "Gravity", "Mad Max", "Logan", "The Batman", "No Country for Old Men", "The Departed", "Heat", "Scarface", "Die Hard", "Mission Impossible", "John Wick", "Matrix Reloaded", "Matrix Revolutions", "Pulp Fiction", "Kill Bill", "Reservoir Dogs", "Inglourious Basterds", "Django Unchained", "Once Upon a Time in Hollywood", "The Good the Bad and the Ugly", "A Fistful of Dollars", "For A Few Dollars More", "2001: A Space Odyssey", "Apocalypse Now", "Taxi Driver", "One Flew Over the Cuckoo's Nest", "Amadeus", "Chinatown", "Fargo", "No Country for Old Men", "Eternal Sunshine of the Spotless Mind", "Requiem for a Dream", "Pan's Labyrinth", "Oldboy", "Crouching Tiger Hidden Dragon", "Drive", "Donnie Darko", "The Grand Budapest Hotel", "Whiplash", "Boyhood", "Mad Max: Fury Road", "Room", "Spotlight", "Moonlight", "Call Me By Your Name", "Get Out", "Nomadland", "Everything Everywhere All at Once", "Poor Things"
+			"The Godfather", "Titanic", "Avatar", "Star Wars", "Jurassic Park", "The Matrix", "Inception", "Forrest Gump", "The Lion King", "Avengers", "Pulp Fiction", "Frozen", "The Dark Knight", "Harry Potter", "Back to the Future", "Rocky", "Gladiator", "Shrek", "Toy Story", "Jaws", "Interstellar", "Parasite", "Coco", "Up", "Wall-E", "Alien", "Terminator", "Fight Club", "Goodfellas", "Spirited Away", "Barbie", "Oppenheimer", "Dune", "Spider-Man", "Black Panther", "Iron Man", "Wonder Woman", "Joker", "Top Gun", "The Shining", "Get Out", "Blade Runner", "E.T.", "Indiana Jones", "Schindler's List", "Lord of the Rings", "Silence of the Lambs", "Casablanca", "Citizen Kane", "The Prestige", "Memento", "Se7en", "Zootopia", "Moana", "Inside Out", "Finding Nemo", "Ratatouille", "The Incredibles", "Whiplash", "La La Land", "The Social Network", "Her", "Gravity", "Mad Max", "Logan", "The Batman", "No Country for Old Men", "The Departed", "Heat", "Scarface", "Die Hard", "Mission Impossible", "John Wick", "Matrix Reloaded", "Matrix Revolutions", "Kill Bill", "Reservoir Dogs", "Inglourious Basterds", "Django Unchained", "Once Upon a Time in Hollywood", "The Good the Bad and the Ugly", "A Fistful of Dollars", "For A Few Dollars More", "2001: A Space Odyssey", "Apocalypse Now", "Taxi Driver", "One Flew Over the Cuckoo's Nest", "Amadeus", "Chinatown", "Fargo", "Eternal Sunshine of the Spotless Mind", "Requiem for a Dream", "Pan's Labyrinth", "Oldboy", "Crouching Tiger Hidden Dragon", "Drive", "Donnie Darko", "The Grand Budapest Hotel", "Boyhood", "Mad Max: Fury Road", "Room", "Spotlight", "Moonlight", "Call Me By Your Name", "Nomadland", "Everything Everywhere All at Once", "Poor Things", "The Shawshank Redemption", "The Wizard of Oz", "The Sound of Music", "Psycho", "Grease", "Home Alone", "Ghostbusters", "The Breakfast Club", "Ferris Bueller's Day Off", "The Sixth Sense", "Saving Private Ryan", "Braveheart", "The Truman Show", "A Beautiful Mind", "The Green Mile", "Cast Away", "Apollo 13", "Terminator 2: Judgment Day", "Predator", "RoboCop", "Total Recall", "The Goonies", "Gremlins", "Raiders of the Lost Ark", "Blade Runner 2049", "The Big Lebowski", "The Princess Bride", "Mean Girls", "Legally Blonde", "Clueless", "The Devil Wears Prada", "The Notebook", "A Star Is Born", "Bohemian Rhapsody", "The Wolf of Wall Street", "American Psycho", "The Aviator", "Twister", "Independence Day", "Men in Black", "Bad Boys", "Rush Hour", "Beverly Hills Cop", "Coming to America", "Groundhog Day", "Ghost", "Dirty Dancing", "Pretty Woman", "The Usual Suspects", "L.A. Confidential", "Unbreakable", "Signs", "Split", "Glass", "Arrival", "Dunkirk", "1917", "All Quiet on the Western Front", "The Revenant", "The Hateful Eight", "The Irishman", "Spider-Man: Into the Spider-Verse", "Spider-Man: Across the Spider-Verse", "Deadpool", "Deadpool & Wolverine", "Guardians of the Galaxy", "Thor: Ragnarok", "Doctor Strange", "Captain Marvel", "Black Widow", "Ant-Man", "Shang-Chi", "Pirates of the Caribbean", "National Treasure", "Ocean's Eleven", "The Italian Job", "Fast and Furious", "Extraction", "The Martian", "Prometheus", "Ex Machina", "A Quiet Place", "Hereditary", "Midsommar", "The Witch", "The Conjuring", "Insidious", "Halloween", "Friday the 13th", "A Nightmare on Elm Street", "Scream", "The Exorcist", "Poltergeist", "The Texas Chain Saw Massacre", "The Birds", "Rear Window", "Vertigo", "North by Northwest", "Sunset Boulevard", "Some Like It Hot", "Singin' in the Rain", "Beauty and the Beast", "Aladdin", "The Little Mermaid", "Mulan", "Hercules", "Tarzan", "How to Train Your Dragon", "Kung Fu Panda", "Despicable Me", "Minions", "Ice Age", "Madagascar", "Shrek 2", "Puss in Boots", "Sing", "Encanto", "Raya and the Last Dragon", "Luca", "Soul", "Turning Red", "Elemental", "Dune: Part Two", "Inside Out 2", "Gladiator II", "Alien: Romulus", "Wicked", "Twisters", "The Hangover", "Superbad", "Step Brothers", "Bridesmaids", "21 Jump Street", "Anchorman", "The Truman Show", "Catch Me If You Can", "The Great Gatsby", "The 40-Year-Old Virgin", "Knives Out", "Glass Onion", "John Wick: Chapter 4", "Furiosa: A Mad Max Saga", "Kingdom of the Planet of the Apes"
 		  ],
 
 		  Food: [
@@ -195,11 +198,15 @@
 		  ],
 
 		  Brands: [
-			"Apple", "Nike", "Coca-Cola", "Samsung", "McDonalds", "Toyota", "Disney", "Amazon", "Google", "Tesla", "Adidas", "Pepsi", "Starbucks", "Netflix", "Microsoft", "Mercedes", "BMW", "Honda", "Sony", "Lego", "IKEA", "Zara", "H&M", "Gucci", "Louis Vuitton", "Rolex", "Canon", "Nikon", "PlayStation", "Xbox", "Spotify", "Uber", "Airbnb", "Facebook", "Instagram", "TikTok", "Twitter", "YouTube", "Visa", "Mastercard", "Ferrari", "Porsche", "Lamborghini", "Intel", "AMD", "Dell", "HP", "Adobe", "Slack", "Zoom", "Ford", "Chevrolet", "Jeep", "Nissan", "Hyundai", "Kia", "Volkswagen", "Audi", "Prada", "Chanel", "Hermes", "Versace", "Burberry", "Tiffany", "Cartier", "Omega", "Asus", "Acer", "Lenovo", "Huawei", "Xiaomi", "Red Bull", "Monster", "Shell", "BP", "Total", "Pfizer", "Moderna", "LG", "Panasonic", "Philips", "Bosch", "Siemens", "General Electric", "Caterpillar", "Boeing", "SpaceX", "Virgin Galactic", "Nintendo", "Electronic Arts", "Activision Blizzard", "Ubisoft", "Rockstar Games", "Square Enix", "Capcom", "Sega", "Bandai Namco", "Puma", "Under Armour", "New Balance", "Reebok", "Converse", "Vans", "Doc Martens", "Ray-Ban", "Oakley", "Fender", "Gibson", "Yamaha", "Bose", "JBL", "Harman Kardon", "Dyson", "SharkNinja", "Whirlpool", "Electrolux", "KitchenAid", "Tefal", "Logitech", "Razer", "Corsair", "Seagate", "Western Digital", "Kingston", "SanDisk"
+		    "Apple", "Nike", "Coca-Cola", "Samsung", "McDonalds", "Toyota", "Disney", "Amazon", "Google", "Tesla", "Adidas", "Pepsi", "Starbucks", "Netflix", "Microsoft", "Mercedes", "BMW", "Honda", "Sony", "Lego", "IKEA", "Zara", "H&M", "Gucci", "Louis Vuitton", "Rolex", "Canon", "Nikon", "PlayStation", "Xbox", "Spotify", "Uber", "Airbnb", "Facebook", "Instagram", "TikTok", "Twitter", "YouTube", "Visa", "Mastercard", "Ferrari", "Porsche", "Lamborghini", "Intel", "AMD", "Dell", "HP", "Adobe", "Slack", "Zoom", "Ford", "Chevrolet", "Jeep", "Nissan", "Hyundai", "Kia", "Volkswagen", "Audi", "Prada", "Chanel", "Hermes", "Versace", "Burberry", "Tiffany", "Cartier", "Omega", "Asus", "Acer", "Lenovo", "Huawei", "Xiaomi", "Red Bull", "Monster", "Shell", "BP", "Total", "Pfizer", "Moderna", "LG", "Panasonic", "Philips", "Bosch", "Siemens", "General Electric", "Caterpillar", "Boeing", "SpaceX", "Virgin Galactic", "Nintendo", "Electronic Arts", "Activision Blizzard", "Ubisoft", "Rockstar Games", "Square Enix", "Capcom", "Sega", "Bandai Namco", "Puma", "Under Armour", "New Balance", "Reebok", "Converse", "Vans", "Doc Martens", "Ray-Ban", "Oakley", "Fender", "Gibson", "Yamaha", "Bose", "JBL", "Harman Kardon", "Dyson", "SharkNinja", "Whirlpool", "Electrolux", "KitchenAid", "Tefal", "Logitech", "Razer", "Corsair", "Seagate", "Western Digital", "Kingston", "SanDisk", "Walmart", "Costco", "Target", "Home Depot", "Lowe's", "Best Buy", "Alibaba", "Tencent", "JD.com", "eBay", "Etsy", "Shopify", "7-Eleven", "Carrefour", "Aldi", "Lidl", "Tesco", "Walgreens", "CVS Health", "Sephora", "Ulta Beauty", "Wayfair", "Nvidia", "Oracle", "IBM", "Salesforce", "SAP", "Cisco", "Qualcomm", "Broadcom", "TSMC", "Texas Instruments", "LinkedIn", "Snapchat", "Pinterest", "Reddit", "Twitch", "Wikipedia", "Mozilla", "Dropbox", "ServiceNow", "Intuit", "Palantir", "Snowflake", "Garmin", "Fitbit", "GoPro", "Roku", "Vimeo", "WeChat", "Line", "WhatsApp", "Telegram", "Discord", "KFC", "Burger King", "Subway", "Domino's", "Pizza Hut", "Taco Bell", "Wendy's", "Chipotle", "Dunkin'", "Tim Hortons", "Krispy Kreme", "Nestle", "Danone", "Kellogg's", "General Mills", "Heinz", "Kraft", "Hershey's", "Mars", "Cadbury", "Ferrero Rocher", "Nutella", "Oreo", "Lays", "Doritos", "Pringles", "Cheetos", "Gatorade", "Mountain Dew", "Dr Pepper", "Sprite", "Fanta", "7up", "Budweiser", "Heineken", "Corona", "Guinness", "Stella Artois", "Jack Daniel's", "Johnnie Walker", "Smirnoff", "Bacardi", "Grey Goose", "Hennessy", "Moët & Chandon", "P&G", "Unilever", "Johnson & Johnson", "Gillette", "Colgate", "Oral-B", "Dove", "Nivea", "Head & Shoulders", "Old Spice", "Axe", "L'Oreal", "Estee Lauder", "Maybelline", "MAC Cosmetics", "Volvo", "Mazda", "Subway", "Suzuki", "Jaguar", "Land Rover", "Bentley", "Rolls-Royce", "Aston Martin", "Bugatti", "McLaren", "Maserati", "Alfa Romeo", "Fiat", "Peugeot", "Renault", "Citroen", "Skoda", "Mini", "Harley-Davidson", "Ducati", "Vespa", "Kawasaki", "Bridgestone", "Michelin", "Goodyear", "Continental", "Uniqlo", "Gap", "Levi's", "Calvin Klein", "Tommy Hilfiger", "Ralph Lauren", "The North Face", "Patagonia", "Columbia", "Timberland", "Helly Hansen", "Arc'teryx", "Lululemon", "Gymshark", "Champion", "Fila", "Skechers", "Asics", "Saucony", "Brooks", "Hoka", "Crocs", "Birkenstock", "Supreme", "Off-White", "Balenciaga", "Dior", "Saint Laurent", "Fendi", "Givenchy", "Valentino", "Dolce & Gabbana", "Armani", "Hugo Boss", "Michael Kors", "Coach", "Kate Spade", "Victoria's Secret", "American Express", "PayPal", "Stripe", "Square", "Revolut", "Chase", "Citi", "Wells Fargo", "Bank of America", "Goldman Sachs", "Morgan Stanley", "HSBC", "Barclays", "UBS", "Credit Suisse", "Deutsche Bank", "Allianz", "AXA", "Berkshire Hathaway", "BlackRock", "Fidelity", "Charles Schwab", "Coinbase", "Binance", "Warner Bros", "Universal", "Paramount", "20th Century Studios", "DreamWorks", "Pixar", "Marvel", "DC Comics", "HBO", "Showtime", "ESPN", "MTV", "CNN", "BBC", "Fox", "NBC", "CBS", "ABC", "Sky", "Bloomberg", "Reuters", "National Geographic", "Discovery", "Time", "Vogue", "Rolling Stone", "Delta", "United Airlines", "American Airlines", "Southwest", "British Airways", "Lufthansa", "Air France", "Emirates", "Qatar Airways", "Singapore Airlines", "Ryanair", "EasyJet", "Marriott", "Hilton", "Hyatt", "Sheraton", "InterContinental", "Holiday Inn", "Four Seasons", "Ritz-Carlton", "Expedia", "Booking.com", "TripAdvisor", "Royal Caribbean", "Carnival", "FedEx", "UPS", "DHL", "Maersk", "General Motors", "Lockheed Martin", "Northrop Grumman", "Raytheon", "Airbus", "Honeywell", "3M", "DuPont", "Dow", "BASF", "John Deere", "Komatsu", "Tag Heuer", "Breitling", "Patek Philippe", "Audemars Piguet", "Richard Mille", "Hublot", "IWC", "Seiko", "Casio", "G-Shock", "Swatch", "Tissot", "Longines", "Pandora", "Swarovski"
 		  ],
 
 		  Technology: [
 			"iPhone", "Laptop", "Drone", "Robot", "Bluetooth", "Wifi", "Keyboard", "Mouse", "Monitor", "Camera", "Headphones", "Smartwatch", "Tablet", "Printer", "Router", "Server", "Microchip", "Satellite", "Telescope", "Microscope", "VR Headset", "Console", "Battery", "Charger", "USB", "Cloud", "Algorithm", "Internet", "Software", "Hardware", "Smartphone", "GPS", "Laser", "Radar", "Scanner", "Projector", "Speaker", "Microphone", "Webcam", "Flash Drive", "Hard Drive", "Processor", "Graphics Card", "Motherboard", "Fan", "Screen", "Pixel", "Code", "Database", "Network", "Firewall", "Encryption", "Hacker", "Virus", "AI", "Blockchain", "Crypto", "NFT", "API", "Framework", "Library", "Compiler", "Terminal", "Shell", "Kernel", "Operating System", "Linux", "Windows", "MacOS", "Android", "iOS", "Ethernet", "5G", "4G", "Fiber", "Quantum Computer", "VR", "AR", "Mixed Reality", "Biometrics", "Cybernetics", "Nanotechnology", "Supercomputer", "Mainframe", "Modem", "Switch", "Hub", "Gateway", "Protocol", "TCP/IP", "HTTP", "HTML", "CSS", "JavaScript", "Python", "Java", "C++", "C#", "SQL", "Big Data", "Machine Learning", "Deep Learning", "Neural Network", "IoT", "Smart Home", "Smart Grid", "Automation", "Robotics", "Interface", "User Experience", "User Interface", "Touchscreen", "Gesture Control", "Voice Recognition", "Speech Synthesis", "Teleportation", "Hologram", "Transistor", "Capacitor", "Resistor", "Diode", "Semiconductor"
+		  ],
+
+		  TV: [
+		    "Stranger Things", "Game of Thrones", "Breaking Bad", "The Office", "Friends", "The Simpsons", "South Park", "SpongeBob SquarePants", "The Mandalorian", "The Crown", "Squid Game", "The Witcher", "Black Mirror", "Rick and Morty", "Avatar: The Last Airbender", "The Sopranos", "The Wire", "Seinfeld", "Parks and Recreation", "Lost", "Grey's Anatomy", "The Walking Dead", "Modern Family", "Family Guy", "The Big Bang Theory", "How I Met Your Mother", "Doctor Who", "Sherlock", "Peaky Blinders", "Narcos", "Money Heist", "Ted Lasso", "The Boys", "Westworld", "Chernobyl", "Succession", "Fleabag", "The Marvelous Mrs. Maisel", "Ozark", "Better Call Saul", "Mad Men", "The X-Files", "Twin Peaks", "Saturday Night Live", "The Daily Show", "Key & Peele", "Chappelle's Show", "Curb Your Enthusiasm", "Arrested Development", "It's Always Sunny in Philadelphia", "Community", "30 Rock", "Veep", "Silicon Valley", "Atlanta", "Barry", "The Good Place", "Brooklyn Nine-Nine", "Schitt's Creek", "The Queen's Gambit", "Bridgerton", "WandaVision", "Loki", "House of the Dragon", "The Last of Us", "Yellowstone", "Severance", "Abbott Elementary", "Only Murders in the Building", "Invincible", "Arcane", "Bluey", "Adventure Time", "Regular Show", "Steven Universe", "Gravity Falls", "The Powerpuff Girls", "Dexter's Laboratory", "Samurai Jack", "iCarly", "Rugrats", "Hey Arnold!", "The Fairly OddParents", "Star Trek", "The Twilight Zone", "I Love Lucy", "M*A*S*H", "Cheers", "Frasier", "The Fresh Prince of Bel-Air", "Buffy the Vampire Slayer", "Firefly", "Battlestar Galactica", "Deadwood", "Fargo", "True Detective", "Mindhunter", "The Handmaid's Tale", "Orange Is the New Black", "House of Cards", "Downton Abbey", "The Crown", "Cobra Kai", "Stranger Things", "NCIS", "Law & Order", "24", "Prison Break", "Survivor", "House M.D.", "Scrubs", "Psych", "Monk", "Suits", "Gilmore Girls", "Supernatural", "The Vampire Diaries", "Gossip Girl", "One Tree Hill", "The O.C.", "Pretty Little Liars", "Desperate Housewives", "Scandal", "How to Get Away with Murder", "Empire", "Sons of Anarchy", "Vikings", "Spartacus", "Rome", "The Tudors", "Reign", "Outlander", "Luther", "Broadchurch", "Killing Eve", "Hannibal", "Bates Motel", "American Horror Story", "Grimm", "Once Upon a Time", "Charmed", "Angel", "Smallville", "Heroes", "Arrow", "The Flash", "Daredevil", "Jessica Jones", "The Punisher", "Gotham", "The Umbrella Academy", "Sense8", "Altered Carbon", "The Expanse", "Dark", "Silo", "For All Mankind", "The Bear", "Beef", "Wednesday", "The White Lotus", "Big Little Lies", "Mare of Easttown", "True Blood", "Entourage", "Ballers", "Insecure", "Girls", "Sex and the City", "Emily in Paris", "Sex Education", "Euphoria", "Alice in Borderland", "All of Us Are Dead", "Dragon Ball Z", "Naruto", "One Piece", "Attack on Titan", "Death Note", "Fullmetal Alchemist: Brotherhood", "Demon Slayer", "Cowboy Bebop", "Neon Genesis Evangelion", "Sailor Moon", "Pokémon", "Batman: The Animated Series", "X-Men: The Animated Series", "Justice League Unlimited", "Teen Titans", "Scooby-Doo", "Tom and Jerry", "Looney Tunes", "The Flintstones", "The Jetsons", "Animaniacs", "Pinky and the Brain", "Phineas and Ferb", "Kim Possible", "DuckTales", "Gargoyles", "Danny Phantom", "Ben 10", "Courage the Cowardly Dog", "Johnny Bravo", "Ed, Edd n Eddy", "Star Wars: The Clone Wars", "Andor", "Obi-Wan Kenobi", "The Muppet Show", "Sesame Street", "Bob's Burgers", "King of the Hill", "Futurama", "American Dad!", "Archer", "BoJack Horseman", "Big Mouth", "Love, Death & Robots", "Robot Chicken", "Beavis and Butt-Head", "Daria", "Top Gear", "The Great British Bake Off", "RuPaul's Drag Race", "Shark Tank", "American Idol", "The Voice", "Keeping Up with the Kardashians", "The Real Housewives of Beverly Hills", "Planet Earth", "MythBusters", "Dirty Jobs", "Jeopardy!", "Wheel of Fortune", "CSI: Crime Scene Investigation", "Criminal Minds", "Bones", "Castle", "The Mentalist", "Hawaii Five-0", "Blue Bloods", "Chicago Fire", "Chicago P.D.", "ER", "Stargate SG-1", "Malcolm in the Middle", "That '70s Show", "Married... with Children", "The Golden Girls", "Full House", "The Nanny", "Will & Grace", "Home Improvement", "Roseanne", "Everybody Loves Raymond", "King of Queens", "Two and a Half Men", "New Girl", "The Mindy Project", "Superstore", "Glee", "Henry Danger", "Drake & Josh", "Spongebob Squarepants"
 		  ],
 
 		  Jobs: [
@@ -226,17 +233,17 @@
 			"Superman", "Batman", "Spider-Man", "Iron Man", "Wonder Woman", "Thor", "Hulk", "Captain America", "Black Panther", "Flash", "Aquaman", "Green Lantern", "Wolverine", "Deadpool", "Doctor Strange", "Black Widow", "Hawkeye", "Ant-Man", "Daredevil", "Cyclops", "Storm", "Jean Grey", "Professor X", "Magneto", "Joker", "Thanos", "Loki", "Venom", "Groot", "Rocket", "Star-Lord", "Gamora", "Drax", "Nebula", "Mantis", "Vision", "Scarlet Witch", "Falcon", "Winter Soldier", "War Machine", "Nick Fury", "Captain Marvel", "Shazam", "Green Arrow", "Supergirl", "Batgirl", "Robin", "Nightwing", "Cyborg", "Beast Boy", "Raven", "Starfire", "Blue Beetle", "Moon Knight", "Ms Marvel", "She-Hulk", "Punisher", "Blade", "Ghost Rider", "Iron Fist", "Luke Cage", "Martian Manhunter", "Zatanna", "Booster Gold", "Hawkman", "Hawkgirl", "Firestorm", "Plastic Man", "Hellboy", "Spawn", "Judge Dredd", "Silver Surfer", "Human Torch", "Thing", "Invisible Woman", "Mr Fantastic", "Elektra", "Cable", "Domino", "Rogue", "Gambit", "Iceman", "Beast", "Angel", "Colossus", "Psylocke", "Bishop", "Emma Frost", "Deadshot", "Harley Quinn", "Poison Ivy", "Catwoman", "Riddler", "Penguin", "Two-Face", "Bane", "Lex Luthor", "General Zod", "Ultron", "Galactus", "Doctor Doom", "Apocalypse", "Kang", "Red Skull", "Green Goblin", "Doctor Octopus", "Vulture", "Kraven", "Mysterio"
 		  ],
 
-		  Animals: [
-			"Lion", "Tiger", "Elephant", "Giraffe", "Penguin", "Dolphin", "Whale", "Shark", "Eagle", "Parrot", "Dog", "Cat", "Hamster", "Snake", "Lizard", "Frog", "Bear", "Wolf", "Fox", "Deer", "Zebra", "Kangaroo", "Koala", "Panda", "Gorilla", "Monkey", "Rabbit", "Mouse", "Rat", "Bat", "Owl", "Hawk", "Crocodile", "Alligator", "Turtle", "Octopus", "Jellyfish", "Crab", "Lobster", "Spider", "Bee", "Ant", "Butterfly", "Moth", "Dragonfly", "Mosquito", "Fly", "Beetle", "Worm", "Snail", "Cheetah", "Leopard", "Rhino", "Hippo", "Camel", "Llama", "Alpaca", "Sheep", "Goat", "Cow", "Pig", "Horse", "Chicken", "Duck", "Goose", "Turkey", "Peacock", "Swan", "Flamingo", "Otter", "Seal", "Walrus", "Moose", "Reindeer", "Bison", "Buffalo", "Chimpanzee", "Orangutan", "Gibbon", "Sloth", "Armadillo", "Hedgehog", "Shrew", "Mole", "Badger", "Weasel", "Ferret", "Skunk", "Coyote", "Jackal", "Hyena", "Bobcat", "Lynx", "Cougar", "Ocelot", "Dingo", "Cobra", "Viper", "Python", "Boa", "Gecko", "Iguana", "Chameleon", "Salamander", "Newt", "Toad", "Tuna", "Salmon", "Cod", "Herring", "Mackerel", "Seahorse", "Starfish", "Eel", "Wasp", "Hornet", "Termite", "Scorpion", "Centipede", "Millipede", "Marten", "Mink", "Racoon", "Opossum", "Wombat", "Platypus", "Echidna", "Dodo", "Mammoth"
+		  Animals: [ 
+			"Lion", "Tiger", "Elephant", "Giraffe", "Penguin", "Dolphin", "Whale", "Shark", "Eagle", "Parrot", "Dog", "Cat", "Hamster", "Snake", "Lizard", "Frog", "Bear", "Wolf", "Fox", "Deer", "Zebra", "Kangaroo", "Koala", "Panda", "Gorilla", "Monkey", "Rabbit", "Mouse", "Rat", "Bat", "Owl", "Hawk", "Crocodile", "Alligator", "Turtle", "Octopus", "Jellyfish", "Crab", "Lobster", "Spider", "Bee", "Ant", "Butterfly", "Moth", "Dragonfly", "Mosquito", "Fly", "Beetle", "Worm", "Snail", "Cheetah", "Leopard", "Rhino", "Hippo", "Camel", "Llama", "Alpaca", "Sheep", "Goat", "Cow", "Pig", "Horse", "Chicken", "Duck", "Goose", "Turkey", "Peacock", "Swan", "Flamingo", "Otter", "Seal", "Walrus", "Moose", "Reindeer", "Bison", "Buffalo", "Chimpanzee", "Orangutan", "Gibbon", "Sloth", "Armadillo", "Hedgehog", "Shrew", "Mole", "Badger", "Weasel", "Ferret", "Skunk", "Coyote", "Jackal", "Hyena", "Bobcat", "Lynx", "Cougar", "Ocelot", "Dingo", "Cobra", "Viper", "Python", "Boa", "Gecko", "Iguana", "Chameleon", "Salamander", "Newt", "Toad", "Tuna", "Salmon", "Cod", "Herring", "Mackerel", "Seahorse", "Starfish", "Eel", "Wasp", "Hornet", "Termite", "Scorpion", "Centipede", "Millipede", "Marten", "Mink", "Racoon", "Opossum", "Wombat", "Platypus", "Echidna", "Dodo", "Mammoth", "Aardvark", "Albatross", "Anaconda", "Angelfish", "Anteater", "Antelope", "Arctic Fox", "Axolotl", "Baboon", "Barnacle", "Barracuda", "Basset Hound", "Beagle", "Bearded Dragon", "Bedbug", "Beluga", "Betta Fish", "Black Bear", "Black Widow", "Blue Jay", "Blue Whale", "Boar", "Bonobo", "Boxer", "Bulldog", "Bullfrog", "Bumblebee", "Canary", "Capybara", "Caribou", "Cassowary", "Catfish", "Caterpillar", "Chihuahua", "Chinchilla", "Chipmunk", "Cicada", "Civet", "Clam", "Clownfish", "Cockatoo", "Cockroach", "Collie", "Coral", "Cormorant", "Crane", "Cricket", "Crow", "Cuttlefish", "Dachshund", "Dalmatian", "Dart Frog", "Dormouse", "Dove", "Dugong", "Dung Beetle", "Earthworm", "Earwig", "Elk", "Emu", "Falcon", "Fennec Fox", "Finch", "Firefly", "Flounder", "Flying Fish", "Fossa", "Fruit Bat", "Gazelle", "Gerbil", "German Shepherd", "Gharial", "Gila Monster", "Gnu", "Golden Retriever", "Goldfish", "Gopher", "Grasshopper", "Great Dane", "Great White Shark", "Greyhound", "Grouse", "Guinea Pig", "Guppy", "Haddock", "Halibut", "Hammerhead Shark", "Hare", "Heron", "Honey Badger", "Hummingbird", "Husky", "Hyrax", "Ibex", "Ibis", "Impala", "Jackrabbit", "Jaguar", "Jay", "Jerboa", "Kangaroo Rat", "Killer Whale", "Kingfisher", "Kiwi", "Koi", "Komodo Dragon", "Krill", "Kudu", "Labradoodle", "Labrador", "Ladybug", "Lemming", "Lemur", "Limpet", "Loris", "Louse", "Macaw", "Magpie", "Mallard", "Manatee", "Mandrill", "Manta Ray", "Mantis", "Marmot", "Mastiff", "Meerkat", "Mockingbird", "Mongoose", "Monitor Lizard", "Mule", "Musk Ox", "Muskrat", "Narwhal", "Nautilus", "Nightingale", "Nuthatch", "Okapi", "Orca", "Oryx", "Ostrich", "Oyster", "Pangolin", "Panther", "Parakeet", "Pelican", "Pheasant", "Piranha", "Pit Bull", "Pointer", "Polar Bear", "Poodle", "Porcupine", "Porpoise", "Prairie Dog", "Prawn", "Pufferfish", "Pug", "Puma", "Quail", "Quokka", "Rattlesnake", "Raven", "Red Panda", "Retriever", "Roadrunner", "Robin", "Rottweiler", "Sand Dollar", "Sandpiper", "Sardine", "Scallop", "Sea Cucumber", "Sea Lion", "Sea Turtle", "Sea Urchin", "Seagull", "Setter", "Sheepdog", "Shrimp", "Siamese Cat", "Siberian Husky", "Skink", "Skipper", "Slug", "Snapper", "Spaniel", "Sparrow", "Sperm Whale", "Sponge", "Squid", "Squirrel", "Starling", "Stingray", "Stoat", "Stork", "Sturgeon", "Sugar Glider", "Swallow", "Swordfish", "Tadpole", "Tamarin", "Tanager", "Tapir", "Tarantula", "Tarsier", "Tasmanian Devil", "Terrier", "Thrush", "Tick", "Toucan", "Trout", "Tsetse Fly", "Vulture", "Wallaby", "Warbler", "Warthog", "Water Buffalo", "Weevil", "Whippet", "Wildebeest", "Wolverine", "Woodpecker", "Wren", "Yak", "Yellowjacket", "Yorkshire Terrier" 
 		  ],
 
 		  Countries: [
 			"USA", "Canada", "Mexico", "Brazil", "Argentina", "UK", "France", "Germany", "Italy", "Spain", "Russia", "China", "Japan", "India", "Australia", "Egypt", "South Africa", "Nigeria", "Kenya", "Morocco", "Turkey", "Saudi Arabia", "Iran", "Israel", "Sweden", "Norway", "Finland", "Denmark", "Netherlands", "Belgium", "Switzerland", "Austria", "Poland", "Greece", "Portugal", "Ireland", "Scotland", "Wales", "Thailand", "Vietnam", "Indonesia", "Philippines", "Malaysia", "Singapore", "South Korea", "North Korea", "Pakistan", "Bangladesh", "New Zealand", "Fiji", "Cuba", "Jamaica", "Peru", "Chile", "Colombia", "Venezuela", "Ukraine", "Romania", "Hungary", "Czech Republic", "Croatia", "Serbia", "Slovakia", "Slovenia", "Latvia", "Lithuania", "Estonia", "Iceland", "Luxembourg", "Qatar", "UAE", "Oman", "Jordan", "Iraq", "Syria", "Lebanon", "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Armenia", "Azerbaijan", "Bahamas", "Bahrain", "Barbados", "Belarus", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia", "Botswana", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Central African Republic", "Chad", "Comoros", "Congo", "Costa Rica", "Cyprus", "Djibouti", "Dominica", "Ecuador", "El Salvador", "Eritrea", "Ethiopia", "Gabon", "Gambia", "Georgia", "Ghana", "Guatemala", "Guinea", "Guyana", "Haiti", "Honduras", "Kazakhstan", "Kuwait", "Laos", "Malta", "Monaco", "Mongolia", "Nepal", "Panama", "Paraguay", "Tanzania", "Uganda", "Uruguay", "Uzbekistan", "Yemen", "Zambia", "Zimbabwe"
 		  ],
 
-		  VideoGames: [
-			"Mario", "Zelda", "Pokemon", "Minecraft", "Fortnite", "Roblox", "Call of Duty", "GTA", "Halo", "God of War", "The Witcher", "Skyrim", "Fallout", "Overwatch", "League of Legends", "Dota", "World of Warcraft", "Counter-Strike", "Valorant", "Apex Legends", "Tetris", "Pac-Man", "Sonic", "Street Fighter", "Mortal Kombat", "Tekken", "Final Fantasy", "Resident Evil", "Silent Hill", "Metal Gear Solid", "Uncharted", "The Last of Us", "Red Dead Redemption", "Cyberpunk", "Elden Ring", "Dark Souls", "Bloodborne", "Sekiro", "Animal Crossing", "Stardew Valley", "Among Us", "Rocket League", "FIFA", "NBA 2K", "Madden", "Sims", "Civilization", "Portal", "Half-Life", "Doom", "Quake", "Bioshock", "Mass Effect", "Assassins Creed", "Far Cry", "Destiny", "Hades", "Dead Cells", "Cuphead", "Undertale", "Terraria", "Subnautica", "Valheim", "No Mans Sky", "Starcraft", "Diablo", "Warcraft", "Guild Wars", "Runescape", "Eve Online", "Genshin Impact", "Honkai Star Rail", "Monster Hunter", "Kingdom Hearts", "Metroid", "Castlevania", "Donkey Kong", "Kirby", "Smash Bros", "Bayonetta", "Devil May Cry", "Ninja Gaiden", "Persona", "Dragon Quest", "Grand Turismo", "Forza", "Need for Speed", "Burnout", "Tomb Raider", "Dishonored", "Prey", "Deus Ex", "Saints Row", "Borderlands", "Gears of War", "Battlefield", "Crysis", "Rime", "Limbo", "Inside", "Celeste", "Shovel Knight", "Hollow Knight", "Disco Elysium", "Outer Wilds", "Returnal", "Deathloop", "Ghost of Tsushima"
-		  ],
+		 "Video Games": [
+			"Mario", "Zelda", "Pokemon", "Minecraft", "Fortnite", "Roblox", "Call of Duty", "GTA", "Halo", "God of War", "The Witcher", "Skyrim", "Fallout", "Overwatch", "League of Legends", "Dota", "World of Warcraft", "Counter-Strike", "Valorant", "Apex Legends", "Tetris", "Pac-Man", "Sonic", "Street Fighter", "Mortal Kombat", "Tekken", "Final Fantasy", "Resident Evil", "Silent Hill", "Metal Gear Solid", "Uncharted", "The Last of Us", "Red Dead Redemption", "Cyberpunk", "Elden Ring", "Dark Souls", "Bloodborne", "Sekiro", "Animal Crossing", "Stardew Valley", "Among Us", "Rocket League", "FIFA", "NBA 2K", "Madden", "Sims", "Civilization", "Portal", "Half-Life", "Doom", "Quake", "Bioshock", "Mass Effect", "Assassins Creed", "Far Cry", "Destiny", "Hades", "Dead Cells", "Cuphead", "Undertale", "Terraria", "Subnautica", "Valheim", "No Mans Sky", "Starcraft", "Diablo", "Warcraft", "Guild Wars", "Runescape", "Eve Online", "Genshin Impact", "Honkai Star Rail", "Monster Hunter", "Kingdom Hearts", "Metroid", "Castlevania", "Donkey Kong", "Kirby", "Smash Bros", "Bayonetta", "Devil May Cry", "Ninja Gaiden", "Persona", "Dragon Quest", "Grand Turismo", "Forza", "Need for Speed", "Burnout", "Tomb Raider", "Dishonored", "Prey", "Deus Ex", "Saints Row", "Borderlands", "Gears of War", "Battlefield", "Crysis", "Rime", "Limbo", "Inside", "Celeste", "Shovel Knight", "Hollow Knight", "Disco Elysium", "Outer Wilds", "Returnal", "Deathloop", "Ghost of Tsushima", "Balatro", "Lethal Company", "Dave the Diver", "Vampire Survivors", "Cult of the Lamb", "Inscryption", "Signalis", "Tunic", "Stray", "Dredge", "Blasphemous", "Pizza Tower", "Animal Well", "Pacific Drive", "Ultrakill", "Katana Zero", "Slay the Spire", "Phasmophobia", "Content Warning", "Palworld", "Helldivers 2", "Manor Lords", "Baldur's Gate 3", "Alan Wake", "Control", "Death Stranding", "Starfield", "Black Myth: Wukong", "Zenless Zone Zero", "Blue Archive", "Arknights", "Fate Grand Order", "Marvel Snap", "Clash of Clans", "Clash Royale", "Brawl Stars", "Candy Crush", "Subway Surfers", "Temple Run", "Angry Birds", "Fruit Ninja", "Jetpack Joyride", "Monument Valley", "Limbo", "Plants vs Zombies", "Hay Day", "Royal Match", "Monopoly Go", "Pokemon GO", "Ingress", "Pikmin Bloom", "Wordle", "Connections", "GeoGuessr", "8 Ball Pool", "Agar.io", "Slither.io", "Krunker", "Shell Shockers", "Diep.io", "Tetr.io", "Friday Night Funkin", "HoloCure", "Doki Doki Literature Club", "Baldi's Basics", "That's Not My Neighbor", "Iron Lung", "Buckshot Roulette", "Getting Over It", "Papers Please", "A Short Hike", "Firewatch", "What Remains of Edith Finch", "The Stanley Parable", "Outer Worlds", "Sea of Thieves", "Rust", "DayZ", "Tarkov", "Squad", "Hell Let Loose", "War Thunder", "World of Tanks", "Warframe", "Path of Exile", "Grim Dawn", "Project Zomboid", "RimWorld", "Factorio", "Satisfactory", "Dwarf Fortress", "Kenshi", "Sons of the Forest", "The Forest", "Raft", "Green Hell", "Stranded Deep", "PowerWash Simulator", "Euro Truck Simulator", "Microsoft Flight Simulator", "Assetto Corsa", "BeamNG.drive", "My Summer Car", "Spelunky", "Risk of Rain", "Enter the Gungeon", "Dead by Daylight", "Phasmophobia", "Identity V", "Left 4 Dead", "Team Fortress 2", "Garry's Mod", "Geometry Dash", "Osu!", "Beat Saber", "VRChat", "Rec Room", "Roblox", "Habbo Hotel", "Club Penguin", "Wizard101", "MapleStory", "Lost Ark", "Black Desert Online"
+		 ],
 
 		  Science: [
 			"Atom", "Molecule", "Cell", "DNA", "Gravity", "Magnetism", "Electricity", "Light", "Sound", "Heat", "Energy", "Force", "Motion", "Planet", "Star", "Galaxy", "Black Hole", "Comet", "Asteroid", "Meteor", "Element", "Compound", "Acid", "Base", "Bacteria", "Virus", "Fungus", "Plant", "Animal", "Human", "Brain", "Heart", "Lungs", "Stomach", "Bone", "Muscle", "Nerve", "Blood", "Skin", "Evolution", "Photosynthesis", "Respiration", "Digestion", "Reproduction", "Genetics", "Chemistry", "Physics", "Biology", "Astronomy", "Geology", "Microscope", "Telescope", "Thermometer", "Barometer", "Compass", "Magnet", "Battery", "Circuit", "Prism", "Lens", "Mirror", "Laser", "Robot", "Satellite", "Rocket", "Quantum", "Relativity", "Entropy", "Neutrino", "Photon", "Proton", "Electron", "Neutron", "Ecosystem", "Habitat", "Ecology", "Biotechnology", "Thermodynamics", "Mechanics", "Optics", "Acoustics", "Fission", "Fusion", "Tsunami", "Earthquake", "Volcano", "Fossil", "Sediment", "Igneous", "Metamorphic", "Wavelength", "Frequency", "Amplitude", "Current", "Voltage", "Resistance", "Capacitance", "Inductance", "Superconductivity", "Semiconductor", "Crystal", "Alloy", "Isotope", "Enzyme", "Hormone", "Antibody", "Vaccine", "Pathogen", "Amoeba", "Organism", "Substance", "Mass", "Volume", "Density", "Pressure", "Velocity", "Acceleration", "Momentum"
@@ -253,7 +260,6 @@
 		  People: [
 			"President", "King", "Queen", "Athlete", "Celebrity", "Artist", "Musician", "Scientist", "Teacher", "Student", "Child", "Elderly", "Baby", "Tourist", "Police Officer", "Doctor", "Firefighter", "Chef", "Astronaut", "Villain", "Hero", "Neighbor", "Friend", "Boss", "Employee", "Stranger", "Beggar", "Model", "Guard", "Priest", "Nun", "Monk", "Philosopher", "Inventor", "Explorer", "Pirate", "Ninja", "Samurai", "Viking", "Knight", "Jester", "Clown", "Magician", "Detective", "Spy", "Ghost", "Alien", "Robot", "Vampire", "Werewolf", "Zombie", "Mermaid", "Dwarf", "Elf", "Giant", "Wizard", "Witch", "Engineer", "Farmer", "Merchant", "Trader", "Sailor", "Captain", "Hunter", "Siblings", "Parent", "Grandparent", "Cousin", "Aunt", "Uncle", "Nephew", "Niece", "Spouse", "Partner", "Fiancé", "Groom", "Bride", "Best Man", "Maid of Honor", "Godparent", "Roommate", "Landlord", "Tenant", "Client", "Customer", "Vendor", "Supplier", "Consumer", "Patient", "Commuter", "Pedestrian", "Audience", "Spectator", "Witness", "Suspect", "Victim", "Heir", "Royal", "Emperor", "Duchess", "Duke", "Count", "Earl", "Baron", "Bishop", "Deacon", "Rabbi", "Imam", "Shaman", "Oracle", "Seer", "Prophet", "Barbarian", "Gladiator", "Centurion", "Scribe", "Herald", "Courier"
 		  ],
-
 		  
 		 "Historical Figures": [
 		   "Cleopatra", "Julius Caesar", "Alexander the Great", "Joan of Arc", "Leonardo da Vinci", "William Shakespeare", "Isaac Newton", "George Washington", "Napoleon Bonaparte", "Abraham Lincoln", "Queen Victoria", "Albert Einstein", "Marie Curie", "Mahatma Gandhi", "Winston Churchill", "Franklin D. Roosevelt", "Martin Luther King Jr.", "Nelson Mandela", "Genghis Khan", "Confucius", "Aristotle", "Plato", "Socrates", "Michelangelo", "Galileo Galilei", "Christopher Columbus", "Marco Polo", "Nikola Tesla", "Henry Ford", "The Wright Brothers", "Amelia Earhart", "Rosa Parks", "Vincent van Gogh", "Mozart", "Beethoven", "Anne Frank", "Catherine the Great", "Blackbeard", "Sun Tzu", "Saladin", "Attila the Hun", "Hannibal Barca", "Hatshepsut", "Augustus", "Charlemagne", "Dante Alighieri", "Johannes Gutenberg", "Queen Elizabeth I", "Ferdinand Magellan", "Hernán Cortés", "Montezuma II", "Pocahontas", "Rembrandt", "Louis XIV", "James Cook", "Thomas Jefferson", "Marie Antoinette", "Simón Bolívar", "Charles Darwin", "Karl Marx", "Florence Nightingale", "Susan B. Anthony", "Sitting Bull", "Geronimo", "Thomas Edison", "Alexander Graham Bell", "Sigmund Freud", "Vladimir Lenin", "Joseph Stalin", "Benito Mussolini", "Adolf Hitler", "Mao Zedong", "Mother Teresa", "Hypatia", "Mansa Musa", "Frida Kahlo", "Eleanor Roosevelt", "Pablo Picasso", "W.E.B. Du Bois", "Srinivasa Ramanujan", "Alan Turing", "Rosalind Franklin", "James Watson", "Francis Crick", "Che Guevara", "Fidel Castro", "Malcolm X", "Muhammad Ali", "Neil Armstrong", "Yuri Gagarin", "Stephen Hawking", "Bill Gates", "Steve Jobs", "Tim Berners-Lee", "Oprah Winfrey", "Malala Yousafzai", "Homer", "Pythagoras", "Heraclitus", "Democritus", "Hippocrates", "Euclid", "Archimedes", "Zeno of Citium", "Cicero", "Ptolemy", "Hypatia of Alexandria", "Avicenna (Ibn Sina)", "Averroes (Ibn Rushd)", "Maimonides", "Thomas Aquinas", "Roger Bacon", "William of Ockham", "Niccolò Machiavelli", "Nicolaus Copernicus", "Thomas More", "Martin Luther", "John Calvin", "Francis Bacon", "Galileo Galilei", "Johannes Kepler", "Thomas Hobbes", "René Descartes", "John Locke", "Baruch Spinoza", "Gottfried Wilhelm Leibniz", "Voltaire", "Jean-Jacques Rousseau", "Immanuel Kant", "Adam Smith", "Mary Wollstonecraft", "Georg Wilhelm Friedrich Hegel", "John Stuart Mill", "Søren Kierkegaard", "Friedrich Nietzsche", "Max Weber", "Émile Durkheim", "Bertrand Russell", "Ludwig Wittgenstein", "Martin Heidegger", "Jean-Paul Sartre", "Simone de Beauvoir", "Albert Camus", "Ayn Rand", "Hannah Arendt", "Michel Foucault", "Noam Chomsky", "Zheng He", "Vasco da Gama", "John Cabot", "Amerigo Vespucci", "Juan Ponce de León", "Francisco Pizarro", "Jacques Cartier", "Francis Drake", "Henry Hudson", "Sacagawea", "Lewis and Clark", "David Livingstone", "Roald Amundsen", "Robert Falcon Scott", "Edmund Hillary"
@@ -275,6 +281,7 @@
             Food: "https://em-content.zobj.net/source/microsoft-teams/363/hamburger_1f354.png",
             Brands: "https://em-content.zobj.net/source/microsoft-teams/337/shopping-bags_1f6cd-fe0f.png",
             Technology: "https://em-content.zobj.net/source/microsoft-teams/337/gear_2699-fe0f.png",
+            TV: "https://em-content.zobj.net/source/microsoft-teams/337/television_1f4fa.png",
             Jobs: "https://em-content.zobj.net/source/microsoft-teams/337/briefcase_1f4bc.png",
             Mythology: "https://em-content.zobj.net/source/microsoft-teams/337/dragon-face_1f432.png", 
             Sport: "https://em-content.zobj.net/source/microsoft-teams/337/trophy_1f3c6.png",
@@ -283,7 +290,7 @@
             Superheroes: "https://em-content.zobj.net/source/microsoft-teams/337/superhero_light-skin-tone_1f9b8-1f3fb_1f3fb.png",
             Animals: "https://em-content.zobj.net/source/microsoft-teams/337/service-dog_1f415-200d-1f9ba.png",
             Countries: "https://em-content.zobj.net/source/microsoft-teams/337/globe-showing-americas_1f30e.png",
-            VideoGames: "https://em-content.zobj.net/source/microsoft-teams/337/joystick_1f579-fe0f.png",
+            "Video Games": "https://em-content.zobj.net/source/microsoft-teams/337/joystick_1f579-fe0f.png",
             Science: "https://em-content.zobj.net/source/microsoft-teams/363/scientist-light-skin-tone_1f9d1-1f3fb-200d-1f52c.png",
             Clothing: "https://em-content.zobj.net/source/microsoft-teams/337/t-shirt_1f455.png",
             Home: "https://em-content.zobj.net/source/microsoft-teams/337/house_1f3e0.png",
@@ -327,7 +334,7 @@
                 Superheroes: "https://www.dropbox.com/scl/fi/p5xbsz50if9i75pras2og/ElevenLabs_2025-12-15T08_38_43_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=cvsc91cryxm94sfetmntb630s&raw=1",
                 Animals: "https://www.dropbox.com/scl/fi/fhty3jkw4g43v32a82wa5/ElevenLabs_2025-12-15T08_41_39_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=kefs2jzmt9lealfbi20jz80xy&raw=1",
                 Countries: "https://www.dropbox.com/scl/fi/7ogj4vdnm8vgv8l06q851/ElevenLabs_2025-12-15T08_42_31_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=xj31mwhkj3gnkdtfagqendwo5&raw=1",
-                VideoGames: "https://www.dropbox.com/scl/fi/e95u1v2ugjqjyndkzbr5x/ElevenLabs_2025-12-15T08_43_37_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=h8fi9gfb9fabe46sfambcwdse&raw=1",
+                "Video Games": "https://www.dropbox.com/scl/fi/e95u1v2ugjqjyndkzbr5x/ElevenLabs_2025-12-15T08_43_37_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=h8fi9gfb9fabe46sfambcwdse&raw=1",
                 Science: "https://www.dropbox.com/scl/fi/ir5zqotuomxllzs9rrtkk/ElevenLabs_2025-12-15T08_44_27_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=e3556mc64aaa6w86nhfe7meu6&raw=1",
                 Clothing: "https://www.dropbox.com/scl/fi/j9ufwciweptnoezljo8ut/ElevenLabs_2025-12-15T08_45_27_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=edhoon9hrhxm8k46t1rao01rp&raw=1",
                 Home: "https://www.dropbox.com/scl/fi/d833xr5wu9aonnpj2guv1/ElevenLabs_2025-12-15T08_47_02_Cornelius_pvc_sp100_s50_sb75_v3.mp3?rlkey=kxugvsnlwtofbke9bcn1gwxl0&raw=1",
@@ -479,17 +486,14 @@
                     if (saved) {
                         let parsed = JSON.parse(saved);
                         if (Array.isArray(parsed) && parsed.length > 0) {
-                            // Migration check: if old format (array of strings) exists, convert it.
                             if (typeof parsed[0] === 'string') {
                                 parsed = parsed.map(name => ({ name, audioData: null }));
                             }
                             return parsed;
                         }
                     }
-                    // If nothing is saved or saved data is empty/invalid, return defaults.
                     return DEFAULT_PLAYERS;
                 } catch {
-                    // If JSON parsing fails, return defaults.
                     return DEFAULT_PLAYERS;
                 }
             });
@@ -924,17 +928,14 @@
             );
         };
 
-        // 2. Card Reveal Screen
+        // 2. Card Reveal Screen (Enhanced with 3D Flip)
         const CardRevealScreen = ({ player, word, onNext, isLastPlayer, audioManager }) => {
             const [step, setStep] = useState('handover'); 
-            const [isRevealed, setIsRevealed] = useState(false);
-            const [swipeX, setSwipeX] = useState(0);
-            const touchStartX = useRef(null);
+            const [isFlipped, setIsFlipped] = useState(false);
             
             useEffect(() => {
                 setStep('handover');
-                setIsRevealed(false);
-                setSwipeX(0);
+                setIsFlipped(false);
             }, [player]);
             
             useEffect(() => {
@@ -944,23 +945,10 @@
                 }
             }, [player, step]);
 
-            const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-            const onTouchMove = (e) => {
-                if (touchStartX.current !== null && !isRevealed) {
-                    setSwipeX(e.touches[0].clientX - touchStartX.current);
-                }
-            };
-            const onTouchEnd = () => {
-                if (!isRevealed && Math.abs(swipeX) > 100) handleReveal();
-                else setSwipeX(0);
-                touchStartX.current = null;
-            };
-
             const handleReveal = () => {
-                if (!isRevealed) {
-                    setIsRevealed(true);
-                    setStep('reveal');
-                    setSwipeX(0);
+                if (!isFlipped) {
+                    setIsFlipped(true);
+                    audioManager.playSound('uiClick');
                     if (navigator.vibrate) navigator.vibrate([30, 50]);
                 }
             };
@@ -970,7 +958,6 @@
                     <div className="w-32 h-32 rounded-full flex items-center justify-center mb-10 relative">
                         <div className="absolute inset-0 bg-brand-500/20 blur-2xl rounded-full animate-pulse-slow"></div>
                         <div className="glass-panel w-full h-full rounded-full flex items-center justify-center border border-white/10">
-                            {/* Replaced fa-user-secret with image */}
                             <img src="https://em-content.zobj.net/source/microsoft-teams/363/detective_light-skin-tone_1f575-1f3fb_1f3fb.png" alt="Detective" draggable="false" className="w-20 h-20" />
                         </div>
                     </div>
@@ -982,7 +969,7 @@
                         <button 
                             onClick={() => {
                                 audioManager.playSound('uiClick');
-                                setStep('identify');
+                                setStep('reveal');
                                 if (navigator.vibrate) navigator.vibrate(20);
                             }}
                             className="w-full glass-panel hover:bg-white/5 border border-white/10 text-white font-display font-bold text-lg py-5 rounded-[1.5rem] transition-all active:scale-95 flex items-center justify-center gap-3"
@@ -993,82 +980,80 @@
                 </div>
             );
 
-            const renderIdentity = () => (
-                <div className="flex flex-col items-center justify-center h-full w-full p-6 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full bg-slate-950/90 backdrop-blur-sm z-0"></div>
-                    
-                    <div 
-                        className="relative w-full max-w-xs aspect-[3/4] perspective-1000 z-10 select-none"
-                        onClick={handleReveal}
-                        onTouchStart={onTouchStart}
-                        onTouchMove={onTouchMove}
-                        onTouchEnd={onTouchEnd}
-                    >
-                         <div 
-                            className={`relative w-full h-full transition-transform duration-700 transform-style-3d preserve-3d cursor-pointer ${isRevealed ? 'rotate-y-180' : 'rotate-y-0'}`}
-                            style={!isRevealed && swipeX ? { transform: `rotateY(${swipeX / 5}deg)` } : {}}
-                         >
-                            {/* Front */}
+            const renderFlipCard = () => (
+                <div className="flex flex-col items-center justify-center h-full w-full p-6 relative">
+                    {/* Background Overlay */}
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-0"></div>
+
+                    {/* Card Container */}
+                    <div className="relative w-full max-w-xs aspect-[3/4] perspective-1000 z-10 cursor-pointer" onClick={handleReveal}>
+                        <div className={`relative w-full h-full transition-transform duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+                            
+                            {/* FRONT (Locked) */}
                             <div className="absolute inset-0 backface-hidden">
-                                <div className="w-full h-full bg-slate-900 rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-col items-center justify-center p-8 group relative overflow-hidden">
+                                <div className="w-full h-full bg-slate-900 rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-col items-center justify-center p-8 relative overflow-hidden group">
                                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
-                                    <div className="w-full h-full absolute top-0 left-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
 
                                     <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-8 ring-1 ring-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                                        {/* Replaced fa-lock with image */}
                                         <img src="https://em-content.zobj.net/source/microsoft-teams/337/locked_1f512.png" alt="Locked" draggable="false" className="w-12 h-12" />
                                     </div>
                                     <h3 className="text-white font-display font-bold text-2xl mb-2">TOP SECRET</h3>
-                                    <p className="text-white/40 font-medium text-sm text-center tracking-wide">Tap or Swipe to decrypt</p>
+                                    <p className="text-white/40 font-medium text-sm text-center tracking-wide">Tap to decrypt</p>
                                     
-                                    <div className="absolute bottom-10 flex gap-3 items-center text-white/20 text-[10px] font-bold uppercase tracking-widest animate-pulse">
-                                        <span>Decrypt</span> <i className="fa-solid fa-chevron-right"></i>
+                                    <div className="absolute bottom-10 flex gap-2 items-center text-white/20 text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                                        <span>Tap to Open</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Back Placeholder (Real content in renderReveal) */}
-                             <div className="absolute inset-0 rotate-y-180 backface-hidden">
-                                <div className="w-full h-full rounded-[2.5rem] bg-slate-800 border border-white/10"></div>
+                            {/* BACK (Revealed) */}
+                            <div className="absolute inset-0 rotate-y-180 backface-hidden">
+                                <div className={`w-full h-full rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-center relative overflow-hidden shadow-2xl border ${
+                                     word === "IMPOSTER" 
+                                        ? 'bg-gradient-to-br from-red-950 to-slate-950 border-red-500/20' 
+                                        : 'bg-gradient-to-br from-teal-950 to-slate-950 border-teal-500/20'
+                                }`}>
+                                    
+                                    {/* Shine Effect */}
+                                    <div className="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden">
+                                         <div className="absolute w-[200%] h-[200%] bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shine"></div>
+                                    </div>
+
+                                    <div className={`absolute top-[-50%] w-full h-full opacity-30 blur-[100px] z-0 ${word === 'IMPOSTER' ? 'bg-red-600' : 'bg-teal-500'}`}></div>
+
+                                    <div className="relative z-10 flex flex-col items-center justify-center h-full">
+                                        <p className={`text-[10px] uppercase tracking-[0.4em] font-bold mb-8 ${word === 'IMPOSTER' ? 'text-red-400' : 'text-teal-400'}`}>Your Mission Role</p>
+                                        
+                                        {word === "IMPOSTER" ? (
+                                            <>
+                                                <div className="w-28 h-28 bg-red-500/10 rounded-full flex items-center justify-center mb-6 ring-1 ring-red-500/30 shadow-[0_0_60px_rgba(239,68,68,0.2)] animate-pulse">
+                                                    <img src="https://em-content.zobj.net/source/microsoft-teams/337/shushing-face_1f92b.png" alt="Shushing" draggable="false" className="w-16 h-16 drop-shadow-lg" />
+                                                </div>
+                                                <h2 className="text-4xl font-display font-black text-red-500 tracking-tight mb-4 drop-shadow-sm">IMPOSTER</h2>
+                                                <p className="text-red-200/60 text-xs font-medium leading-relaxed max-w-[200px]">Blend in. Deceive. Don't let them know you are the spy.</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="w-28 h-28 bg-teal-500/10 rounded-full flex items-center justify-center mb-6 ring-1 ring-teal-500/30 shadow-[0_0_60px_rgba(20,184,166,0.2)]">
+                                                    <img src="https://em-content.zobj.net/source/microsoft-teams/337/clipboard_1f4cb.png" alt="Clipboard" draggable="false" className="w-16 h-16 drop-shadow-lg" />
+                                                </div>
+                                                <h2 className="text-3xl font-display font-bold text-white mb-4 drop-shadow-sm">{word}</h2>
+                                                <p className="text-teal-200/60 text-xs font-medium leading-relaxed max-w-[200px]">Memorize this word. It proves your innocence.</p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
+
                         </div>
                     </div>
-                </div>
-            );
 
-            const renderReveal = () => (
-                 <div className="flex flex-col items-center justify-center h-full p-6 animate-fadeIn relative z-10">
-                    <div className={`w-full max-w-sm aspect-[3/4] rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-center relative overflow-hidden shadow-2xl border ${
-                         word === "IMPOSTER" 
-                            ? 'bg-gradient-to-br from-red-950 to-slate-950 border-red-500/20' 
-                            : 'bg-gradient-to-br from-teal-950 to-slate-950 border-teal-500/20'
-                    }`}>
-                        <div className={`absolute top-[-50%] w-full h-full opacity-30 blur-[100px] ${word === 'IMPOSTER' ? 'bg-red-600' : 'bg-teal-500'}`}></div>
-
-                        <p className={`text-[10px] uppercase tracking-[0.4em] font-bold mb-10 ${word === 'IMPOSTER' ? 'text-red-400' : 'text-teal-400'}`}>Your Mission Role</p>
-                        
-                        {word === "IMPOSTER" ? (
-                            <>
-                                <div className="w-32 h-32 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-8 ring-1 ring-red-500/30 shadow-[0_0_60px_rgba(239,68,68,0.2)] animate-pulse">
-                                    <img src="https://em-content.zobj.net/source/microsoft-teams/337/shushing-face_1f92b.png" alt="Shushing" draggable="false" className="w-20 h-20 drop-shadow-lg" />
-                                </div>
-                                <h2 className="text-5xl font-display font-black text-red-500 tracking-tight mb-4 drop-shadow-sm">IMPOSTER</h2>
-                                <p className="text-red-200/60 text-sm font-medium leading-relaxed max-w-[220px]">Blend in. Deceive. Don't let them know you are the spy.</p>
-                            </>
-                        ) : (
-                            <>
-                                <div className="w-32 h-32 bg-teal-500/10 rounded-full flex items-center justify-center mx-auto mb-8 ring-1 ring-teal-500/30 shadow-[0_0_60px_rgba(20,184,166,0.2)]">
-                                    <img src="https://em-content.zobj.net/source/microsoft-teams/337/clipboard_1f4cb.png" alt="Clipboard" draggable="false" className="w-20 h-20 drop-shadow-lg" />
-                                </div>
-                                <h2 className="text-4xl font-display font-bold text-white mb-4 drop-shadow-sm">{word}</h2>
-                                <p className="text-teal-200/60 text-sm font-medium leading-relaxed max-w-[220px]">Memorize this word. It proves your innocence.</p>
-                            </>
-                        )}
-                    </div>
-
-                    <div className="w-full max-w-sm mt-8">
+                    {/* Next Button (Only appears after flip) */}
+                    <div className={`w-full max-w-sm mt-8 transition-all duration-700 transform ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
                         <button 
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent re-triggering flip
                                 audioManager.playSound('uiClick');
                                 if(navigator.vibrate) navigator.vibrate(20);
                                 onNext();
@@ -1089,9 +1074,7 @@
                          <div className="blob bg-cyan-600 bottom-[-10%] right-[-10%] w-[50%] h-[50%] animation-delay-2000"></div>
                     </div>
                     <div className="relative z-10 h-full">
-                        {step === 'handover' && renderHandover()}
-                        {step === 'identify' && renderIdentity()}
-                        {step === 'reveal' && renderReveal()}
+                        {step === 'handover' ? renderHandover() : renderFlipCard()}
                     </div>
                 </div>
             );
@@ -1420,8 +1403,7 @@
                                 img.onload = resolve;
                                 img.onerror = resolve; // Resolve even on error
                             } else if (url.match(/\.(mp3|wav|ogg)$/)) {
-                               // Audio is now pre-initialized, so we don't need to preload it here.
-                               // The browser will start fetching it when the Audio object is created.
+                               // Audio is now pre-initialized
                                 resolve();
                             } else {
                                 resolve();
