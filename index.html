@@ -6,18 +6,23 @@
     <title>Imposter - Find the Spy</title>
     
     <!-- Favicon -->
-    <link rel="icon" href="https://em-content.zobj.net/source/microsoft-teams/400/disguised-face_1f978.png" type="image/png">
+    <link rel="icon" href="https://em-content.zobj.net/source/microsoft/379/disguised-face_1f978.png" type="image/png">
 
-    <!-- Social Media / Share Metadata (Open Graph & Twitter) -->
+	<!-- Social Media / Share Metadata (Open Graph & Twitter) -->
     <meta property="og:title" content="Imposter - Find the Spy" />
-    <meta property="og:description" content="A web-based social deduction game of deception. Find the imposter before it's too late. Play with friends online or on one device!" />
-    <meta property="og:image" content="https://i.ibb.co/bFqD2s7/imposter-promo.png" />
-    <meta property="og:url" content="https://imposter.tanner.center" />
+    <meta property="og:description" content="Can you blend in? Find the spy before time runs out. Play with friends online or on one device!" />
+    
+    <meta property="og:url" content="https://shortiescam.github.io/" />
+    
+    <meta property="og:image" content="https://images.emojiterra.com/microsoft/fluent-emoji/15.1/512px/1f92b_color.png" />
+    
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Imposter - Find the Spy" />
-    <meta name="twitter:description" content="A web-based social deduction game of deception. Find the imposter before it's too late. Play with friends online or on one device!" />
-    <meta name="twitter:image" content="https://i.ibb.co/bFqD2s7/imposter-promo.png" />
+    <meta name="twitter:description" content="Can you blend in? Find the spy before time runs out. Play with friends online or on one device!" />
+    
+    <!-- Same image link as above -->
+    <meta name="twitter:image" content="https://images.emojiterra.com/microsoft/fluent-emoji/15.1/512px/1f92b_color.png" />
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -837,8 +842,7 @@
         };
 
 
-        // 0. Loading Screen
-        const TIPS = [
+		const TIPS = [
             "The Imposter doesn't know the secret word. Ask questions that might expose them!",
             "Pay attention to hesitation. The Imposter might need extra time to think of a lie.",
             "Try to ask a question only a true agent would know the answer to.",
@@ -850,7 +854,19 @@
             "Use the untimed mode for a more relaxed, deduction-focused game.",
             "The Imposter's goal is to survive the round without being identified.",
             "As an agent, be specific enough to prove you're innocent but vague enough not to reveal the word to the Imposter.",
-            "Listen to how others answer. Is someone being overly generic or changing their story?"
+            "Listen to how others answer. Is someone being overly generic or changing their story?",
+            "If you are the Imposter, try to get others to talk first so you can copy their vibe.",
+            "Don't be too obvious! If the word is 'Pizza', don't ask 'Do you like pepperoni?'",
+            "In Online Mode, check the 'Voting Record' at the end to see who betrayed whom.",
+            "The 'Speak Category' toggle allows the game to announce the category name aloud.",
+            "Watch out for players who simply repeat the previous answer in different words.",
+            "Silence is suspicious! Make sure you have an answer ready before it's your turn.",
+            "If the group is confused, the Imposter often wins. Keep your questions clear.",
+            "Eye contact can be deceiving. Some Imposters are great at looking you in the eye.",
+            "Use the 'Verify Identity' button in local mode to ensure you are handing the phone to the right person.",
+			"Did someone smile when they saw their card? That might be a clue.",
+            "If you are the Imposter and figure out the word, try to blend in by adding a unique detail.",
+			"Keep your card hidden! Reflections in glasses or windows can give you away."
         ];
 
         const LoadingScreen = () => {
