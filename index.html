@@ -20,6 +20,11 @@
     
     <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -179,6 +184,22 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // --- FIREBASE SETUP ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyCebdOffzrb0D2efbgC9eDPRAr-hYgIXS8",
+          authDomain: "imposter-e571f.firebaseapp.com",
+          projectId: "imposter-e571f",
+          storageBucket: "imposter-e571f.firebasestorage.app",
+          messagingSenderId: "318719643356",
+          appId: "1:318719643356:web:994fb32e845e6df743ae19",
+          measurementId: "G-KHJRQCSH8Z"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        // --- END FIREBASE SETUP ---
+
         // --- DATA ---
 		const WORD_BANK = {
 		  Supercell: [
@@ -190,7 +211,7 @@
 		  ],
 
 		  Movies: [
-			"The Godfather", "Titanic", "Avatar", "Star Wars", "Jurassic Park", "The Matrix", "Inception", "Forrest Gump", "The Lion King", "Avengers", "Pulp Fiction", "Frozen", "The Dark Knight", "Harry Potter", "Back to the Future", "Rocky", "Gladiator", "Shrek", "Toy Story", "Jaws", "Interstellar", "Parasite", "Coco", "Up", "Wall-E", "Alien", "Terminator", "Fight Club", "Goodfellas", "Spirited Away", "Barbie", "Oppenheimer", "Dune", "Spider-Man", "Black Panther", "Iron Man", "Wonder Woman", "Joker", "Top Gun", "The Shining", "Get Out", "Blade Runner", "E.T.", "Indiana Jones", "Schindler's List", "Lord of the Rings", "Silence of the Lambs", "Casablanca", "Citizen Kane", "The Prestige", "Memento", "Se7en", "Zootopia", "Moana", "Inside Out", "Finding Nemo", "Ratatouille", "The Incredibles", "Whiplash", "La La Land", "The Social Network", "Her", "Gravity", "Mad Max", "Logan", "The Batman", "No Country for Old Men", "The Departed", "Heat", "Scarface", "Die Hard", "Mission Impossible", "John Wick", "Matrix Reloaded", "Matrix Revolutions", "Kill Bill", "Reservoir Dogs", "Inglourious Basterds", "Django Unchained", "Once Upon a Time in Hollywood", "The Good the Bad and the Ugly", "A Fistful of Dollars", "For A Few Dollars More", "2001: A Space Odyssey", "Apocalypse Now", "Taxi Driver", "One Flew Over the Cuckoo's Nest", "Amadeus", "Chinatown", "Fargo", "Eternal Sunshine of the Spotless Mind", "Requiem for a Dream", "Pan's Labyrinth", "Oldboy", "Crouching Tiger Hidden Dragon", "Drive", "Donnie Darko", "The Grand Budapest Hotel", "Boyhood", "Mad Max: Fury Road", "Room", "Spotlight", "Moonlight", "Call Me By Your Name", "Nomadland", "Everything Everywhere All at Once", "Poor Things", "The Shawshank Redemption", "The Wizard of Oz", "The Sound of Music", "Psycho", "Grease", "Home Alone", "Ghostbusters", "The Breakfast Club", "Ferris Bueller's Day Off", "The Sixth Sense", "Saving Private Ryan", "Braveheart", "The Truman Show", "A Beautiful Mind", "The Green Mile", "Cast Away", "Apollo 13", "Terminator 2: Judgment Day", "Predator", "RoboCop", "Total Recall", "The Goonies", "Gremlins", "Raiders of the Lost Ark", "Blade Runner 2049", "The Big Lebowski", "The Princess Bride", "Mean Girls", "Legally Blonde", "Clueless", "The Devil Wears Prada", "The Notebook", "A Star Is Born", "Bohemian Rhapsody", "The Wolf of Wall Street", "American Psycho", "The Aviator", "Twister", "Independence Day", "Men in Black", "Bad Boys", "Rush Hour", "Beverly Hills Cop", "Coming to America", "Groundhog Day", "Ghost", "Dirty Dancing", "Pretty Woman", "The Usual Suspects", "L.A. Confidential", "Unbreakable", "Signs", "Split", "Glass", "Arrival", "Dunkirk", "1917", "All Quiet on the Western Front", "The Revenant", "The Hateful Eight", "The Irishman", "Spider-Man: Into the Spider-Verse", "Spider-Man: Across the Spider-Verse", "Deadpool", "Deadpool & Wolverine", "Guardians of the Galaxy", "Thor: Ragnarok", "Doctor Strange", "Captain Marvel", "Black Widow", "Ant-Man", "Shang-Chi", "Pirates of the Caribbean", "National Treasure", "Ocean's Eleven", "The Italian Job", "Fast and Furious", "Extraction", "The Martian", "Prometheus", "Ex Machina", "A Quiet Place", "Hereditary", "Midsommar", "The Witch", "The Conjuring", "Insidious", "Halloween", "Friday the 13th", "A Nightmare on Elm Street", "Scream", "The Exorcist", "Poltergeist", "The Texas Chain Saw Massacre", "The Birds", "Rear Window", "Vertigo", "North by Northwest", "Sunset Boulevard", "Some Like It Hot", "Singin' in the Rain", "Beauty and the Beast", "Aladdin", "The Little Mermaid", "Mulan", "Hercules", "Tarzan", "How to Train Your Dragon", "Kung Fu Panda", "Despicable Me", "Minions", "Ice Age", "Madagascar", "Shrek 2", "Puss in Boots", "Sing", "Encanto", "Raya and the Last Dragon", "Luca", "Soul", "Turning Red", "Elemental", "Dune: Part Two", "Inside Out 2", "Gladiator II", "Alien: Romulus", "Wicked", "Twisters", "The Hangover", "Superbad", "Step Brothers", "Bridesmaids", "21 Jump Street", "Anchorman", "The Truman Show", "Catch Me If You Can", "The Great Gatsby", "The 40-Year-Old Virgin", "Knives Out", "Glass Onion", "John Wick: Chapter 4", "Furiosa: A Mad Max Saga", "Kingdom of the Planet of the Apes"
+			"The Godfather", "Titanic", "Avatar", "Star Wars", "Jurassic Park", "The Matrix", "Inception", "Forrest Gump", "The Lion King", "Avengers", "Pulp Fiction", "Frozen", "The Dark Knight", "Harry Potter", "Back to the Future", "Rocky", "Gladiator", "Shrek", "Toy Story", "Jaws", "Interstellar", "Parasite", "Coco", "Up", "Wall-E", "Alien", "Terminator", "Fight Club", "Goodfellas", "Spirited Away", "Barbie", "Oppenheimer", "Dune", "Spider-Man", "Black Panther", "Iron Man", "Wonder Woman", "Joker", "Top Gun", "The Shining", "Get Out", "Blade Runner", "E.T.", "Indiana Jones", "Schindler's List", "Lord of the Rings", "Silence of the Lambs", "Casablanca", "Citizen Kane", "The Prestige", "Memento", "Se7en", "Zootopia", "Moana", "Inside Out", "Finding Nemo", "Ratatouille", "The Incredibles", "Whiplash", "La La Land", "The Social Network", "Her", "Gravity", "Mad Max", "Logan", "The Batman", "No Country for Old Men", "The Departed", "Heat", "Scarface", "Die Hard", "Mission Impossible", "John Wick", "Matrix Reloaded", "Matrix Revolutions", "Kill Bill", "Reservoir Dogs", "Inglourious Basterds", "Django Unchained", "Once Upon a Time in Hollywood", "The Good the Bad and the Ugly", "A Fistful of Dollars", "For A Few Dollars More", "2001: A Space Odyssey", "Apocalypse Now", "Taxi Driver", "One Flew Over the Cuckoo's Nest", "Amadeus", "Chinatown", "Fargo", "Eternal Sunshine of the Spotless Mind", "Requiem for a Dream", "Pan's Labyrinth", "Oldboy", "Crouching Tiger Hidden Dragon", "Drive", "Donnie Darko", "The Grand Budapest Hotel", "Boyhood", "Mad Max: Fury Road", "Room", "Spotlight", "Moonlight", "Call Me By Your Name", "Nomadland", "Everything Everywhere All at Once", "Poor Things", "The Shawshank Redemption", "The Wizard of Oz", "The Sound of Music", "Psycho", "Grease", "Home Alone", "Ghostbusters", "The Breakfast Club", "Ferris Bueller's Day Off", "The Sixth Sense", "Saving Private Ryan", "Braveheart", "The Truman Show", "A Beautiful Mind", "The Green Mile", "Cast Away", "Apollo 13", "Terminator 2: Judgment Day", "Predator", "RoboCop", "Total Recall", "The Goonies", "Gremlins", "Raiders of the Lost Ark", "Blade Runner 2049", "The Big Lebowski", "The Princess Bride", "Mean Girls", "Legally Blonde", "Clueless", "The Devil Wears Prada", "The Notebook", "A Star Is Born", "Bohemian Rhapsody", "The Wolf of Wall Street", "American Psycho", "The Aviator", "Twister", "Independence Day", "Men in Black", "Bad Boys", "Rush Hour", "Beverly Hills Cop", "Coming to America", "Groundhog Day", "Ghost", "Dirty Dancing", "Pretty Woman", "The Usual Suspects", "L.A. Confidential", "Unbreakable", "Signs", "Split", "Glass", "Arrival", "Dunkirk", "1917", "All Quiet on the Western Front", "The Revenant", "The Hateful Eight", "The Irishman", "Spider-Man: Into the Spider-Verse", "Spider-Man: Across the Spider-Verse", "Deadpool", "Deadpool & Wolverine", "Guardians of the Galaxy", "Thor: Ragnarok", "Doctor Strange", "Captain Marvel", "Black Widow", "Ant-Man", "Shang-Chi", "Pirates of the Caribbean", "National Treasure", "Ocean's Eleven", "The Italian Job", "Fast and Furious", "Extraction", "The Martian", "Prometheus", "Ex Machina", "A Quiet Place", "Hereditary", "Midsommar", "The Witch", "The Conjuring", "Insidious", "Halloween", "Friday the 13th", "A Nightmare on Elm Street", "Scream", "The Exorcist", "Poltergeist", "The Texas Chain Saw Massacre", "The Birds", "Rear Window", "Vertigo", "North by Northwest", "Sunset Boulevard", "Some Like It Hot", "Singin' in the Rain", "Beauty and the Beast", "Aladdin", "The Little Mermaid", "Mulan", "Hercules", "Tarzan", "How to Train your Dragon", "Kung Fu Panda", "Despicable Me", "Minions", "Ice Age", "Madagascar", "Shrek 2", "Puss in Boots", "Sing", "Encanto", "Raya and the Last Dragon", "Luca", "Soul", "Turning Red", "Elemental", "Dune: Part Two", "Inside Out 2", "Gladiator II", "Alien: Romulus", "Wicked", "Twisters", "The Hangover", "Superbad", "Step Brothers", "Bridesmaids", "21 Jump Street", "Anchorman", "The Truman Show", "Catch Me If You Can", "The Great Gatsby", "The 40-Year-Old Virgin", "Knives Out", "Glass Onion", "John Wick: Chapter 4", "Furiosa: A Mad Max Saga", "Kingdom of the Planet of the Apes"
 		  ],
 
 		  Food: [
@@ -198,7 +219,7 @@
 		  ],
 
 		  Brands: [
-		    "Apple", "Nike", "Coca-Cola", "Samsung", "McDonalds", "Toyota", "Disney", "Amazon", "Google", "Tesla", "Adidas", "Pepsi", "Starbucks", "Netflix", "Microsoft", "Mercedes", "BMW", "Honda", "Sony", "Lego", "IKEA", "Zara", "H&M", "Gucci", "Louis Vuitton", "Rolex", "Canon", "Nikon", "PlayStation", "Xbox", "Spotify", "Uber", "Airbnb", "Facebook", "Instagram", "TikTok", "Twitter", "YouTube", "Visa", "Mastercard", "Ferrari", "Porsche", "Lamborghini", "Intel", "AMD", "Dell", "HP", "Adobe", "Slack", "Zoom", "Ford", "Chevrolet", "Jeep", "Nissan", "Hyundai", "Kia", "Volkswagen", "Audi", "Prada", "Chanel", "Hermes", "Versace", "Burberry", "Tiffany", "Cartier", "Omega", "Asus", "Acer", "Lenovo", "Huawei", "Xiaomi", "Red Bull", "Monster", "Shell", "BP", "Total", "Pfizer", "Moderna", "LG", "Panasonic", "Philips", "Bosch", "Siemens", "General Electric", "Caterpillar", "Boeing", "SpaceX", "Virgin Galactic", "Nintendo", "Electronic Arts", "Activision Blizzard", "Ubisoft", "Rockstar Games", "Square Enix", "Capcom", "Sega", "Bandai Namco", "Puma", "Under Armour", "New Balance", "Reebok", "Converse", "Vans", "Doc Martens", "Ray-Ban", "Oakley", "Fender", "Gibson", "Yamaha", "Bose", "JBL", "Harman Kardon", "Dyson", "SharkNinja", "Whirlpool", "Electrolux", "KitchenAid", "Tefal", "Logitech", "Razer", "Corsair", "Seagate", "Western Digital", "Kingston", "SanDisk", "Walmart", "Costco", "Target", "Home Depot", "Lowe's", "Best Buy", "Alibaba", "Tencent", "JD.com", "eBay", "Etsy", "Shopify", "7-Eleven", "Carrefour", "Aldi", "Lidl", "Tesco", "Walgreens", "CVS Health", "Sephora", "Ulta Beauty", "Wayfair", "Nvidia", "Oracle", "IBM", "Salesforce", "SAP", "Cisco", "Qualcomm", "Broadcom", "TSMC", "Texas Instruments", "LinkedIn", "Snapchat", "Pinterest", "Reddit", "Twitch", "Wikipedia", "Mozilla", "Dropbox", "ServiceNow", "Intuit", "Palantir", "Snowflake", "Garmin", "Fitbit", "GoPro", "Roku", "Vimeo", "WeChat", "Line", "WhatsApp", "Telegram", "Discord", "KFC", "Burger King", "Subway", "Domino's", "Pizza Hut", "Taco Bell", "Wendy's", "Chipotle", "Dunkin'", "Tim Hortons", "Krispy Kreme", "Nestle", "Danone", "Kellogg's", "General Mills", "Heinz", "Kraft", "Hershey's", "Mars", "Cadbury", "Ferrero Rocher", "Nutella", "Oreo", "Lays", "Doritos", "Pringles", "Cheetos", "Gatorade", "Mountain Dew", "Dr Pepper", "Sprite", "Fanta", "7up", "Budweiser", "Heineken", "Corona", "Guinness", "Stella Artois", "Jack Daniel's", "Johnnie Walker", "Smirnoff", "Bacardi", "Grey Goose", "Hennessy", "Moët & Chandon", "P&G", "Unilever", "Johnson & Johnson", "Gillette", "Colgate", "Oral-B", "Dove", "Nivea", "Head & Shoulders", "Old Spice", "Axe", "L'Oreal", "Estee Lauder", "Maybelline", "MAC Cosmetics", "Volvo", "Mazda", "Subway", "Suzuki", "Jaguar", "Land Rover", "Bentley", "Rolls-Royce", "Aston Martin", "Bugatti", "McLaren", "Maserati", "Alfa Romeo", "Fiat", "Peugeot", "Renault", "Citroen", "Skoda", "Mini", "Harley-Davidson", "Ducati", "Vespa", "Kawasaki", "Bridgestone", "Michelin", "Goodyear", "Continental", "Uniqlo", "Gap", "Levi's", "Calvin Klein", "Tommy Hilfiger", "Ralph Lauren", "The North Face", "Patagonia", "Columbia", "Timberland", "Helly Hansen", "Arc'teryx", "Lululemon", "Gymshark", "Champion", "Fila", "Skechers", "Asics", "Saucony", "Brooks", "Hoka", "Crocs", "Birkenstock", "Supreme", "Off-White", "Balenciaga", "Dior", "Saint Laurent", "Fendi", "Givenchy", "Valentino", "Dolce & Gabbana", "Armani", "Hugo Boss", "Michael Kors", "Coach", "Kate Spade", "Victoria's Secret", "American Express", "PayPal", "Stripe", "Square", "Revolut", "Chase", "Citi", "Wells Fargo", "Bank of America", "Goldman Sachs", "Morgan Stanley", "HSBC", "Barclays", "UBS", "Credit Suisse", "Deutsche Bank", "Allianz", "AXA", "Berkshire Hathaway", "BlackRock", "Fidelity", "Charles Schwab", "Coinbase", "Binance", "Warner Bros", "Universal", "Paramount", "20th Century Studios", "DreamWorks", "Pixar", "Marvel", "DC Comics", "HBO", "Showtime", "ESPN", "MTV", "CNN", "BBC", "Fox", "NBC", "CBS", "ABC", "Sky", "Bloomberg", "Reuters", "National Geographic", "Discovery", "Time", "Vogue", "Rolling Stone", "Delta", "United Airlines", "American Airlines", "Southwest", "British Airways", "Lufthansa", "Air France", "Emirates", "Qatar Airways", "Singapore Airlines", "Ryanair", "EasyJet", "Marriott", "Hilton", "Hyatt", "Sheraton", "InterContinental", "Holiday Inn", "Four Seasons", "Ritz-Carlton", "Expedia", "Booking.com", "TripAdvisor", "Royal Caribbean", "Carnival", "FedEx", "UPS", "DHL", "Maersk", "General Motors", "Lockheed Martin", "Northrop Grumman", "Raytheon", "Airbus", "Honeywell", "3M", "DuPont", "Dow", "BASF", "John Deere", "Komatsu", "Tag Heuer", "Breitling", "Patek Philippe", "Audemars Piguet", "Richard Mille", "Hublot", "IWC", "Seiko", "Casio", "G-Shock", "Swatch", "Tissot", "Longines", "Pandora", "Swarovski"
+		    "Apple", "Nike", "Coca-Cola", "Samsung", "McDonalds", "Toyota", "Disney", "Amazon", "Google", "Tesla", "Adidas", "Pepsi", "Starbucks", "Netflix", "Microsoft", "Mercedes", "BMW", "Honda", "Sony", "Lego", "IKEA", "Zara", "H&M", "Gucci", "Louis Vuitton", "Rolex", "Canon", "Nikon", "PlayStation", "Xbox", "Spotify", "Uber", "Airbnb", "Facebook", "Instagram", "TikTok", "Twitter", "YouTube", "Visa", "Mastercard", "Ferrari", "Porsche", "Lamborghini", "Intel", "AMD", "Dell", "HP", "Adobe", "Slack", "Zoom", "Ford", "Chevrolet", "Jeep", "Nissan", "Hyundai", "Kia", "Volkswagen", "Audi", "Prada", "Chanel", "Hermes", "Versace", "Burberry", "Tiffany", "Cartier", "Omega", "Asus", "Acer", "Lenovo", "Huawei", "Xiaomi", "Red Bull", "Monster", "Shell", "BP", "Total", "Pfizer", "Moderna", "LG", "Panasonic", "Philips", "Bosch", "Siemens", "General Electric", "Caterpillar", "Boeing", "SpaceX", "Virgin Galactic", "Nintendo", "Electronic Arts", "Activision Blizzard", "Ubisoft", "Rockstar Games", "Square Enix", "Capcom", "Sega", "Bandai Namco", "Puma", "Under Armour", "New Balance", "Reebok", "Converse", "Vans", "Doc Martens", "Ray-Ban", "Oakley", "Fender", "Gibson", "Yamaha", "Bose", "JBL", "Harman Kardon", "Dyson", "SharkNinja", "Whirlpool", "Electrolux", "KitchenAid", "Tefal", "Logitech", "Razer", "Corsair", "Seagate", "Western Digital", "Kingston", "SanDisk", "Walmart", "Costco", "Target", "Home Depot", "Lowe's", "Best Buy", "Alibaba", "Tencent", "JD.com", "eBay", "Etsy", "Shopify", "7-Eleven", "Carrefour", "Aldi", "Lidl", "Tesco", "Walgreens", "CVS Health", "Sephora", "Ulta Beauty", "Wayfair", "Nvidia", "Oracle", "IBM", "Salesforce", "SAP", "Cisco", "Qualcomm", "Broadcom", "TSMC", "Texas Instruments", "LinkedIn", "Snapchat", "Pinterest", "Reddit", "Twitch", "Wikipedia", "Mozilla", "Dropbox", "ServiceNow", "Intuit", "Palantir", "Snowflake", "Garmin", "Fitbit", "GoPro", "Roku", "Vimeo", "WeChat", "Line", "WhatsApp", "Telegram", "Discord", "KFC", "Burger King", "Subway", "Domino's", "Pizza Hut", "Taco Bell", "Wendy's", "Chipotle", "Dunkin'", "Tim Hortons", "Krispy Kreme", "Nestle", "Danone", "Kellogg's", "General Mills", "Heinz", "Kraft", "Hershey's", "Mars", "Cadbury", "Ferrero Rocher", "Nutella", "Oreo", "Lays", "Doritos", "Pringles", "Cheetos", "Gatorade", "Mountain Dew", "Dr Pepper", "Sprite", "Fanta", "7up", "Budweiser", "Heineken", "Corona", "Guinness", "Stella Artois", "Jack Daniel's", "Johnnie Walker", "Smirnoff", "Bacardi", "Grey Goose", "Hennessy", "Moët & Chandon", "P&G", "Unilever", "Johnson & Johnson", "Gillette", "Colgate", "Oral-B", "Dove", "Nivea", "Head & Shoulders", "Old Spice", "Axe", "L'Oreal", "Estee Lauder", "Maybelline", "MAC Cosmetics", "Volvo", "Mazda", "Subway", "Suzuki", "Jaguar", "Land Rover", "Bentley", "Rolls-Royce", "Aston Martin", "Bugatti", "McLaren", "Maserati", "Alfa Romeo", "Fiat", "Peugeot", "Renault", "Citroen", "Skoda", "Mini", "Harley-Davidson", "Ducati", "Vespa", "Kawasaki", "Bridgestone", "Michelin", "Goodyear", "Continental", "Uniqlo", "Gap", "Levi's", "Calvin Klein", "Tommy Hilfiger", "Ralph Lauren", "The North Face", "Patagonia", "Columbia", "Timberland", "Helly Hansen", "Arc'teryx", "Lululemon", "Gymshark", "Champion", "Fila", "Skechers", "Asics", "Saucony", "Brooks", "Hoka", "Crocs", "Birkenstock", "Supreme", "Off-White", "Balenciaga", "Dior", "Saint Laurent", "Fendi", "Givenchy", "Valentino", "Dolce & Gabbana", "Armani", "Hugo Boss", "Michael Kors", "Coach", "Kate Spade", "Victoria's Secret", "American Express", "PayPal", "Stripe", "Square", "Revolut", "Chase", "Citi", "Wells Fargo", "Bank of America", "Goldman Sachs", "Morgan Stanley", "HSBC", "Barclays", "UBS", "Credit Suisse", "Deutsche Bank", "Allianz", "AXA", "Berkshire Hathaway", "BlackRock", "Fidelity", "Charles Schwab", "Coinbase", "Binance", "Warner Bros", "Universal", "Paramount", "20th Century Studios", "DreamWorks", "Pixar", "Marvel", "DC Comics", "HBO", "Showtime", "ESPN", "MTV", "CNN", "BBC", "Fox", "NBC", "CBS", "ABC", "Sky", "Bloomberg", "Reuters", "National Geographic", "Discovery", "Time", "Vogue", "Rolling Stone", "Delta", "United Airlines", "American Airlines", "Southwest", "British Airways", "Lufthansa", "Air France", "Emirates", "Qatar Airways", "Singapore Airlines", "Ryanair", "EasyJet", "Marriott", "Hilton", "Hyatt", "Sheraton", "InterContinental", "Holiday Inn", "Four Seasons", "Ritz-Carlton", "Expedia", "Booking.com", "TripAdvisor", "Royal Caribbean", "Carnival", "FedEx", "UPS", "DHL", "Maersk", "General Motors", "Lockheed Martin", "Northrop Grumman", "Raytheon", "Airbus", "Honeywell", "3M", "DuPont", "Dow", "BASF", "John Deere", "Komatsu", "Tag Heuer", "Breitling", "Patek Philippe", "Audermars Piguet", "Richard Mille", "Hublot", "IWC", "Seiko", "Casio", "G-Shock", "Swatch", "Tissot", "Longines", "Pandora", "Swarovski"
 		  ],
 
 		  Technology: [
@@ -350,6 +371,444 @@
         
         // --- COMPONENTS ---
 
+        // NEW: Game Mode Selection Screen (Restyled)
+        const GameModeSelectionScreen = ({ onSelectMode, audioManager }) => {
+            return (
+                <div className="h-[100dvh] flex flex-col items-center justify-center p-6 bg-slate-950 text-center relative overflow-hidden animate-fadeIn">
+                    <div className="absolute inset-0 pointer-events-none">
+                        <div className="blob bg-brand-600/30 top-[-20%] left-[-20%] w-[60%] h-[60%]"></div>
+                        <div className="blob bg-cyan-600/30 bottom-[-20%] right-[-20%] w-[60%] h-[60%] animation-delay-2000"></div>
+                    </div>
+                    
+                    <div className="relative z-10 flex flex-col items-center w-full max-w-lg mx-auto">
+                         <div class="mb-10 text-center">
+                            <h1 class="text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/50 mb-2 drop-shadow-lg tracking-tight">IMPOSTER</h1>
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+                                <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+                                <span class="text-white/60 text-[10px] font-bold tracking-[0.3em] uppercase">Trust No One</span>
+                            </div>
+                        </div>
+
+                        <div className="w-full flex flex-col gap-4 mt-8">
+                            <button
+                                onClick={() => { onSelectMode('online'); audioManager.playSound('uiClick'); }}
+                                className="w-full bg-white text-slate-950 font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_50px_rgba(255,255,255,0.2)] active:scale-[0.98] transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
+                            >
+                                <i className="fa-solid fa-globe text-brand-500"></i> PLAY ONLINE
+                            </button>
+                             <button
+                                onClick={() => { onSelectMode('local'); audioManager.playSound('uiClick'); }}
+                                className="w-full glass-panel-lighter border-white/10 text-white/70 font-display font-bold text-lg py-5 rounded-[1.5rem] transition-all active:scale-98 flex items-center justify-center gap-3 hover:bg-white/5 hover:text-white"
+                            >
+                                <i className="fa-solid fa-mobile-screen-button"></i> PLAY ON THIS DEVICE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        // NEW: Online Lobby Screen (Restyled)
+        const OnlineLobbyScreen = ({ user, onJoin, onCreate, audioManager, onBack }) => {
+            const [isJoining, setIsJoining] = useState(true);
+            const [lobbyId, setLobbyId] = useState('');
+            const [password, setPassword] = useState('');
+            const [username, setUsername] = useState('');
+            const [error, setError] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
+
+            useEffect(() => {
+                try {
+                    const saved = localStorage.getItem('imposter_username');
+                    if (saved) setUsername(JSON.parse(saved));
+
+                    const params = new URLSearchParams(window.location.search);
+                    const urlLobbyId = params.get('lobbyId');
+                    const urlPassword = params.get('password');
+                    if (urlLobbyId) {
+                        setLobbyId(urlLobbyId.toUpperCase());
+                        setIsJoining(true);
+                        // If there is a lobby ID in the URL, we are definitely joining.
+                        // No need to show the "create" screen first.
+                    }
+                    if (urlPassword) {
+                        setPassword(urlPassword.toUpperCase());
+                    }
+                     // Clear URL params after reading them
+                    if (urlLobbyId || urlPassword) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                } catch {}
+            }, []);
+
+            useEffect(() => { localStorage.setItem('imposter_username', JSON.stringify(username)); }, [username]);
+
+            const handleAction = async () => {
+                if (!username.trim()) { setError('Please enter a username.'); return; }
+                setIsLoading(true);
+                setError('');
+                audioManager.playSound('uiClick');
+                try {
+                    if (isJoining) {
+                        if (!lobbyId.trim() || !password.trim()) {
+                            setError('Lobby ID and Password are required.');
+                            setIsLoading(false);
+                            return;
+                        }
+                        await onJoin(lobbyId.toUpperCase(), password.toUpperCase(), username.trim());
+                    } else {
+                        await onCreate(username.trim());
+                    }
+                } catch (e) {
+                    setError(e.message);
+                    setIsLoading(false);
+                }
+            };
+            
+            return (
+                 <div className="flex flex-col h-[100dvh] relative z-10">
+                    <div className="absolute top-6 left-6 z-20">
+                         <button onClick={onBack} className="w-12 h-12 flex items-center justify-center bg-white/5 rounded-full text-white/50 hover:bg-white/10 active:scale-90 transition-transform">
+                            <i className="fa-solid fa-chevron-left"></i>
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
+                        <div className="max-w-lg mx-auto p-6 pt-28">
+                             <div class="mb-10 text-center">
+								<h1 class="text-5xl font-display font-black text-white mb-2 drop-shadow-lg tracking-tight">
+                                    {isJoining ? 'Join Mission' : 'Create Mission'}
+                                </h1>
+                                <p class="text-white/40 font-semibold tracking-wide">Enter your agent codename to begin.</p>
+							</div>
+
+                            <section className="glass-panel rounded-[2rem] p-6 flex flex-col gap-4">
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Enter codename..."
+                                    className="w-full bg-slate-950/50 rounded-xl px-5 py-4 outline-none border border-white/5 focus:border-brand-500/50 focus:bg-slate-950/80 transition-all placeholder:text-white/20 font-medium text-sm text-white"
+                                />
+
+                                {isJoining && (
+                                    <>
+                                        <input
+                                            type="text"
+                                            value={lobbyId}
+                                            onChange={(e) => setLobbyId(e.target.value.toUpperCase())}
+                                            placeholder="Lobby ID"
+                                            maxLength="6"
+                                            className="w-full bg-slate-950/50 rounded-xl px-5 py-4 outline-none border border-white/5 focus:border-brand-500/50 focus:bg-slate-950/80 transition-all placeholder:text-white/20 font-mono text-lg tracking-widest text-white"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value.toUpperCase())}
+                                            placeholder="Password"
+                                            maxLength="4"
+                                            className="w-full bg-slate-950/50 rounded-xl px-5 py-4 outline-none border border-white/5 focus:border-brand-500/50 focus:bg-slate-950/80 transition-all placeholder:text-white/20 font-mono text-lg tracking-widest text-white"
+                                        />
+                                    </>
+                                )}
+                                
+                                {error && <p className="text-red-400 text-xs text-center -my-2">{error}</p>}
+                                
+                                <button onClick={() => { setIsJoining(!isJoining); setError(''); }} className="text-brand-400/70 hover:text-brand-400 text-xs font-bold transition text-center">
+                                    {isJoining ? 'Or, create a new lobby' : 'Or, join an existing lobby'}
+                                </button>
+                            </section>
+                        </div>
+                    </div>
+                     <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
+                        <div className="max-w-lg mx-auto pb-[env(safe-area-inset-bottom)]">
+                             <button
+                                onClick={handleAction}
+                                disabled={isLoading}
+                                className="w-full h-[68px] flex items-center justify-center bg-white text-slate-950 font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_50px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:shadow-none active:scale-[0.98] transition-all"
+                            >
+                               {isLoading ? <i className="fa-solid fa-spinner animate-spin"></i> : (isJoining ? 'JOIN LOBBY' : 'CREATE LOBBY')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        // NEW: Waiting Room Screen (Restyled & Feature-Rich)
+        const WaitingRoom = ({ lobbyData, lobbyPlayers, user, lobbyId, onStartGame, onStartMission, audioManager }) => {
+            const isHost = user.uid === lobbyData.hostId;
+            const MIN_PLAYERS = 3;
+            const [showCopied, setShowCopied] = useState(false);
+            const [inspectedCategory, setInspectedCategory] = useState(null);
+            const categoryLongPressTimerRef = useRef(null);
+
+            const allPlayersReady = lobbyData.gameState === 'reveal' && lobbyPlayers.length > 0 && lobbyPlayers.every(p => p.hasSeenCard);
+
+            const handleCategorySelect = (cat) => {
+                if (isHost && lobbyData.category !== cat) {
+                    db.collection('lobbies').doc(lobbyId).update({ 
+                        category: cat,
+                        lastSoundEvent: { name: 'selectCategory', timestamp: Date.now() }
+                    });
+                }
+            };
+
+            const handleModeChange = (newModeIsRandom) => {
+                if (isHost && lobbyData.isRandomMode !== newModeIsRandom) {
+                    db.collection('lobbies').doc(lobbyId).update({ 
+                        isRandomMode: newModeIsRandom,
+                        lastSoundEvent: { name: 'toggleMode', timestamp: Date.now() }
+                    });
+                }
+            };
+            
+            const handleSpeakCategoryChange = () => {
+                 if (isHost) {
+                    const newValue = !lobbyData.speakCategory;
+                     db.collection('lobbies').doc(lobbyId).update({ 
+                        speakCategory: newValue,
+                        lastSoundEvent: { name: newValue ? 'switchOn' : 'switchOff', timestamp: Date.now() }
+                    });
+                }
+            }
+
+            const handleCategoryTouchStart = (cat) => {
+                 if (isHost) {
+                    categoryLongPressTimerRef.current = setTimeout(() => {
+                        setInspectedCategory(cat);
+                        audioManager.playSound('openInfo');
+                        if (navigator.vibrate) navigator.vibrate(30);
+                    }, 600);
+                }
+            };
+
+            const handleCategoryTouchEnd = () => {
+                if (categoryLongPressTimerRef.current) {
+                    clearTimeout(categoryLongPressTimerRef.current);
+                    categoryLongPressTimerRef.current = null;
+                }
+            };
+
+            const handleCopyInvite = () => {
+                const inviteLink = `${window.location.origin}${window.location.pathname}?lobbyId=${lobbyId}&password=${lobbyData.password}`;
+                navigator.clipboard.writeText(inviteLink).then(() => {
+                    setShowCopied(true);
+                    setTimeout(() => setShowCopied(false), 2000);
+                });
+                audioManager.playSound('uiClick');
+            };
+
+            const handleRemovePlayer = (playerId) => {
+                if (isHost && user.uid !== playerId) {
+                    db.collection('lobbies').doc(lobbyId).collection('players').doc(playerId).delete()
+                        .catch(err => console.error("Failed to remove player:", err));
+                }
+            };
+
+            return (
+                 <div className="flex flex-col h-[100dvh] relative z-10">
+                    <CategoryInfoModal category={inspectedCategory} onClose={() => setInspectedCategory(null)} />
+                    <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
+                        <div className="max-w-lg mx-auto p-6 pt-12">
+                            <div class="mb-10 text-center">
+								<h1 class="text-5xl font-display font-black text-white mb-2 drop-shadow-lg tracking-tight">Mission Lobby</h1>
+                                <p class="text-white/40 font-semibold tracking-wide">Waiting for agents to assemble.</p>
+							</div>
+                            
+                            <section className="mb-6 glass-panel rounded-[2rem] p-6">
+                               <div className="flex items-center gap-4">
+                                    <div className="flex-1">
+                                        <div className="text-white/40 text-[10px] uppercase font-bold tracking-widest mb-1">Lobby ID</div>
+                                        <div className="font-mono text-2xl font-bold tracking-widest">{lobbyId}</div>
+                                    </div>
+                                    <div className="w-px h-10 bg-white/10"></div>
+                                    <div className="flex-1">
+                                        <div className="text-white/40 text-[10px] uppercase font-bold tracking-widest mb-1">Password</div>
+                                        <div className="font-mono text-2xl font-bold tracking-widest">{lobbyData.password}</div>
+                                    </div>
+                                    <button onClick={handleCopyInvite} className="relative w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center text-brand-400 hover:bg-brand-500/20 active:scale-90 transition">
+                                        <i className={`fa-solid ${showCopied ? 'fa-check' : 'fa-share-nodes'} transition-all`}></i>
+                                        {showCopied && <div className="absolute -top-8 text-xs bg-slate-800 px-2 py-1 rounded-md">Copied!</div>}
+                                    </button>
+                                </div>
+                            </section>
+
+                            <section className="mb-6 glass-panel rounded-[2rem] p-6">
+                                <h2 className="text-sm font-bold tracking-widest text-brand-400 mb-4 flex items-center gap-2 uppercase">
+                                    <i className="fa-solid fa-users"></i> Agents
+                                    <span className="ml-auto text-[10px] bg-white/5 px-2 py-1 rounded-md text-white/50">{lobbyPlayers.length}</span>
+                                </h2>
+                                <div className="flex flex-col gap-3">
+                                    {lobbyPlayers.map(p => (
+                                        <div key={p.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${p.id === user.uid ? 'bg-white/10' : 'bg-white/5'}`}>
+                                            <i className={`fa-solid ${p.id === lobbyData.hostId ? 'fa-crown text-yellow-400' : 'fa-user-secret text-white/40'}`}></i>
+                                            <span className="font-bold text-white/90">{p.name}</span>
+                                            {(lobbyData.gameState === 'reveal' || lobbyData.gameState === 'turnOrder') && (
+                                                 <span className="ml-auto text-xs font-bold flex items-center gap-2">
+                                                    {p.hasSeenCard ? 
+                                                        <i className="fa-solid fa-check-circle text-green-400 animate-fadeIn"></i> :
+                                                        <i className="fa-solid fa-ellipsis text-white/30"></i>
+                                                    }
+                                                </span>
+                                            )}
+                                            {isHost && p.id !== user.uid && lobbyData.gameState === 'waiting' && (
+                                                <button onClick={() => handleRemovePlayer(p.id)} className="ml-auto w-8 h-8 flex items-center justify-center rounded-full text-white/40 hover:bg-red-500/20 hover:text-red-400 transition-colors">
+                                                    <i className="fa-solid fa-trash-can text-xs"></i>
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                            
+                            {lobbyData.gameState === 'waiting' && (
+                                <>
+                                 <section className="mb-6 glass-panel rounded-[2rem] p-6">
+                                     <div className="flex items-center justify-between">
+                                        <h2 className="text-sm font-bold tracking-widest text-purple-400 flex items-center gap-2 uppercase">
+                                            <i className="fa-solid fa-volume-high"></i> Speak Category
+                                        </h2>
+                                        <button 
+                                            onClick={handleSpeakCategoryChange}
+                                            disabled={!isHost}
+                                            className={`w-12 h-7 rounded-full p-1 transition-all duration-300 ${lobbyData.speakCategory ? 'bg-purple-500/80' : 'bg-white/10'} ${!isHost && 'opacity-50 cursor-not-allowed'}`}
+                                        >
+                                            <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${lobbyData.speakCategory ? 'translate-x-5' : 'translate-x-0'}`} />
+                                        </button>
+                                    </div>
+                                 </section>
+                                <section>
+                                    <div className="flex items-center justify-between mb-4 px-2">
+                                        <h2 className="text-sm font-bold tracking-widest text-teal-400 flex items-center gap-2 uppercase">
+                                            <i className="fa-solid fa-layer-group"></i> Mission
+                                        </h2>
+                                        <div className={`flex bg-slate-950/50 p-1 rounded-lg border border-white/5 ${!isHost && 'opacity-50 pointer-events-none'}`}>
+                                            <button 
+                                                onClick={() => handleModeChange(false)}
+                                                className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all ${!lobbyData.isRandomMode ? 'bg-white/10 text-white shadow-sm' : 'text-white/30 hover:text-white/60'}`}
+                                            >
+                                                Select
+                                            </button>
+                                            <button 
+                                                onClick={() => handleModeChange(true)}
+                                                className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all ${lobbyData.isRandomMode ? 'bg-gradient-to-r from-brand-600 to-fuchsia-600 text-white shadow-sm' : 'text-white/30 hover:text-white/60'}`}
+                                            >
+                                                Random
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {lobbyData.isRandomMode ? (
+                                        <div className="glass-panel rounded-[2rem] p-8 text-center animate-fadeIn border border-brand-500/20 relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 via-transparent to-fuchsia-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+                                            <div className="relative z-10 py-8">
+                                                <div className="w-24 h-24 mx-auto bg-gradient-to-br from-brand-500 to-fuchsia-600 rounded-3xl rotate-12 flex items-center justify-center shadow-lg shadow-brand-900/40 mb-6 group-hover:rotate-[20deg] group-hover:scale-110 transition-transform duration-500">
+                                                    <i className="fa-solid fa-dice text-4xl text-white drop-shadow-md"></i>
+                                                </div>
+                                                <h3 className="text-2xl font-display font-bold text-white mb-2">Mystery Mode</h3>
+                                                <p className="text-white/50 text-sm max-w-[200px] mx-auto leading-relaxed">
+                                                    The system will automatically select a random category for your mission.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 ${!isHost && 'opacity-60 pointer-events-none'}`}>
+                                        {DISPLAY_CATEGORIES.map(cat => {
+                                            const iconSource = CATEGORY_ICONS[cat];
+                                            const isSelected = lobbyData.category === cat;
+                                            const isSupercell = cat === 'Supercell';
+                                            
+                                            let cardClasses = `relative overflow-hidden flex flex-col items-center justify-center gap-3 p-4 rounded-[1.5rem] border transition-all duration-300 active:scale-95 group min-h-[110px] `;
+                                            
+                                            if (isSupercell) {
+                                                if (isSelected) {
+                                                    cardClasses += 'border-blue-400 bg-blue-900/20 ring-2 ring-blue-500 shadow-lg shadow-blue-900/40 text-white';
+                                                } else {
+                                                    cardClasses += 'border-white/10 bg-slate-900/40 opacity-60 grayscale-[0.5] hover:opacity-100 hover:grayscale-0 text-slate-300';
+                                                }
+                                            } else {
+                                                if (isSelected) {
+                                                    cardClasses += 'glass-panel bg-teal-500/10 border-teal-500/40 text-teal-100 shadow-[0_0_20px_rgba(20,184,166,0.1)]';
+                                                } else {
+                                                    cardClasses += 'glass-panel-lighter border-white/5 text-slate-400 hover:bg-white/5 hover:border-white/10';
+                                                }
+                                            }
+
+                                            return (
+                                                <button
+                                                    key={cat}
+                                                    onClick={() => handleCategorySelect(cat)}
+                                                    onMouseDown={() => handleCategoryTouchStart(cat)}
+                                                    onMouseUp={handleCategoryTouchEnd}
+                                                    onMouseLeave={handleCategoryTouchEnd}
+                                                    onTouchStart={() => handleCategoryTouchStart(cat)}
+                                                    onTouchEnd={handleCategoryTouchEnd}
+                                                    className={cardClasses}
+                                                    disabled={!isHost}
+                                                >
+                                                    {isSupercell && (
+                                                        <div className="supercell-container pointer-events-none">
+                                                            <div className="supercell-bg-1"></div>
+                                                            <div className="supercell-bg-2"></div>
+                                                        </div>
+                                                    )}
+                                                    <div className="relative z-10 flex flex-col items-center gap-2">
+                                                        <FaIcon 
+                                                            name={iconSource} 
+                                                            sizeClass="text-2xl" 
+                                                            className={`transition-all duration-300 ${isSupercell ? "drop-shadow-md brightness-125" : (isSelected ? "text-teal-400 scale-110" : "text-white/40 group-hover:text-white/70")}`} 
+                                                        />
+                                                        <span className={`text-xs font-bold tracking-wide transition-colors ${isSupercell ? 'text-white drop-shadow-md' : ''}`}>{cat}</span>
+                                                    </div>
+                                                    {isSelected && (
+                                                        <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow-sm ${isSupercell ? 'bg-blue-500 text-white' : 'bg-teal-500 text-slate-900'}`}>
+                                                            <i className="fa-solid fa-check"></i>
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            )
+                                        })}
+                                        </div>
+                                    )}
+                                </section>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                    
+                    <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
+                        <div className="max-w-lg mx-auto pb-[env(safe-area-inset-bottom)]">
+                        {isHost ? (
+                            allPlayersReady ? (
+                                <button
+                                    onClick={onStartMission}
+                                    className="w-full bg-green-500 text-white font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_30px_rgba(34,197,94,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 animate-pulse"
+                                >
+                                    <i className="fa-solid fa-rocket text-lg"></i>
+                                    ALL AGENTS READY - BEGIN!
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={onStartGame}
+                                    disabled={lobbyPlayers.length < MIN_PLAYERS || lobbyData.gameState !== 'waiting'}
+                                    className="w-full bg-white text-slate-950 font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_50px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:shadow-none active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                                >
+                                    <i className="fa-solid fa-play text-sm"></i> START MISSION ({lobbyPlayers.length}/{MIN_PLAYERS}+)
+                                </button>
+                            )
+                        ) : (
+                            <div className="text-center p-4 glass-panel rounded-xl">
+                               <p className="text-white/60 font-medium">
+                                 {allPlayersReady ? "All agents are ready! Waiting for host..." : "Waiting for host to start the mission..."}
+                               </p>
+                           </div>
+                        )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+
         // 0. Loading Screen
         const TIPS = [
             "The Imposter doesn't know the secret word. Ask questions that might expose them!",
@@ -468,7 +927,7 @@
                                 <i className="fa-solid fa-list-ul text-brand-400 text-xs"></i> Examples
                             </h3>
                             <p className="text-white/90 text-sm leading-relaxed">
-                                {examples}{remainingCount > 0 ? `, and ${remainingCount}+` : ''}
+                                {examples}{remainingCount > 0 ? `, and ${remainingCount}+ more` : ''}
                             </p>
                         </div>
                         
@@ -479,9 +938,32 @@
                 </div>
             );
         };
+        
+        // NEW: Modal for removed players
+        const RemovedModal = ({ onClose }) => {
+            return (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-fadeIn">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
+                    <div className="relative w-full max-w-sm glass-panel rounded-3xl p-6 border border-white/10 shadow-2xl animate-slide-up text-center">
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4 bg-red-500/20 ring-1 ring-white/10 mx-auto">
+                            <i className="fa-solid fa-user-slash text-3xl text-red-400"></i>
+                        </div>
+                        <h2 className="text-2xl font-display font-bold text-white mb-2">Removed from Lobby</h2>
+                        <p className="text-white/60 mb-6">The host has removed you from the mission lobby.</p>
+                        
+                        <button 
+                            onClick={onClose}
+                            className="w-full bg-white hover:bg-slate-200 text-slate-950 py-3 rounded-xl font-display font-bold text-base shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-95 transition-all flex items-center justify-center gap-3"
+                        >
+                            RETURN TO HOME
+                        </button>
+                    </div>
+                </div>
+            );
+        };
 
         // 1. Setup Screen
-        const SetupScreen = ({ onStartGame, audioManager }) => {
+        const SetupScreen = ({ onStartGame, audioManager, onBack }) => {
             const DEFAULT_PLAYERS = [{ name: 'Player 1', audioData: null }, { name: 'Player 2', audioData: null }, { name: 'Player 3', audioData: null }];
             const MIN_PLAYERS = 3;
 
@@ -665,18 +1147,22 @@
 
             return (
                 <div className="flex flex-col h-[100dvh] relative z-10">
+                    <div className="absolute top-6 left-6 z-20">
+                         <button onClick={onBack} className="w-12 h-12 flex items-center justify-center bg-white/5 rounded-full text-white/50 hover:bg-white/10 active:scale-90 transition-transform">
+                            <i className="fa-solid fa-chevron-left"></i>
+                        </button>
+                    </div>
                     <CategoryInfoModal category={inspectedCategory} onClose={() => setInspectedCategory(null)} />
 
                     <div className="flex-1 overflow-y-auto no-scrollbar pb-32">
-                        <div className="max-w-lg mx-auto p-6 pt-12">
+                        <div className="max-w-lg mx-auto p-6 pt-28">
                             {/* Header */}
                             <div class="mb-10 text-center">
 								<h1 class="text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/50 mb-2 drop-shadow-lg tracking-tight">IMPOSTER</h1>
 								<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-									<div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-									<span class="text-white/60 text-[10px] font-bold tracking-[0.3em] uppercase">Trust No One</span>
+									<div class="w-1.5 h-1.5 rounded-full bg-green-400"></div>
+									<span class="text-white/60 text-[10px] font-bold tracking-[0.3em] uppercase">Local Game</span>
 								</div>
-								<div class="mt-4 text-xs text-white/40 font-semibold tracking-wider">4000+ words</div>
 							</div>
 
                             {/* Players */}
@@ -929,14 +1415,18 @@
         };
 
         // 2. Card Reveal Screen (Enhanced with 3D Flip)
-        const CardRevealScreen = ({ player, word, onNext, isLastPlayer, audioManager }) => {
-            const [step, setStep] = useState('handover'); 
+        const CardRevealScreen = ({ player, word, onNext, isLastPlayer, audioManager, onAcknowledge, isOnline, isHost, onStartMission }) => {
+            const [step, setStep] = useState(isOnline ? 'reveal' : 'handover'); 
             const [isFlipped, setIsFlipped] = useState(false);
             
             useEffect(() => {
-                setStep('handover');
-                setIsFlipped(false);
-            }, [player]);
+                if(!isOnline) {
+                    setStep('handover');
+                    setIsFlipped(false);
+                } else {
+                    setStep('reveal');
+                }
+            }, [player, isOnline]);
             
             useEffect(() => {
                 if (step === 'handover' && player.audioData) {
@@ -950,6 +1440,16 @@
                     setIsFlipped(true);
                     audioManager.playSound('uiClick');
                     if (navigator.vibrate) navigator.vibrate([30, 50]);
+                }
+            };
+            
+            const handleAckAndNext = () => {
+                 audioManager.playSound('uiClick');
+                if (isOnline) {
+                    onAcknowledge();
+                } else {
+                    if(navigator.vibrate) navigator.vibrate(20);
+                    onNext();
                 }
             };
 
@@ -1054,14 +1554,12 @@
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation(); // Prevent re-triggering flip
-                                audioManager.playSound('uiClick');
-                                if(navigator.vibrate) navigator.vibrate(20);
-                                onNext();
+                                handleAckAndNext();
                             }}
                             className="w-full bg-white hover:bg-slate-200 text-slate-950 py-5 rounded-[1.5rem] font-display font-bold text-lg shadow-[0_0_30px_rgba(255,255,255,0.1)] active:scale-95 transition-all flex items-center justify-center gap-3"
                         >
                             <i className="fa-solid fa-check-circle text-lg"></i>
-                            {isLastPlayer ? "REVEAL TURN ORDER" : "NEXT PLAYER"}
+                            {isOnline ? "RETURN TO LOBBY" : (isLastPlayer ? "REVEAL TURN ORDER" : "NEXT PLAYER")}
                         </button>
                     </div>
                 </div>
@@ -1080,26 +1578,31 @@
             );
         };
 
-        // 3. Turn Order Screen
-        const TurnOrderScreen = ({ players, onStartMission, audioManager }) => {
-            
+        // 3. Turn Order Screen with Countdown
+        const TurnOrderScreen = ({ players, onStartMission, audioManager, isHost }) => {
+            const [countdown, setCountdown] = useState(10);
+
             useEffect(() => {
-                // Play a sound when the turn order is revealed
-                audioManager.playSound('startRandomMission');
-            }, [audioManager]);
+                const timer = setInterval(() => {
+                    setCountdown(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            if (isHost) {
+                                onStartMission();
+                            }
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [isHost, onStartMission]);
             
             return (
                 <div className="h-[100dvh] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden animate-fadeIn">
                      <div className="absolute inset-0 pointer-events-none">
                          <div className="blob bg-teal-600/30 top-[-20%] left-[-20%] w-[60%] h-[60%]"></div>
                          <div className="blob bg-sky-600/30 bottom-[-20%] right-[-20%] w-[60%] h-[60%] animation-delay-2000"></div>
-                    </div>
-
-                    <div className="w-24 h-24 rounded-full flex items-center justify-center mb-8 relative">
-                        <div className="absolute inset-0 bg-sky-500/20 blur-2xl rounded-full animate-pulse-slow"></div>
-                        <div className="glass-panel w-full h-full rounded-full flex items-center justify-center border border-white/10">
-                           <i className="fa-solid fa-list-ol text-sky-400 text-4xl"></i>
-                        </div>
                     </div>
 
                     <h1 className="text-4xl font-display font-bold text-white mb-4">Turn Order Established</h1>
@@ -1117,12 +1620,17 @@
                     </div>
 
                     <div className="w-full max-w-sm">
-                        <button 
-                            onClick={onStartMission}
-                            className="w-full bg-white text-slate-950 font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_50px_rgba(255,255,255,0.2)] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                        <div
+                            className="w-full bg-white text-slate-950 font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-all flex items-center justify-center gap-3"
                         >
-                            <i className="fa-solid fa-rocket text-sky-500"></i> BEGIN MISSION
-                        </button>
+                            {countdown > 0 ? (
+                                <span className="font-mono text-2xl tracking-widest">{countdown}</span>
+                            ) : (
+                                <>
+                                 <i className="fa-solid fa-rocket text-sky-500"></i> BEGIN MISSION
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             );
@@ -1130,38 +1638,62 @@
 
 
         // 4. Game Timer Screen
-        const GameTimerScreen = ({ duration, onEndGame, firstPlayer, category, audioManager }) => {
+        const GameTimerScreen = ({ lobbyData, onEndGame, firstPlayer, audioManager, isHost, lobbyId }) => {
+            const { duration, missionStartTime } = lobbyData || {};
             const [timeLeft, setTimeLeft] = useState(duration || 0);
-            const [active, setActive] = useState(!!duration);
-            
+            const timerRef = useRef(null);
+
             useEffect(() => {
-                // Stop any lingering sounds from previous screens
+                if (!duration || !missionStartTime) {
+                    setTimeLeft(0);
+                    return;
+                }
+
+                const updateTimer = () => {
+                    const getStartTime = () => {
+                        if (missionStartTime.toDate) return missionStartTime.toDate().getTime(); // Firestore timestamp
+                        if (missionStartTime instanceof Date) return missionStartTime.getTime(); // JS Date for local game
+                        return Date.now(); // Fallback
+                    };
+
+                    const startTime = getStartTime();
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    const newTimeLeft = Math.round(Math.max(0, duration - elapsed));
+                    
+                    setTimeLeft(newTimeLeft);
+
+                    if (newTimeLeft <= 0) {
+                        clearInterval(timerRef.current);
+                        
+                        const sound = audioManager.getSound('alarm');
+                        if (sound && sound.paused) {
+                           sound.play().catch(e => console.log("Alarm sound autoplay prevented"));
+                        }
+                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                        
+                        if (isHost) {
+                            onEndGame();
+                        }
+                    }
+                };
+
+                if(timerRef.current) clearInterval(timerRef.current);
+                updateTimer(); 
+                timerRef.current = setInterval(updateTimer, 1000);
+
                 return () => {
+                    clearInterval(timerRef.current);
                     const sound = audioManager.getSound('alarm');
                     if (sound) {
                         sound.pause();
                         sound.currentTime = 0;
                     }
                 };
-            }, [audioManager]);
-
-            useEffect(() => {
-                if (!active || !duration) return;
-                
-                if (timeLeft <= 0) {
-                    setActive(false);
-                    const sound = audioManager.getSound('alarm');
-                    if (sound) {
-                        sound.play().catch(e => console.log("Alarm sound autoplay prevented"));
-                    }
-                    if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
-                    return;
-                }
-                const interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
-                return () => clearInterval(interval);
-            }, [active, timeLeft, duration, audioManager]);
+            }, [duration, missionStartTime, isHost, onEndGame, audioManager]);
 
             const handleIdentifyImposter = () => {
+                if (lobbyId && !isHost) return;
+                
                 if(navigator.vibrate) navigator.vibrate(50);
                 
                 const sound = audioManager.getSound('alarm');
@@ -1182,11 +1714,12 @@
             const progress = duration ? timeLeft / duration : 0;
             const strokeDasharray = 2 * Math.PI * 120;
             const strokeDashoffset = strokeDasharray * (1 - progress);
+            const isActive = duration && timeLeft > 0;
 
             return (
                 <div className="h-[100dvh] flex flex-col items-center justify-between p-6 relative overflow-hidden">
                     <div className="absolute inset-0 pointer-events-none">
-                        <div className={`absolute inset-0 bg-red-600/10 transition-opacity duration-1000 ${timeLeft < 30 && active ? 'opacity-100 animate-pulse' : 'opacity-0'}`}></div>
+                        <div className={`absolute inset-0 bg-red-600/10 transition-opacity duration-1000 ${timeLeft < 30 && isActive ? 'opacity-100 animate-pulse' : 'opacity-0'}`}></div>
                         <div className="blob bg-brand-900/30 top-0 left-0 w-full h-full"></div>
                     </div>
 
@@ -1219,7 +1752,7 @@
                                         />
                                     </svg>
                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className={`text-7xl font-mono font-bold tracking-tighter tabular-nums ${timeLeft < 30 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+                                        <span className={`text-7xl font-mono font-bold tracking-tighter tabular-nums ${timeLeft < 30 && isActive ? 'text-red-500 animate-pulse' : 'text-white'}`}>
                                             {formatTime(timeLeft)}
                                         </span>
                                         <span className="text-white/30 text-[10px] font-bold uppercase tracking-[0.4em] mt-4 ml-1">
@@ -1245,7 +1778,8 @@
                     <div className="w-full z-10 pb-[env(safe-area-inset-bottom)] mb-6">
                         <button 
                             onClick={handleIdentifyImposter}
-                            className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_40px_rgba(220,38,38,0.4)] transition-all active:scale-[0.98] flex items-center justify-center gap-3 border border-red-400/30"
+                            disabled={lobbyId && !isHost}
+                            className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_40px_rgba(220,38,38,0.4)] transition-all active:scale-[0.98] flex items-center justify-center gap-3 border border-red-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <i className="fa-solid fa-user-secret text-xl"></i>
                             IDENTIFY IMPOSTER
@@ -1254,164 +1788,352 @@
                 </div>
             );
         };
+        
+        // 5. Voting Screen
+        const VotingScreen = ({ lobbyData, lobbyPlayers, user, lobbyId, audioManager }) => {
+            const me = lobbyPlayers.find(p => p.id === user.uid);
 
-        // 5. Results Screen
-        const ResultScreen = ({ imposterName, word, onRestart, audioManager }) => {
+            const handleVote = (targetPlayerId) => {
+                if (!me.votedFor) {
+                    audioManager.playSound('uiClick');
+                    db.collection('lobbies').doc(lobbyId).collection('players').doc(user.uid).update({
+                        votedFor: targetPlayerId
+                    });
+                }
+            };
+
+            return (
+                <div className="h-[100dvh] flex flex-col items-center justify-center p-6 text-center overflow-hidden relative animate-fadeIn">
+                     <div className="absolute inset-0 pointer-events-none">
+                        <div className="blob bg-red-600/20 top-0 left-0 w-full h-full"></div>
+                    </div>
+                    
+                    <div className="relative z-10 w-full max-w-sm">
+                        <div className="w-24 h-24 rounded-full flex items-center justify-center mb-8 relative mx-auto">
+                            <div className="absolute inset-0 bg-red-500/20 blur-2xl rounded-full animate-pulse-slow"></div>
+                            <div className="glass-panel w-full h-full rounded-full flex items-center justify-center border border-white/10">
+                               <i className="fa-solid fa-user-secret text-red-400 text-4xl"></i>
+                            </div>
+                        </div>
+                        <h1 className="text-4xl font-display font-bold text-white mb-4">Who is the Imposter?</h1>
+                        <p className="text-white/60 mb-10">Cast your vote. The agent with the most votes will be revealed.</p>
+
+                        {me?.votedFor ? (
+                            <div className="glass-panel p-8 rounded-2xl">
+                                <i className="fa-solid fa-spinner animate-spin text-white/50 text-2xl mb-4"></i>
+                                <h3 className="text-xl font-bold text-white mb-2">Vote Cast</h3>
+                                <p className="text-white/50">Waiting for the remaining agents to cast their votes...</p>
+                            </div>
+                        ) : (
+                            <div className="w-full flex flex-col gap-3">
+                                {lobbyPlayers.filter(p => p.id !== user.uid).map(player => (
+                                    <button 
+                                        key={player.id} 
+                                        onClick={() => handleVote(player.id)}
+                                        className="w-full text-left p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all flex items-center gap-4 active:scale-95"
+                                    >
+                                        <i className="fa-solid fa-user text-white/40"></i>
+                                        <span className="font-bold text-lg">{player.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )
+        };
+
+
+        // 6. Results Screen
+        const ResultScreen = ({ lobbyData, lobbyPlayers, onRestart, onBackToHome, audioManager, isHost, isLocal }) => {
+            const { gameResult, imposterId, secretWord, turnOrder } = lobbyData;
+            const imposter = lobbyPlayers.find(p => p.id === imposterId);
+            const imposterName = imposter?.name || "Unknown";
+
             useEffect(() => {
-                const sound = audioManager.getSound('result');
-                if (sound) {
-                    sound.currentTime = 0; // Ensure it starts from the beginning
-                    sound.play().catch(e => console.error("Result sound autoplay was prevented.", e));
+                if (isLocal) {
+                    audioManager.playSound('result');
+                }
+                return () => { 
+                    const sound = audioManager.getSound('result');
+                    if (sound) sound.pause(); 
+                };
+            }, [audioManager, isLocal]);
+
+            const renderResultContent = () => {
+                if (!gameResult) {
+                    return <p>Calculating results...</p>;
+                }
+
+                if (isLocal) {
+                    return (
+                        <>
+                            <div className="w-28 h-28 bg-gradient-to-br from-red-500/20 to-transparent rounded-full flex items-center justify-center mx-auto mb-8 ring-1 ring-red-500/40 shadow-[0_0_40px_rgba(239,68,68,0.2)]">
+                                <img src="https://em-content.zobj.net/source/microsoft-teams/337/ninja_medium-light-skin-tone_1f977-1f3fc_1f3fc.png" alt="Ninja" draggable="false" className="w-24 h-24 drop-shadow-lg" />
+                            </div>
+                            <h2 className="text-3xl font-display font-bold text-white mb-2">The Imposter Was...</h2>
+                            <p className="text-4xl font-black text-red-400 tracking-tight drop-shadow-sm">{imposterName}</p>
+                        </>
+                    );
                 }
                 
-                // Cleanup function runs when the component unmounts
-                return () => {
-                    if (sound) {
-                        sound.pause();
-                    }
-                };
-            }, [audioManager]);
+                if (gameResult.winner === 'imposter') {
+                    return (
+                        <>
+                         <div className="w-28 h-28 bg-gradient-to-br from-red-500/20 to-transparent rounded-full flex items-center justify-center mx-auto mb-8 ring-1 ring-red-500/40 shadow-[0_0_40px_rgba(239,68,68,0.2)]">
+                            <img src="https://em-content.zobj.net/source/microsoft-teams/337/ninja_medium-light-skin-tone_1f977-1f3fc_1f3fc.png" alt="Ninja" draggable="false" className="w-24 h-24 drop-shadow-lg" />
+                        </div>
+                        <h2 className="text-3xl font-display font-bold text-red-400 mb-2">IMPOSTER WINS</h2>
+                        <p className="text-white/60 mb-6 max-w-xs mx-auto">
+                            {gameResult.reason === 'tie'
+                                ? "The agents couldn't agree on a suspect, allowing the imposter to escape!"
+                                : `The agents incorrectly accused ${gameResult.accusedName}, allowing the real imposter to win!`}
+                        </p>
+                        <p className="text-white">The Imposter was <span className="font-bold text-red-400">{imposterName}</span></p>
+                        </>
+                    );
+                } else { // Agents win
+                     return (
+                        <>
+                         <div className="w-28 h-28 bg-gradient-to-br from-teal-500/20 to-transparent rounded-full flex items-center justify-center mx-auto mb-8 ring-1 ring-teal-500/40 shadow-[0_0_40px_rgba(20,184,166,0.2)]">
+                            <img src="https://em-content.zobj.net/source/microsoft-teams/363/detective_light-skin-tone_1f575-1f3fb_1f3fb.png" alt="Detective" draggable="false" className="w-24 h-24 drop-shadow-lg" />
+                        </div>
+                        <h2 className="text-3xl font-display font-bold text-teal-400 mb-2">AGENTS WIN</h2>
+                        <p className="text-white/60 mb-6 max-w-xs mx-auto">
+                            The agents successfully identified the imposter!
+                        </p>
+                        <p className="text-white">The Imposter was <span className="font-bold text-teal-400">{imposterName}</span></p>
+                        </>
+                    );
+                }
+            };
 
             return (
                 <div className="h-[100dvh] flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
                     <div className="absolute inset-0 pointer-events-none">
-                        <div className="blob bg-red-600/20 top-0 left-0 w-full h-full"></div>
+                        <div className={`blob ${gameResult?.winner === 'imposter' && !isLocal ? 'bg-red-600/20' : 'bg-teal-600/20'} top-0 left-0 w-full h-full`}></div>
                     </div>
                     
-                    <div className="relative mb-12 animate-float w-full max-w-sm z-10">
-                        <div className="absolute inset-0 bg-red-500 rounded-[2.5rem] blur-[50px] opacity-20"></div>
-                        <div className="relative glass-panel p-10 rounded-[2.5rem] border border-red-500/30">
-                            <div className="text-[10px] font-bold text-red-400 uppercase tracking-[0.4em] mb-10">Identity Confirmed</div>
-                            <div className="w-28 h-28 bg-gradient-to-br from-red-500/20 to-transparent rounded-full flex items-center justify-center mx-auto mb-8 ring-1 ring-red-500/40 shadow-[0_0_40px_rgba(239,68,68,0.2)]">
-                                <img src="https://em-content.zobj.net/source/microsoft-teams/337/ninja_medium-light-skin-tone_1f977-1f3fc_1f3fc.png" alt="Beaming Face" draggable="false" className="w-24 h-24 drop-shadow-lg" />
-                            </div>
-                            <span className="text-4xl font-display font-bold text-white block break-words leading-tight">
-                                {imposterName}
-                            </span>
+                    <div className="relative mb-8 animate-float w-full max-w-sm z-10">
+                        <div className={`absolute inset-0 ${gameResult?.winner === 'imposter' && !isLocal ? 'bg-red-500' : 'bg-teal-500'} rounded-[2.5rem] blur-[50px] opacity-20`}></div>
+                        <div className={`relative glass-panel p-10 rounded-[2.5rem] border ${gameResult?.winner === 'imposter' && !isLocal ? 'border-red-500/30' : 'border-teal-500/30'}`}>
+                           {renderResultContent()}
                         </div>
                     </div>
 
-                    <div className="glass-panel p-6 rounded-[2rem] w-full max-w-sm mb-10 border border-white/5 z-10">
+                    <div className="glass-panel p-6 rounded-[2rem] w-full max-w-sm mb-8 border border-white/5 z-10">
                         <p className="text-slate-500 text-[10px] uppercase tracking-widest font-bold mb-3">The Secret Word</p>
-                        <p className="text-3xl font-display font-bold text-teal-400 tracking-wide">{word}</p>
+                        <p className="text-3xl font-display font-bold text-teal-400 tracking-wide">{secretWord}</p>
                     </div>
-
-                    <button 
-                        onClick={() => {
-                            if(navigator.vibrate) navigator.vibrate(20);
-                            onRestart();
-                        }}
-                        className="w-full max-w-sm bg-white hover:bg-slate-200 text-slate-950 py-5 rounded-[1.5rem] font-display font-bold text-lg shadow-[0_0_30px_rgba(255,255,255,0.15)] active:scale-95 transition-all flex items-center justify-center gap-3 z-10"
-                    >
-                        <i className="fa-solid fa-rotate-right text-lg"></i> PLAY AGAIN
-                    </button>
+                    
+                    <div className="w-full max-w-sm z-10 flex flex-col gap-3 pb-[env(safe-area-inset-bottom)]">
+                        {/* *** MODIFICATION: Only show "PLAY AGAIN" for local games *** */}
+                        {isLocal && (
+                            <button 
+                                onClick={() => {
+                                    if(navigator.vibrate) navigator.vibrate(20);
+                                    onRestart();
+                                }}
+                                className="w-full bg-white hover:bg-slate-200 text-slate-950 py-5 rounded-[1.5rem] font-display font-bold text-lg shadow-[0_0_30px_rgba(255,255,255,0.15)] active:scale-95 transition-all flex items-center justify-center gap-3"
+                            >
+                                <i className="fa-solid fa-rotate-right text-lg"></i> PLAY AGAIN
+                            </button>
+                        )}
+                        <button 
+                            onClick={onBackToHome}
+                            className="w-full bg-white/5 hover:bg-white/10 text-white/70 py-4 rounded-[1.5rem] font-display font-bold text-base active:scale-95 transition-all flex items-center justify-center gap-3"
+                        >
+                            <i className="fa-solid fa-house text-sm"></i> BACK TO HOME
+                        </button>
+                    </div>
                 </div>
             );
         };
+        
+        // --- HELPER FUNCTIONS ---
+        const generateRandomString = (length, chars) => {
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        };
+
+        const generateLobbyId = () => generateRandomString(6, 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789');
+        const generateLobbyPassword = () => generateRandomString(4, 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789');
+
 
         // --- MAIN APP ---
         const App = () => {
+            // Core App State
             const [isLoading, setIsLoading] = useState(true);
-            const [gameState, setGameState] = useState('setup'); 
-            const [gameData, setGameData] = useState({
+            const [user, setUser] = useState(null);
+            const [gameMode, setGameMode] = useState('select'); // 'select', 'local', 'online'
+
+            // Local Game State
+            const [localGameState, setLocalGameState] = useState('setup'); 
+            const [localGameData, setLocalGameData] = useState({
                 players: [],
                 imposterIndex: -1,
                 secretWord: '',
                 duration: null,
                 firstPlayer: '',
                 category: '',
-                speakCategory: false
+                speakCategory: false,
+                turnOrder: [],
             });
-            const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+            const [localCurrentPlayerIndex, setLocalCurrentPlayerIndex] = useState(0);
 
-            // Create a single ref for the audio manager
+            // Online Game State
+            const [lobbyId, setLobbyId] = useState(null);
+            const [lobbyData, setLobbyData] = useState(null);
+            const [lobbyPlayers, setLobbyPlayers] = useState([]);
+            const lobbyListenerUnsubscribe = useRef(null);
+            const playersListenerUnsubscribe = useRef(null);
+            const [showRemovedModal, setShowRemovedModal] = useState(false);
+
+            // Audio Manager & Sync State
             const audioManagerRef = useRef(null);
+            const [lastPlayedEventTimestamp, setLastPlayedEventTimestamp] = useState(0);
             
-            // Initialize all audio objects and manager on app start
+            // --- Effects ---
+            
+            // Initialize Audio
             useEffect(() => {
-                if (audioManagerRef.current) return; // Initialize only once
-
+                if (audioManagerRef.current) return;
                 const manager = {
                     sounds: {},
-                    
                     initSound: function(name, url, loop = false) {
                         this.sounds[name] = new Audio(url);
                         this.sounds[name].loop = loop;
                         this.sounds[name].preload = 'auto';
                     },
-
                     getSound: function(name, category = null) {
                         if (name === 'category' && category && this.sounds.categories[category]) {
                             return this.sounds.categories[category];
                         }
                         return this.sounds[name];
                     },
-                    
                     playSound: function(name, category = null) {
                         const sound = this.getSound(name, category);
                         if (sound) {
                             sound.currentTime = 0;
                             const playPromise = sound.play();
                             if (playPromise !== undefined) {
-                                playPromise.catch(error => {
-                                    console.error(`Audio playback failed for "${name}":`, error);
-                                });
+                                playPromise.catch(error => { /* Autoplay was prevented */ });
                             }
-                        } else {
-                            console.warn(`Sound not found: ${name} ${category || ''}`);
                         }
                     },
-                    
                     stopSound: function(name, category = null) {
-                        const sound = this.getSound(name, category);
+                         const sound = this.getSound(name, category);
                         if (sound) {
                             sound.pause();
                             sound.currentTime = 0;
                         }
                     }
                 };
-                
-                // Initialize all sounds
-                Object.keys(AUDIO_URLS).forEach(key => {
-                    if (key !== 'categories') {
-                       manager.initSound(key, AUDIO_URLS[key], key === 'alarm');
-                    }
-                });
-                
+                Object.keys(AUDIO_URLS).forEach(key => { if (key !== 'categories') { manager.initSound(key, AUDIO_URLS[key], key === 'alarm'); } });
                 manager.sounds.categories = {};
-                for (const cat in AUDIO_URLS.categories) {
-                    manager.sounds.categories[cat] = new Audio(AUDIO_URLS.categories[cat]);
-                    manager.sounds.categories[cat].preload = 'auto';
-                }
-
+                for (const cat in AUDIO_URLS.categories) { manager.sounds.categories[cat] = new Audio(AUDIO_URLS.categories[cat]); manager.sounds.categories[cat].preload = 'auto'; }
                 audioManagerRef.current = manager;
             }, []);
 
-
-            // Preloading logic
+            // Preloading & Auth
             useEffect(() => {
-                // Preloading is now handled by the 'auto' attribute on audio elements.
-                // We just need a minimum loading time for aesthetics.
                 const minTimePromise = new Promise(resolve => setTimeout(resolve, 3000));
+                
+                const params = new URLSearchParams(window.location.search);
+                if (params.has('lobbyId')) {
+                    setGameMode('online');
+                }
 
-                minTimePromise.then(() => {
-                    setIsLoading(false);
+                const authUnsubscribe = auth.onAuthStateChanged(user => {
+                    if (user) {
+                        setUser(user);
+                    } else {
+                        auth.signInAnonymously().catch(error => console.error("Anonymous sign-in failed:", error));
+                    }
                 });
-
+                minTimePromise.then(() => setIsLoading(false));
+                return () => authUnsubscribe();
             }, []);
 
-            const startGame = (players, selectedCategories, duration, isRandomMode, speakCategory) => {
-                const shuffleArray = (array) => {
-                    let currentIndex = array.length, randomIndex;
-                    while (currentIndex !== 0) {
-                        randomIndex = Math.floor(Math.random() * currentIndex);
-                        currentIndex--;
-                        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-                    }
-                    return array;
-                };
-                const shuffledPlayers = shuffleArray([...players]);
+            // Firestore Listeners & Vote Calculation for Online Mode
+            useEffect(() => {
+                if (gameMode !== 'online' || !lobbyId || !user) {
+                    if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
+                    if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
+                    return;
+                }
+                
+                const lobbyRef = db.collection('lobbies').doc(lobbyId);
+                lobbyListenerUnsubscribe.current = lobbyRef.onSnapshot(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        setLobbyData(data);
+                        
+                        // Play synced sound events
+                        if (data.lastSoundEvent && data.lastSoundEvent.timestamp > lastPlayedEventTimestamp) {
+                            const soundName = data.lastSoundEvent.name;
+                            const sound = audioManagerRef.current.getSound(soundName);
+                            if (soundName === 'alarm' && sound && !sound.paused) {
+                                // Already playing, do nothing.
+                            } else {
+                                audioManagerRef.current.playSound(soundName, data.lastSoundEvent.category || null);
+                            }
+                            setLastPlayedEventTimestamp(data.lastSoundEvent.timestamp);
+                        }
 
+                    } else {
+                        alert('Lobby has been closed or does not exist.');
+                        handleBackToModeSelect();
+                    }
+                }, error => {
+                    console.error("Error listening to lobby:", error);
+                    alert('Connection to lobby lost.');
+                    setLobbyId(null);
+                });
+
+                const playersRef = lobbyRef.collection('players');
+                playersListenerUnsubscribe.current = playersRef.orderBy('createdAt').onSnapshot(snapshot => {
+                    const currentLobbyPlayers = lobbyPlayers;
+                    const newPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    
+                    const wasIInLobby = currentLobbyPlayers.some(p => p.id === user.uid);
+                    const amIStillInLobby = newPlayers.some(p => p.id === user.uid);
+                    
+                    if (lobbyData && lobbyData.gameState === 'waiting' && wasIInLobby && !amIStillInLobby) {
+                        setShowRemovedModal(true);
+                    }
+
+                    setLobbyPlayers(newPlayers);
+                    
+                    setLobbyData(currentLobbyData => {
+                        if (!currentLobbyData) return currentLobbyData;
+
+                        const isHost = user.uid === currentLobbyData.hostId;
+                        if (isHost && currentLobbyData.gameState === 'voting') {
+                            const allVoted = newPlayers.length > 0 && newPlayers.every(p => p.votedFor);
+                            if (allVoted) {
+                               setTimeout(() => calculateResults(currentLobbyData, newPlayers), 1000);
+                            }
+                        }
+                        return currentLobbyData;
+                    });
+
+
+                }, error => console.error("Error listening to players:", error));
+
+                return () => {
+                    if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
+                    if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
+                };
+            }, [gameMode, lobbyId, user]);
+
+
+            // --- LOCAL GAME HANDLERS ---
+            const startLocalGame = (players, selectedCategories, duration, isRandomMode, speakCategory) => {
+                const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
                 const useRandom = isRandomMode || (selectedCategories && selectedCategories.length === 0);
                 let finalCategory;
                 if (useRandom) {
@@ -1420,91 +2142,342 @@
                 } else {
                     finalCategory = selectedCategories[0];
                 }
-
                 const words = WORD_BANK[finalCategory];
                 const secretWord = words[Math.floor(Math.random() * words.length)];
                 const imposterIndex = Math.floor(Math.random() * shuffledPlayers.length);
                 
-                setGameData({
-                    players: shuffledPlayers, 
-                    imposterIndex, 
-                    secretWord, 
+                const playersWithIds = shuffledPlayers.map((p, i) => ({ ...p, id: `local_${i}` }));
+                const imposterId = playersWithIds[imposterIndex].id;
+
+                setLocalGameData({ 
+                    players: playersWithIds,
+                    imposterIndex,
+                    imposterId,
+                    secretWord,
                     duration,
-                    firstPlayer: shuffledPlayers[0].name,
-                    category: finalCategory, 
-                    speakCategory
+                    firstPlayer: playersWithIds[0].name,
+                    category: finalCategory,
+                    speakCategory,
+                    turnOrder: playersWithIds.map(p => ({name: p.name, id: p.id}))
                 });
-                
-                setCurrentPlayerIndex(0);
-                setGameState('pass');
+                setLocalCurrentPlayerIndex(0);
+                setLocalGameState('pass');
             };
-
-            const handleNextPlayer = () => {
-                if (currentPlayerIndex < gameData.players.length - 1) {
-                    setCurrentPlayerIndex(prev => prev + 1);
+            const handleLocalNextPlayer = () => {
+                if (localCurrentPlayerIndex < localGameData.players.length - 1) {
+                    setLocalCurrentPlayerIndex(prev => prev + 1);
                 } else {
-                    setGameState('turnOrder');
+                    setLocalGameState('turnOrder');
                 }
+            };
+            const handleStartLocalActiveGame = () => {
+                audioManagerRef.current.playSound('uiClick');
+                 if (localGameData.speakCategory && localGameData.category) {
+                    audioManagerRef.current.playSound('category', localGameData.category);
+                }
+                setLocalGameData(prev => ({ ...prev, missionStartTime: new Date() }));
+                setLocalGameState('active');
             };
 
-            const handleStartActiveGame = () => {
-                audioManagerRef.current.playSound('uiClick');
-                 if (gameData.speakCategory && gameData.category) {
-                    audioManagerRef.current.playSound('category', gameData.category);
-                }
-                setGameState('active');
+            const handleLocalEndGame = () => {
+                setLocalGameData(prev => ({
+                    ...prev,
+                    gameResult: { winner: 'local' } // Add a placeholder result object
+                }));
+                setLocalGameState('result');
             };
-            
-            const handleEndGame = () => setGameState('result');
-            const handleRestart = () => {
+
+            const handleLocalRestart = () => {
                 audioManagerRef.current.playSound('playAgain');
                 audioManagerRef.current.stopSound('result');
-                setGameState('setup');
+                setLocalGameState('setup');
+                setLocalGameData({
+                    players: [], imposterIndex: -1, secretWord: '',
+                    duration: null, firstPlayer: '', category: '', speakCategory: false
+                });
+            };
+            const handleBackToModeSelect = () => {
+                audioManagerRef.current.playSound('uiClick');
+                setGameMode('select');
+                setLocalGameState('setup');
+                setLobbyId(null);
+                setLobbyData(null);
+                setLobbyPlayers([]);
+                if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
+                if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
             };
 
+            // --- ONLINE GAME HANDLERS ---
+            const handleCreateLobby = async (username) => {
+                const newLobbyId = generateLobbyId();
+                const newPassword = generateLobbyPassword();
+                const lobbyRef = db.collection('lobbies').doc(newLobbyId);
+
+                const expiryDate = new Date();
+                expiryDate.setDate(expiryDate.getDate() + 1);
+                
+                await lobbyRef.set({
+                    hostId: user.uid,
+                    password: newPassword,
+                    category: 'Movies',
+                    isRandomMode: false,
+                    speakCategory: false,
+                    gameState: 'waiting',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    expireAt: firebase.firestore.Timestamp.fromDate(expiryDate)
+                });
+                await lobbyRef.collection('players').doc(user.uid).set({
+                    name: username,
+                    isHost: true,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                setLobbyId(newLobbyId);
+            };
+
+            const handleJoinLobby = async (lobbyId, password, username) => {
+                const lobbyRef = db.collection('lobbies').doc(lobbyId);
+                const lobbyDoc = await lobbyRef.get();
+                if (!lobbyDoc.exists) throw new Error('Lobby not found.');
+                const data = lobbyDoc.data();
+                if (data.password !== password) throw new Error('Incorrect password.');
+                if (data.gameState !== 'waiting') throw new Error('Game is already in progress.');
+
+                const playersSnapshot = await lobbyRef.collection('players').get();
+                if (playersSnapshot.docs.some(doc => doc.id === user.uid)) {
+                    setLobbyId(lobbyId);
+                    return;
+                }
+                const playerNames = playersSnapshot.docs.map(doc => doc.data().name);
+                if (playerNames.includes(username)) throw new Error('Username is already taken in this lobby.');
+                await lobbyRef.collection('players').doc(user.uid).set({
+                    name: username,
+                    isHost: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                setLobbyId(lobbyId);
+            };
+            
+             const handleStartGameOnline = async () => {
+                if (lobbyPlayers.length < 3) return;
+                const soundName = lobbyData.isRandomMode ? 'startRandomMission' : 'startMission';
+                const useRandom = lobbyData.isRandomMode;
+                let finalCategory;
+                 if (useRandom) {
+                    const allActualCategories = Object.keys(WORD_BANK);
+                    finalCategory = allActualCategories[Math.floor(Math.random() * allActualCategories.length)];
+                } else {
+                    finalCategory = lobbyData.category;
+                }
+                const words = WORD_BANK[finalCategory];
+                const secretWord = words[Math.floor(Math.random() * words.length)];
+
+                const shuffledPlayers = [...lobbyPlayers].sort(() => Math.random() - 0.5);
+                const imposterId = shuffledPlayers[Math.floor(Math.random() * shuffledPlayers.length)].id;
+                
+                await db.collection('lobbies').doc(lobbyId).update({
+                    secretWord,
+                    imposterId,
+                    turnOrder: shuffledPlayers.map(p => ({name: p.name, id: p.id})),
+                    category: finalCategory,
+                    gameState: 'reveal',
+                    lastSoundEvent: { name: soundName, timestamp: Date.now() }
+                });
+            };
+
+            const handleAcknowledgeCard = () => {
+                db.collection('lobbies').doc(lobbyId).collection('players').doc(user.uid).update({ hasSeenCard: true });
+            };
+            
+            const handleStartMissionOnline = () => {
+                db.collection('lobbies').doc(lobbyId).update({ 
+                    gameState: 'turnOrder',
+                    lastSoundEvent: { name: 'uiClick', timestamp: Date.now() }
+                }); 
+            };
+            
+            const handleStartActiveMission = () => {
+                const updates = { 
+                    gameState: 'active', 
+                    missionStartTime: firebase.firestore.FieldValue.serverTimestamp(),
+                    duration: 3 * 60,
+                    lastSoundEvent: { 
+                        name: lobbyData.speakCategory ? 'category' : 'uiClick', 
+                        category: lobbyData.speakCategory ? lobbyData.category : null,
+                        timestamp: Date.now() 
+                    }
+                };
+                db.collection('lobbies').doc(lobbyId).update(updates);
+            }
+
+            const handleEndGameOnline = () => {
+                if (lobbyData.gameState === 'active') {
+                    db.collection('lobbies').doc(lobbyId).update({ 
+                         gameState: 'voting',
+                         lastSoundEvent: { name: 'alarm', timestamp: Date.now() }
+                     });
+                }
+            };
+            
+            const calculateResults = async (currentLobbyData, currentLobbyPlayers) => {
+                if (currentLobbyData.gameState !== 'voting') return;
+
+                const voteCounts = {};
+                currentLobbyPlayers.forEach(p => {
+                    if (p.votedFor) {
+                        voteCounts[p.votedFor] = (voteCounts[p.votedFor] || 0) + 1;
+                    }
+                });
+
+                let maxVotes = 0;
+                let accusedIds = [];
+                for (const playerId in voteCounts) {
+                    if (voteCounts[playerId] > maxVotes) {
+                        maxVotes = voteCounts[playerId];
+                        accusedIds = [playerId];
+                    } else if (voteCounts[playerId] === maxVotes) {
+                        accusedIds.push(playerId);
+                    }
+                }
+                
+                let result = {};
+                if (accusedIds.length === 1 && accusedIds[0] === currentLobbyData.imposterId) {
+                    result = { winner: 'agents' };
+                } else if (accusedIds.length > 1) {
+                    const accusedPlayer = lobbyPlayers.find(p => p.id === accusedIds[0]);
+                    result = { winner: 'imposter', reason: 'tie', accusedName: accusedPlayer?.name || 'an agent'};
+                }
+                else {
+                    const accusedPlayer = lobbyPlayers.find(p => p.id === accusedIds[0]);
+                    result = { winner: 'imposter', reason: 'wrong_vote', accusedName: accusedPlayer?.name || 'an innocent agent' };
+                }
+
+                await db.collection('lobbies').doc(lobbyId).update({ 
+                    gameState: 'result', 
+                    gameResult: result,
+                    lastSoundEvent: { name: 'result', timestamp: Date.now() }
+                });
+            };
+            
+            const handleRestartOnline = async () => {
+                if (lobbyData.gameState !== 'result') return;
+
+                const playersRef = db.collection('lobbies').doc(lobbyId).collection('players');
+                const playersSnapshot = await playersRef.get();
+                const batch = db.batch();
+                playersSnapshot.docs.forEach(doc => {
+                    batch.update(doc.ref, { 
+                        hasSeenCard: firebase.firestore.FieldValue.delete(),
+                        votedFor: firebase.firestore.FieldValue.delete() 
+                    });
+                });
+                await batch.commit();
+
+                await db.collection('lobbies').doc(lobbyId).update({
+                    gameState: 'waiting',
+                    secretWord: firebase.firestore.FieldValue.delete(),
+                    imposterId: firebase.firestore.FieldValue.delete(),
+                    turnOrder: firebase.firestore.FieldValue.delete(),
+                    gameResult: firebase.firestore.FieldValue.delete(),
+                    missionStartTime: firebase.firestore.FieldValue.delete(),
+                    duration: firebase.firestore.FieldValue.delete(),
+                    lastSoundEvent: { name: 'playAgain', timestamp: Date.now() }
+                });
+            };
+
+
+            // --- RENDER LOGIC ---
+            const renderContent = () => {
+                if (isLoading || !user) return <LoadingScreen />;
+
+                if (gameMode === 'select') {
+                    return <GameModeSelectionScreen onSelectMode={setGameMode} audioManager={audioManagerRef.current} />;
+                }
+
+                if (gameMode === 'local') {
+                    switch (localGameState) {
+                        case 'setup': return <SetupScreen onStartGame={startLocalGame} audioManager={audioManagerRef.current} onBack={handleBackToModeSelect} />;
+                        case 'pass': return <CardRevealScreen key={localCurrentPlayerIndex} player={localGameData.players[localCurrentPlayerIndex]} word={localCurrentPlayerIndex === localGameData.imposterIndex ? "IMPOSTER" : localGameData.secretWord} onNext={handleLocalNextPlayer} isLastPlayer={localCurrentPlayerIndex === localGameData.players.length - 1} audioManager={audioManagerRef.current} isHost={true} />;
+                        case 'turnOrder': return <TurnOrderScreen players={localGameData.players} onStartMission={handleStartLocalActiveGame} audioManager={audioManagerRef.current} isHost={true}/>;
+                        case 'active': return <GameTimerScreen lobbyData={localGameData} onEndGame={handleLocalEndGame} firstPlayer={localGameData.firstPlayer} audioManager={audioManagerRef.current} isHost={true} lobbyId={null}/>;
+                        case 'result': 
+                            return <ResultScreen 
+                                isLocal={true} 
+                                lobbyData={localGameData} 
+                                lobbyPlayers={localGameData.players} 
+                                onRestart={handleLocalRestart} 
+                                onBackToHome={handleBackToModeSelect} 
+                                audioManager={audioManagerRef.current} 
+                                isHost={true} 
+                            />;
+                        default: return <SetupScreen onStartGame={startLocalGame} audioManager={audioManagerRef.current} onBack={handleBackToModeSelect} />;
+                    }
+                }
+                
+                if (gameMode === 'online') {
+                    if (!lobbyId || !lobbyData) {
+                        return <OnlineLobbyScreen user={user} onCreate={handleCreateLobby} onJoin={handleJoinLobby} audioManager={audioManagerRef.current} onBack={handleBackToModeSelect} />;
+                    }
+                    
+                    const meAsPlayer = lobbyPlayers.find(p => p.id === user.uid);
+                    const isHost = user.uid === lobbyData.hostId;
+                    const onlineState = lobbyData.gameState;
+                    
+                    if (onlineState === 'waiting' || (onlineState === 'reveal' && meAsPlayer?.hasSeenCard)) {
+                         return <WaitingRoom lobbyData={lobbyData} lobbyPlayers={lobbyPlayers} user={user} lobbyId={lobbyId} onStartGame={handleStartGameOnline} onStartMission={handleStartMissionOnline} audioManager={audioManagerRef.current} />;
+                    }
+                    if (onlineState === 'reveal' && !meAsPlayer?.hasSeenCard) {
+                         return <CardRevealScreen 
+                                        isOnline={true}
+                                        player={{ name: meAsPlayer?.name }} 
+                                        word={user.uid === lobbyData.imposterId ? "IMPOSTER" : lobbyData.secretWord}
+                                        audioManager={audioManagerRef.current}
+                                        onAcknowledge={handleAcknowledgeCard}
+                                        isHost={isHost}
+                                     />;
+                    }
+                    if (onlineState === 'turnOrder') {
+                        return <TurnOrderScreen players={lobbyData.turnOrder || []} onStartMission={handleStartActiveMission} audioManager={audioManagerRef.current} isHost={isHost} />;
+                    }
+                    if (onlineState === 'active') {
+                         return <GameTimerScreen 
+                            lobbyData={lobbyData}
+                            onEndGame={handleEndGameOnline} 
+                            firstPlayer={lobbyData.turnOrder ? lobbyData.turnOrder[0].name : ''} 
+                            audioManager={audioManagerRef.current}
+                            isHost={isHost}
+                            lobbyId={lobbyId}
+                        />;
+                    }
+                    if (onlineState === 'voting') {
+                        return <VotingScreen lobbyData={lobbyData} lobbyPlayers={lobbyPlayers} user={user} lobbyId={lobbyId} audioManager={audioManagerRef.current} />;
+                    }
+                    if (onlineState === 'result') {
+                        return <ResultScreen 
+                            isLocal={false}
+                            lobbyData={lobbyData}
+                            lobbyPlayers={lobbyPlayers}
+                            onRestart={handleRestartOnline} 
+                            onBackToHome={handleBackToModeSelect}
+                            audioManager={audioManagerRef.current}
+                            isHost={isHost}
+                        />;
+                    }
+                    return <LoadingScreen />; // Fallback
+                }
+            };
+            
             return (
                 <div className="w-full h-full text-slate-200 font-sans selection:bg-brand-500/30">
                     <div className="fixed inset-0 bg-[#020617] -z-10"></div>
-                    
-                    {isLoading ? <LoadingScreen /> : (
-                        <>
-                            {gameState === 'setup' && <SetupScreen onStartGame={startGame} audioManager={audioManagerRef.current} />}
-                            {gameState === 'pass' && (
-                                <CardRevealScreen 
-                                    key={currentPlayerIndex}
-                                    player={gameData.players[currentPlayerIndex]}
-                                    word={currentPlayerIndex === gameData.imposterIndex ? "IMPOSTER" : gameData.secretWord}
-                                    onNext={handleNextPlayer}
-                                    isLastPlayer={currentPlayerIndex === gameData.players.length - 1}
-                                    audioManager={audioManagerRef.current}
-                                />
-                            )}
-                            {gameState === 'turnOrder' && (
-                                <TurnOrderScreen
-                                    players={gameData.players}
-                                    onStartMission={handleStartActiveGame}
-                                    audioManager={audioManagerRef.current}
-                                />
-                            )}
-                            {gameState === 'active' && (
-                                <GameTimerScreen 
-                                    duration={gameData.duration}
-                                    onEndGame={handleEndGame}
-                                    firstPlayer={gameData.firstPlayer}
-                                    category={gameData.category}
-                                    audioManager={audioManagerRef.current}
-                                />
-                            )}
-                            {gameState === 'result' && (
-                                <ResultScreen 
-                                    imposterName={gameData.players[gameData.imposterIndex].name}
-                                    word={gameData.secretWord}
-                                    onRestart={handleRestart}
-                                    audioManager={audioManagerRef.current}
-                                />
-                            )}
-                        </>
-                    )}
+                     <div className="absolute inset-0 pointer-events-none">
+                        <div className="blob bg-brand-600/30 top-[-20%] left-[-20%] w-[60%] h-[60%]"></div>
+                        <div className="blob bg-cyan-600/30 bottom-[-20%] right-[-20%] w-[60%] h-[60%] animation-delay-2000"></div>
+                    </div>
+                    {showRemovedModal && <RemovedModal onClose={() => {
+                        setShowRemovedModal(false);
+                        handleBackToModeSelect();
+                    }} />}
+                    {renderContent()}
                 </div>
             );
         };
