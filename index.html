@@ -309,7 +309,7 @@
             Places: "https://em-content.zobj.net/source/microsoft-teams/337/cityscape_1f3d9-fe0f.png",
             Instruments: "https://em-content.zobj.net/source/microsoft-teams/337/musical-note_1f3b5.png",
             Superheroes: "https://em-content.zobj.net/source/microsoft-teams/337/superhero_light-skin-tone_1f9b8-1f3fb_1f3fb.png",
-            Animals: "https://em-content.zobj.net/source/microsoft-teams/337/service-dog_1f415-200d-1f9ba.png",
+            Animals: "https://em-content.zobj.net/source/microsoft-teams/337/dog-face_1f436.png",
             Countries: "https://em-content.zobj.net/source/microsoft-teams/337/globe-showing-americas_1f30e.png",
             "Video Games": "https://em-content.zobj.net/source/microsoft-teams/337/joystick_1f579-fe0f.png",
             Science: "https://em-content.zobj.net/source/microsoft-teams/363/scientist-light-skin-tone_1f9d1-1f3fb-200d-1f52c.png",
@@ -1673,7 +1673,7 @@
                         }
                         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                         
-                        if (isHost) {
+                        if (isHost && lobbyId) {
                             onEndGame();
                         }
                     }
@@ -1691,7 +1691,7 @@
                         sound.currentTime = 0;
                     }
                 };
-            }, [duration, missionStartTime, isHost, onEndGame, audioManager]);
+            }, [duration, missionStartTime, isHost, onEndGame, audioManager, lobbyId]);
 
             const handleIdentifyImposter = () => {
                 if (lobbyId && !isHost) return;
@@ -1784,7 +1784,7 @@
                             className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_40px_rgba(220,38,38,0.4)] transition-all active:scale-[0.98] flex items-center justify-center gap-3 border border-red-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <i className="fa-solid fa-user-secret text-xl"></i>
-                            IDENTIFY IMPOSTER
+                            {duration && timeLeft === 0 && !lobbyId ? 'REVEAL IMPOSTER' : 'IDENTIFY IMPOSTER'}
                         </button>
                     </div>
                 </div>
@@ -1913,12 +1913,12 @@
             return (
                 <div className="h-[100dvh] flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
                     <div className="absolute inset-0 pointer-events-none">
-                        <div className={`blob ${gameResult?.winner === 'imposter' && !isLocal ? 'bg-red-600/20' : 'bg-teal-600/20'} top-0 left-0 w-full h-full`}></div>
+                        <div className={`blob ${ (gameResult?.winner === 'imposter' && !isLocal) || isLocal ? 'bg-red-600/20' : 'bg-teal-600/20'} top-0 left-0 w-full h-full`}></div>
                     </div>
                     
                     <div className="relative mb-8 animate-float w-full max-w-sm z-10">
-                        <div className={`absolute inset-0 ${gameResult?.winner === 'imposter' && !isLocal ? 'bg-red-500' : 'bg-teal-500'} rounded-[2.5rem] blur-[50px] opacity-20`}></div>
-                        <div className={`relative glass-panel p-10 rounded-[2.5rem] border ${gameResult?.winner === 'imposter' && !isLocal ? 'border-red-500/30' : 'border-teal-500/30'}`}>
+                        <div className={`absolute inset-0 ${ (gameResult?.winner === 'imposter' && !isLocal) || isLocal ? 'bg-red-500' : 'bg-teal-500'} rounded-[2.5rem] blur-[50px] opacity-20`}></div>
+                        <div className={`relative glass-panel p-10 rounded-[2.5rem] border ${ (gameResult?.winner === 'imposter' && !isLocal) || isLocal ? 'border-red-500/30' : 'border-teal-500/30'}`}>
                            {renderResultContent()}
                         </div>
                     </div>
