@@ -115,6 +115,7 @@
             -webkit-user-drag: none;
             user-drag: none;
             -webkit-touch-callout: none;
+            pointer-events: none;
         }
 
         /* Modern Glassmorphism */
@@ -192,6 +193,40 @@
             33% { transform: translate(30px, -50px) scale(1.1); }
             66% { transform: translate(-20px, 20px) scale(0.9); }
         }
+        
+		.timer-slider::-webkit-slider-thumb {
+		  -webkit-appearance: none; /* Override default look */
+		  appearance: none;
+		  width: 28px; /* Set width */
+		  height: 28px; /* Set height */
+		  background-image: url('https://em-content.zobj.net/source/microsoft-teams/337/stopwatch_23f1-fe0f.png');
+		  background-size: contain;
+		  background-repeat: no-repeat;
+		  background-position: center;
+		  background-color: transparent; /* Remove default color */
+		  cursor: pointer;
+		  /* Key change: A less negative margin-top pushes the thumb down */
+		  /* Try values from -4px to 0px or even positive values for a lower effect */
+		  margin-top: -4px;
+		  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Optional: a subtle shadow for depth */
+		  border-radius: 50%; /* Optional: ensures shadow is circular */
+		}
+
+		.timer-slider::-moz-range-thumb {
+		  width: 28px; /* Set width */
+		  height: 28px; /* Set height */
+		  background-image: url('https://em-content.zobj.net/source/microsoft-teams/337/stopwatch_23f1-fe0f.png');
+		  background-size: contain;
+		  background-repeat: no-repeat;
+		  background-position: center;
+		  background-color: transparent; /* Remove default color */
+		  border: none; /* Remove default border */
+		  cursor: pointer;
+		  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Optional: a subtle shadow for depth */
+		  border-radius: 50%; /* Optional: ensures shadow is circular */
+		  /* Note: Firefox centers the thumb differently. The visual effect of being */
+		  /* "down" is primarily achieved through the image design itself. */
+		}
     </style>
 </head>
 <body class="select-none">
@@ -243,7 +278,7 @@
 		  ],
 
 		  TV: [
-		    "Stranger Things", "Game of Thrones", "Breaking Bad", "The Office", "Friends", "The Simpsons", "South Park", "SpongeBob SquarePants", "The Mandalorian", "The Crown", "Squid Game", "The Witcher", "Black Mirror", "Rick and Morty", "Avatar: The Last Airbender", "The Sopranos", "The Wire", "Seinfeld", "Parks and Recreation", "Lost", "Grey's Anatomy", "The Walking Dead", "Modern Family", "Family Guy", "The Big Bang Theory", "How I Met Your Mother", "Doctor Who", "Sherlock", "Peaky Blinders", "Narcos", "Money Heist", "Ted Lasso", "The Boys", "Westworld", "Chernobyl", "Succession", "Fleabag", "The Marvelous Mrs. Maisel", "Ozark", "Better Call Saul", "Mad Men", "The X-Files", "Twin Peaks", "Saturday Night Live", "The Daily Show", "Key & Peele", "Chappelle's Show", "Curb Your Enthusiasm", "Arrested Development", "It's Always Sunny in Philadelphia", "Community", "30 Rock", "Veep", "Silicon Valley", "Atlanta", "Barry", "The Good Place", "Brooklyn Nine-Nine", "Schitt's Creek", "The Queen's Gambit", "Bridgerton", "WandaVision", "Loki", "House of the Dragon", "The Last of Us", "Yellowstone", "Severance", "Abbott Elementary", "Only Murders in the Building", "Invincible", "Arcane", "Bluey", "Adventure Time", "Regular Show", "Steven Universe", "Gravity Falls", "The Powerpuff Girls", "Dexter's Laboratory", "Samurai Jack", "iCarly", "Rugrats", "Hey Arnold!", "The Fairly OddParents", "Star Trek", "The Twilight Zone", "I Love Lucy", "M*A*S*H", "Cheers", "Frasier", "The Fresh Prince of Bel-Air", "Buffy the Vampire Slayer", "Firefly", "Battlestar Galactica", "Deadwood", "Fargo", "True Detective", "Mindhunter", "The Handmaid's Tale", "Orange Is the New Black", "House of Cards", "Downton Abbey", "The Crown", "Cobra Kai", "Stranger Things", "NCIS", "Law & Order", "24", "Prison Break", "Survivor", "House M.D.", "Scrubs", "Psych", "Monk", "Suits", "Gilmore Girls", "Supernatural", "The Vampire Diaries", "Gossip Girl", "One Tree Hill", "The O.C.", "Pretty Little Liars", "Desperate Housewives", "Scandal", "How to Get Away with Murder", "Empire", "Sons of Anarchy", "Vikings", "Spartacus", "Rome", "The Tudors", "Reign", "Outlander", "Luther", "Broadchurch", "Killing Eve", "Hannibal", "Bates Motel", "American Horror Story", "Grimm", "Once Upon a Time", "Charmed", "Angel", "Smallville", "Heroes", "Arrow", "The Flash", "Daredevil", "Jessica Jones", "The Punisher", "Gotham", "The Umbrella Academy", "Sense8", "Altered Carbon", "The Expanse", "Dark", "Silo", "For All Mankind", "The Bear", "Beef", "Wednesday", "The White Lotus", "Big Little Lies", "Mare of Easttown", "True Blood", "Entourage", "Ballers", "Insecure", "Girls", "Sex and the City", "Emily in Paris", "Sex Education", "Euphoria", "Alice in Borderland", "All of Us Are Dead", "Dragon Ball Z", "Naruto", "One Piece", "Attack on Titan", "Death Note", "Fullmetal Alchemist: Brotherhood", "Demon Slayer", "Cowboy Bebop", "Neon Genesis Evangelion", "Sailor Moon", "Pokémon", "Batman: The Animated Series", "X-Men: The Animated Series", "Justice League Unlimited", "Teen Titans", "Scooby-Doo", "Tom and Jerry", "Looney Tunes", "The Flintstones", "The Jetsons", "Animaniacs", "Pinky and the Brain", "Phineas and Ferb", "Kim Possible", "DuckTales", "Gargoyles", "Danny Phantom", "Ben 10", "Courage the Cowardly Dog", "Johnny Bravo", "Ed, Edd n Eddy", "Star Wars: The Clone Wars", "Andor", "Obi-Wan Kenobi", "The Muppet Show", "Sesame Street", "Bob's Burgers", "King of the Hill", "Futurama", "American Dad!", "Archer", "BoJack Horseman", "Big Mouth", "Love, Death & Robots", "Robot Chicken", "Beavis and Butt-Head", "Daria", "Top Gear", "The Great British Bake Off", "RuPaul's Drag Race", "Shark Tank", "American Idol", "The Voice", "Keeping Up with the Kardashians", "The Real Housewives of Beverly Hills", "Planet Earth", "MythBusters", "Dirty Jobs", "Jeopardy!", "Wheel of Fortune", "CSI: Crime Scene Investigation", "Criminal Minds", "Bones", "Castle", "The Mentalist", "Hawaii Five-0", "Blue Bloods", "Chicago Fire", "Chicago P.D.", "ER", "Stargate SG-1", "Malcolm in the Middle", "That '70s Show", "Married... with Children", "The Golden Girls", "Full House", "The Nanny", "Will & Grace", "Home Improvement", "Roseanne", "Everybody Loves Raymond", "King of Queens", "Two and a Half Men", "New Girl", "The Mindy Project", "Superstore", "Glee", "Henry Danger", "Drake & Josh", "Mr. Bean", "Game Shakers", "Dora the Explorer", "Peppa Pig", "The Thundermans", "The Loud House", "Paw Patrol", "Sanjay & Craig", "Mom"
+		    "Stranger Things", "Game of Thrones", "Breaking Bad", "The Office", "Friends", "The Simpsons", "South Park", "SpongeBob SquarePants", "The Mandalorian", "The Crown", "Squid Game", "The Witcher", "Black Mirror", "Rick and Morty", "Avatar: The Last of Airbender", "The Sopranos", "The Wire", "Seinfeld", "Parks and Recreation", "Lost", "Grey's Anatomy", "The Walking Dead", "Modern Family", "Family Guy", "The Big Bang Theory", "How I Met Your Mother", "Doctor Who", "Sherlock", "Peaky Blinders", "Narcos", "Money Heist", "Ted Lasso", "The Boys", "Westworld", "Chernobyl", "Succession", "Fleabag", "The Marvelous Mrs. Maisel", "Ozark", "Better Call Saul", "Mad Men", "The X-Files", "Twin Peaks", "Saturday Night Live", "The Daily Show", "Key & Peele", "Chappelle's Show", "Curb Your Enthusiasm", "Arrested Development", "It's Always Sunny in Philadelphia", "Community", "30 Rock", "Veep", "Silicon Valley", "Atlanta", "Barry", "The Good Place", "Brooklyn Nine-Nine", "Schitt's Creek", "The Queen's Gambit", "Bridgerton", "WandaVision", "Loki", "House of the Dragon", "The Last of Us", "Yellowstone", "Severance", "Abbott Elementary", "Only Murders in the Building", "Invincible", "Arcane", "Bluey", "Adventure Time", "Regular Show", "Steven Universe", "Gravity Falls", "The Powerpuff Girls", "Dexter's Laboratory", "Samurai Jack", "iCarly", "Rugrats", "Hey Arnold!", "The Fairly OddParents", "Star Trek", "The Twilight Zone", "I Love Lucy", "M*A*S*H", "Cheers", "Frasier", "The Fresh Prince of Bel-Air", "Buffy the Vampire Slayer", "Firefly", "Battlestar Galactica", "Deadwood", "Fargo", "True Detective", "Mindhunter", "The Handmaid's Tale", "Orange Is the New Black", "House of Cards", "Downton Abbey", "The Crown", "Cobra Kai", "Stranger Things", "NCIS", "Law & Order", "24", "Prison Break", "Survivor", "House M.D.", "Scrubs", "Psych", "Monk", "Suits", "Gilmore Girls", "Supernatural", "The Vampire Diaries", "Gossip Girl", "One Tree Hill", "The O.C.", "Pretty Little Liars", "Desperate Housewives", "Scandal", "How to Get Away with Murder", "Empire", "Sons of Anarchy", "Vikings", "Spartacus", "Rome", "The Tudors", "Reign", "Outlander", "Luther", "Broadchurch", "Killing Eve", "Hannibal", "Bates Motel", "American Horror Story", "Grimm", "Once Upon a Time", "Charmed", "Angel", "Smallville", "Heroes", "Arrow", "The Flash", "Daredevil", "Jessica Jones", "The Punisher", "Gotham", "The Umbrella Academy", "Sense8", "Altered Carbon", "The Expanse", "Dark", "Silo", "For All Mankind", "The Bear", "Beef", "Wednesday", "The White Lotus", "Big Little Lies", "Mare of Easttown", "True Blood", "Entourage", "Ballers", "Insecure", "Girls", "Sex and the City", "Emily in Paris", "Sex Education", "Euphoria", "Alice in Borderland", "All of Us Are Dead", "Dragon Ball Z", "Naruto", "One Piece", "Attack on Titan", "Death Note", "Fullmetal Alchemist: Brotherhood", "Demon Slayer", "Cowboy Bebop", "Neon Genesis Evangelion", "Sailor Moon", "Pokémon", "Batman: The Animated Series", "X-Men: The Animated Series", "Justice League Unlimited", "Teen Titans", "Scooby-Doo", "Tom and Jerry", "Looney Tunes", "The Flintstones", "The Jetsons", "Animaniacs", "Pinky and the Brain", "Phineas and Ferb", "Kim Possible", "DuckTales", "Gargoyles", "Danny Phantom", "Ben 10", "Courage the Cowardly Dog", "Johnny Bravo", "Ed, Edd n Eddy", "Star Wars: The Clone Wars", "Andor", "Obi-Wan Kenobi", "The Muppet Show", "Sesame Street", "Bob's Burgers", "King of the Hill", "Futurama", "American Dad!", "Archer", "BoJack Horseman", "Big Mouth", "Love, Death & Robots", "Robot Chicken", "Beavis and Butt-Head", "Daria", "Top Gear", "The Great British Bake Off", "RuPaul's Drag Race", "Shark Tank", "American Idol", "The Voice", "Keeping Up with the Kardashians", "The Real Housewives of Beverly Hills", "Planet Earth", "MythBusters", "Dirty Jobs", "Jeopardy!", "Wheel of Fortune", "CSI: Crime Scene Investigation", "Criminal Minds", "Bones", "Castle", "The Mentalist", "Hawaii Five-0", "Blue Bloods", "Chicago Fire", "Chicago P.D.", "ER", "Stargate SG-1", "Malcolm in the Middle", "That '70s Show", "Married... with Children", "The Golden Girls", "Full House", "The Nanny", "Will & Grace", "Home Improvement", "Roseanne", "Everybody Loves Raymond", "King of Queens", "Two and a Half Men", "New Girl", "The Mindy Project", "Superstore", "Glee", "Henry Danger", "Drake & Josh", "Mr. Bean", "Game Shakers", "Dora the Explorer", "Peppa Pig", "The Thundermans", "The Loud House", "Paw Patrol", "Sanjay & Craig", "Mom"
 		  ],
 
 		  Jobs: [
@@ -870,12 +905,18 @@
         ];
 
         const LoadingScreen = () => {
-            const [currentTipIndex, setCurrentTipIndex] = useState(0);
+            const [currentTipIndex, setCurrentTipIndex] = useState(() => Math.floor(Math.random() * TIPS.length));
 
             useEffect(() => {
                 const tipInterval = setInterval(() => {
-                    setCurrentTipIndex(prev => (prev + 1) % TIPS.length);
-                }, 5000); // Change tip every 5 seconds
+                    setCurrentTipIndex(prev => {
+                        let newIndex;
+                        do {
+                            newIndex = Math.floor(Math.random() * TIPS.length);
+                        } while (newIndex === prev && TIPS.length > 1);
+                        return newIndex;
+                    });
+                }, 5000);
 
                 return () => clearInterval(tipInterval);
             }, []);
@@ -985,8 +1026,8 @@
         
         // NEW: Modal for removed players
         const RemovedModal = ({ onClose }) => {
-            return (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-fadeIn">
+			return (
+				<div className="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fadeIn">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
                     <div className="relative w-full max-w-sm glass-panel rounded-3xl p-6 border border-white/10 shadow-2xl animate-slide-up text-center">
                         <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4 bg-red-500/20 ring-1 ring-white/10 mx-auto">
@@ -1018,7 +1059,7 @@
                     if (saved) {
                         let parsed = JSON.parse(saved);
                         if (Array.isArray(parsed) && parsed.length > 0) {
-                            if (typeof parsed[0] === 'string') {
+                            if (typeof parsed === 'string') {
                                 parsed = parsed.map(name => ({ name, audioData: null }));
                             }
                             return parsed;
@@ -1310,7 +1351,7 @@
                                         max="15"
                                         value={timerMinutes}
                                         onChange={(e) => setTimerMinutes(parseInt(e.target.value))}
-                                        className="w-full h-2 bg-slate-950 rounded-full appearance-none cursor-pointer accent-sky-500"
+                                        className="w-full h-2 bg-slate-950 rounded-full appearance-none cursor-pointer timer-slider"
                                     />
                                 </div>
 
@@ -1484,7 +1525,7 @@
                 if (!isFlipped) {
                     setIsFlipped(true);
                     audioManager.playSound('uiClick');
-                    if (navigator.vibrate) navigator.vibrate([30, 50]);
+                    if (navigator.vibrate) navigator.vibrate();
                 }
             };
             
@@ -1714,7 +1755,7 @@
                         if (sound && sound.paused) {
                            sound.play().catch(e => console.log("Alarm sound autoplay prevented"));
                         }
-                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                        if (navigator.vibrate) navigator.vibrate();
                         
                         if (isHost && lobbyId) {
                             onEndGame();
@@ -1987,7 +2028,7 @@
                     )}
                     
                     <div className="w-full max-w-sm z-10 flex flex-col gap-3 pb-[env(safe-area-inset-bottom)] mb-8">
-                         {isLocal && (
+                         {isHost && (
                             <button 
                                 onClick={() => {
                                     if(navigator.vibrate) navigator.vibrate(20);
@@ -2021,11 +2062,52 @@
         const generateLobbyId = () => generateRandomString(6, 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789');
         const generateLobbyPassword = () => generateRandomString(4, 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789');
 
+        // --- NEW: Asset Preloading ---
+        const preloadAssets = () => {
+            const imageUrls = [
+                // General UI & Components
+                'https://em-content.zobj.net/source/microsoft-teams/400/disguised-face_1f978.png', // Loading Icon
+                'https://em-content.zobj.net/source/microsoft-teams/363/detective_light-skin-tone_1f575-1f3fb_1f3fb.png', // Handover & Agent Win Icon
+                'https://em-content.zobj.net/source/microsoft-teams/337/locked_1f512.png', // Locked Card Icon
+                'https://em-content.zobj.net/source/microsoft-teams/337/shushing-face_1f92b.png', // Imposter Card Icon
+                'https://em-content.zobj.net/source/microsoft-teams/337/clipboard_1f4cb.png', // Innocent Card Icon
+                'https://em-content.zobj.net/source/microsoft-teams/337/ninja_medium-light-skin-tone_1f977-1f3fc_1f3fc.png', // Imposter Win Icon
+                'https://em-content.zobj.net/source/microsoft-teams/337/stopwatch_23f1-fe0f.png', // Timer Slider thumb
+                
+                // Supercell category backgrounds
+                'https://www.clashchamps.com/wp-content/uploads/2024/06/czJOx2-Q.png',
+                'https://static0.srcdn.com/wordpress/wp-content/uploads/2021/04/Three-new-Clash-of-Clans-games-announced.jpg',
+            ];
+
+            // Add all category icons to the list
+            Object.values(CATEGORY_ICONS).forEach(icon => {
+                if (Array.isArray(icon)) {
+                    imageUrls.push(...icon);
+                } else {
+                    imageUrls.push(icon);
+                }
+            });
+
+            // Use a Set to ensure we only load unique URLs
+            const uniqueImageUrls = [...new Set(imageUrls)];
+
+            const promises = uniqueImageUrls.map(src => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = src;
+                    img.onload = resolve;
+                    img.onerror = resolve; // Resolve on error so one broken image doesn't stop the app
+                });
+            });
+
+            return Promise.all(promises);
+        };
 
         // --- MAIN APP ---
         const App = () => {
             // Core App State
             const [isLoading, setIsLoading] = useState(true);
+            const [assetsLoaded, setAssetsLoaded] = useState(false); // New state for preloading
             const [user, setUser] = useState(null);
             const [gameMode, setGameMode] = useState('select'); // 'select', 'local', 'online'
 
@@ -2058,6 +2140,7 @@
             // --- Refs to hold the latest state for use in Firestore listeners ---
             const latestLobbyData = useRef(lobbyData);
             const latestLobbyPlayers = useRef(lobbyPlayers);
+            const previousGameStateRef = useRef();
             
             // --- Effects ---
 
@@ -2114,6 +2197,10 @@
             useEffect(() => {
                 const minTimePromise = new Promise(resolve => setTimeout(resolve, 3000));
                 
+                // Start preloading assets immediately
+                const assetsPromise = preloadAssets();
+                assetsPromise.then(() => setAssetsLoaded(true));
+
                 const params = new URLSearchParams(window.location.search);
                 if (params.has('lobbyId')) {
                     setGameMode('online');
@@ -2126,8 +2213,25 @@
                         auth.signInAnonymously().catch(error => console.error("Anonymous sign-in failed:", error));
                     }
                 });
-                minTimePromise.then(() => setIsLoading(false));
-                return () => authUnsubscribe();
+
+                // Add event listener to disable context menu on images
+                const disableImageContextMenu = (e) => {
+                    if (e.target.tagName === 'IMG') {
+                        e.preventDefault();
+                    }
+                };
+                document.addEventListener('contextmenu', disableImageContextMenu);
+
+
+                // Wait for both minimum time and asset loading to finish
+                Promise.all([minTimePromise, assetsPromise]).then(() => {
+                    setIsLoading(false);
+                });
+
+                return () => {
+                    authUnsubscribe();
+                    document.removeEventListener('contextmenu', disableImageContextMenu); // Cleanup
+                };
             }, []);
 
             // Firestore Listeners & Vote Calculation for Online Mode
@@ -2206,6 +2310,29 @@
                 };
             }, [gameMode, lobbyId, user]);
 
+            // NEW: Effect to handle client-side reset on "Play Again"
+            useEffect(() => {
+                if (lobbyData && lobbyData.gameState !== previousGameStateRef.current) {
+                    if (
+                        user &&
+                        lobbyId &&
+                        previousGameStateRef.current === 'result' &&
+                        lobbyData.gameState === 'waiting'
+                    ) {
+                        const playerDocRef = db.collection('lobbies').doc(lobbyId).collection('players').doc(user.uid);
+                        // Each client resets their own state, which is permitted by the security rules.
+                        playerDocRef.update({
+                            hasSeenCard: firebase.firestore.FieldValue.delete(),
+                            votedFor: firebase.firestore.FieldValue.delete()
+                        }).catch(error => {
+                            console.error('Failed to reset player state for new game:', error);
+                        });
+                    }
+                    // Update the ref to the new state for the next render.
+                    previousGameStateRef.current = lobbyData.gameState;
+                }
+            }, [lobbyData, user, lobbyId]);
+
 
             // --- LOCAL GAME HANDLERS ---
             const startLocalGame = (players, selectedCategories, duration, isRandomMode, speakCategory) => {
@@ -2216,7 +2343,7 @@
                     const allActualCategories = Object.keys(WORD_BANK);
                     finalCategory = allActualCategories[Math.floor(Math.random() * allActualCategories.length)];
                 } else {
-                    finalCategory = selectedCategories[0];
+                    finalCategory = selectedCategories;
                 }
                 const words = WORD_BANK[finalCategory];
                 const secretWord = words[Math.floor(Math.random() * words.length)];
@@ -2452,11 +2579,9 @@
                 let result = {};
                 if (accusedIds.length === 1 && accusedIds[0] === currentLobbyData.imposterId) {
                     result = { winner: 'agents' };
-                } else if (accusedIds.length > 1) {
-                    const accusedPlayer = lobbyPlayers.find(p => p.id === accusedIds[0]);
-                    result = { winner: 'imposter', reason: 'tie', accusedName: accusedPlayer?.name || 'an agent'};
-                }
-                else {
+                } else if (accusedIds.length !== 1) { // This now covers ties ( > 1) and no votes (0)
+                    result = { winner: 'imposter', reason: 'tie' };
+                } else { // Exactly one person accused, and it's not the imposter
                     const accusedPlayer = lobbyPlayers.find(p => p.id === accusedIds[0]);
                     result = { winner: 'imposter', reason: 'wrong_vote', accusedName: accusedPlayer?.name || 'an innocent agent' };
                 }
@@ -2479,19 +2604,13 @@
             };
             
             const handleRestartOnline = async () => {
-                if (lobbyData.gameState !== 'result') return;
+                // Ensure only the host can trigger this and only from the result screen.
+                if (!lobbyData || user.uid !== lobbyData.hostId || lobbyData.gameState !== 'result') {
+                    return;
+                }
 
-                const playersRef = db.collection('lobbies').doc(lobbyId).collection('players');
-                const playersSnapshot = await playersRef.get();
-                const batch = db.batch();
-                playersSnapshot.docs.forEach(doc => {
-                    batch.update(doc.ref, { 
-                        hasSeenCard: firebase.firestore.FieldValue.delete(),
-                        votedFor: firebase.firestore.FieldValue.delete() 
-                    });
-                });
-                await batch.commit();
-
+                // The host updates the main lobby document. This is allowed by the security rules.
+                // Each client will see this change and reset their own player state via a useEffect hook.
                 await db.collection('lobbies').doc(lobbyId).update({
                     gameState: 'waiting',
                     secretWord: firebase.firestore.FieldValue.delete(),
@@ -2508,7 +2627,7 @@
 
             // --- RENDER LOGIC ---
             const renderContent = () => {
-                if (isLoading || !user) return <LoadingScreen />;
+                if (isLoading || !user || !assetsLoaded) return <LoadingScreen />;
 
                 if (gameMode === 'select') {
                     return <GameModeSelectionScreen onSelectMode={setGameMode} audioManager={audioManagerRef.current} />;
@@ -2518,7 +2637,7 @@
                     switch (localGameState) {
                         case 'setup': return <SetupScreen onStartGame={startLocalGame} audioManager={audioManagerRef.current} onBack={handleBackToHome} />;
                         case 'pass': return <CardRevealScreen key={localCurrentPlayerIndex} player={localGameData.players[localCurrentPlayerIndex]} word={localCurrentPlayerIndex === localGameData.imposterIndex ? "IMPOSTER" : localGameData.secretWord} onNext={handleLocalNextPlayer} isLastPlayer={localCurrentPlayerIndex === localGameData.players.length - 1} audioManager={audioManagerRef.current} isHost={true} />;
-                        case 'turnOrder': return <TurnOrderScreen players={localGameData.players} onStartMission={handleStartLocalActiveGame} audioManager={audioManagerRef.current} isHost={true}/>;
+                        case 'turnOrder': return <TurnOrderScreen players={localGameData.turnOrder} onStartMission={handleStartLocalActiveGame} audioManager={audioManagerRef.current} isHost={true}/>;
                         case 'active': return <GameTimerScreen lobbyData={localGameData} onEndGame={handleLocalEndGame} firstPlayer={localGameData.firstPlayer} audioManager={audioManagerRef.current} isHost={true} lobbyId={null}/>;
                         case 'result': 
                             return <ResultScreen 
