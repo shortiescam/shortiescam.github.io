@@ -2333,86 +2333,75 @@
                 };
             }, []);
 
-            // Firestore Listeners & Vote Calculation for Online Mode
-            useEffect(() => {
-                if (gameMode !== 'online' || !lobbyId || !user) {
-                    if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
-                    if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
-                    return;
-                }
-                
-                const lobbyRef = db.collection('lobbies').doc(lobbyId);
-                lobbyListenerUnsubscribe.current = lobbyRef.onSnapshot(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        setLobbyData(data);
-                        
-                        // Play synced sound events
-                        if (data.lastSoundEvent && data.lastSoundEvent.timestamp > lastPlayedEventTimestamp) {
-                            const soundName = data.lastSoundEvent.name;
-                            const sound = audioManagerRef.current.getSound(soundName);
-                            if (soundName === 'alarm' && sound && !sound.paused) {
-                                // Already playing, do nothing.
-                            } else {
-                                audioManagerRef.current.playSound(soundName, data.lastSoundEvent.category || null);
-                            }
-                            setLastPlayedEventTimestamp(data.lastSoundEvent.timestamp);
-                        }
+// Firestore Listeners & Vote Calculation for Online Mode
+useEffect(() => {
+    if (gameMode !== 'online' || !lobbyId || !user) {
+        if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
+        if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
+        return;
+    }
+    
+    const lobbyRef = db.collection('lobbies').doc(lobbyId);
+    
+    // 1. Lobby Listener
+    lobbyListenerUnsubscribe.current = lobbyRef.onSnapshot(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            setLobbyData(data);
+            
+            if (data.lastSoundEvent && data.lastSoundEvent.timestamp > lastPlayedEventTimestamp) {
+                const soundName = data.lastSoundEvent.name;
+                audioManagerRef.current.playSound(soundName, data.lastSoundEvent.category || null);
+                setLastPlayedEventTimestamp(data.lastSoundEvent.timestamp);
+            }
+        } else {
+            // THE LOBBY WAS DELETED (Host closed it)
+            const wasIHost = latestLobbyData.current?.hostId === user.uid;
+            
+            // Only show the modal if I wasn't the one who closed it (the host)
+            if (!wasIHost && lobbyId) {
+                const host = latestLobbyPlayers.current.find(p => p.id === latestLobbyData.current?.hostId);
+                setLobbyClosedInfo({ hostName: host ? host.name : 'The host' });
+            }
+        }
+    });
 
-                    } else {
-                        // This case handles when the lobby document is deleted by the host.
-                        const lastLobbyData = latestLobbyData.current;
-                        const lastPlayers = latestLobbyPlayers.current;
+    // 2. Players Listener
+    const playersRef = lobbyRef.collection('players');
+    playersListenerUnsubscribe.current = playersRef.orderBy('createdAt').onSnapshot(snapshot => {
+        const newPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        const previousPlayers = latestLobbyPlayers.current;
+        const currentLobbyDoc = latestLobbyData.current;
 
-                        if (lastLobbyData && lastPlayers.some(p => p.id === user.uid)) {
-                            const host = lastPlayers.find(p => p.id === lastLobbyData.hostId);
-                            if (user.uid !== lastLobbyData.hostId) {
-                                // This modal is for players who are not the host.
-                                setLobbyClosedInfo({ hostName: host ? host.name : 'The host' });
-                            }
-                        }
-                    }
-                }, error => {
-                    console.error("Error listening to lobby:", error);
-                    alert('Connection to lobby lost.');
-                    setLobbyId(null);
-                });
+        // CHECK FOR KICK (Only if the Lobby document still exists)
+        // If snapshot is empty because the lobby is gone, the Lobby listener handles it.
+        // If snapshot is missing ME, but other players still exist, I was kicked.
+        if (newPlayers.length > 0) {
+            const wasIInLobby = previousPlayers.some(p => p.id === user.uid);
+            const amIStillInLobby = newPlayers.some(p => p.id === user.uid);
+            
+            if (wasIInLobby && !amIStillInLobby) {
+                setShowRemovedModal(true);
+            }
+        }
 
-                const playersRef = lobbyRef.collection('players');
-                playersListenerUnsubscribe.current = playersRef.orderBy('createdAt').onSnapshot(snapshot => {
-                    const newPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    
-                    // Use refs to get the most recent state inside the listener to avoid stale closures.
-                    const previousPlayers = latestLobbyPlayers.current;
-                    const currentLobbyInfo = latestLobbyData.current;
+        setLobbyPlayers(newPlayers);
+        
+        // Voting completion logic...
+        if (currentLobbyDoc && currentLobbyDoc.gameState === 'voting') {
+            const allVoted = newPlayers.length > 0 && newPlayers.every(p => p.votedFor);
+            if (allVoted && user.uid === currentLobbyDoc.hostId) {
+               setTimeout(() => calculateResults(currentLobbyDoc, newPlayers), 1000);
+            }
+        }
+    });
 
-                    const wasIInLobby = previousPlayers.length > 0 && previousPlayers.some(p => p.id === user.uid);
-                    const amIStillInLobby = newPlayers.some(p => p.id === user.uid);
-                    
-                    if (currentLobbyInfo && currentLobbyInfo.gameState === 'waiting' && wasIInLobby && !amIStillInLobby) {
-                        setShowRemovedModal(true);
-                    }
-
-                    // Update the players state
-                    setLobbyPlayers(newPlayers);
-                    
-                    // Check for voting completion using up-to-date data from the refs
-                    if (currentLobbyInfo) {
-                        const isHost = user.uid === currentLobbyInfo.hostId;
-                        if (isHost && currentLobbyInfo.gameState === 'voting') {
-                            const allVoted = newPlayers.length > 0 && newPlayers.every(p => p.votedFor);
-                            if (allVoted) {
-                               setTimeout(() => calculateResults(currentLobbyInfo, newPlayers), 1000);
-                            }
-                        }
-                    }
-                }, error => console.error("Error listening to players:", error));
-
-                return () => {
-                    if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
-                    if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
-                };
-            }, [gameMode, lobbyId, user]);
+    return () => {
+        if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
+        if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
+    };
+}, [gameMode, lobbyId, user]);
 
             // NEW: Effect to handle client-side reset on "Play Again"
             useEffect(() => {
@@ -2524,43 +2513,36 @@
                 }
             };
             
-            const handleBackToHome = async () => {
-                audioManagerRef.current.playSound('uiClick');
+			const handleBackToHome = async () => {
+				audioManagerRef.current.playSound('uiClick');
 
-                // Store these values before state is reset
-                const currentLobbyId = lobbyId;
-                const isOnlineMode = gameMode === 'online';
-                const isHostLeaving = isOnlineMode && lobbyData && user && user.uid === lobbyData.hostId;
+				const currentLobbyId = lobbyId;
+				const isOnlineMode = gameMode === 'online';
+				const isHostLeaving = isOnlineMode && lobbyData && user && user.uid === lobbyData.hostId;
 
-                // Unsubscribe from listeners immediately to prevent memory leaks or errors on unmount
-                if (lobbyListenerUnsubscribe.current) {
-                    lobbyListenerUnsubscribe.current();
-                    lobbyListenerUnsubscribe.current = null;
-                }
-                if (playersListenerUnsubscribe.current) {
-                    playersListenerUnsubscribe.current();
-                    playersListenerUnsubscribe.current = null;
-                }
-                
-                // Always reset the local UI state for a snappy response
-                setGameMode('select');
-                setLocalGameState('setup');
-                setLobbyId(null);
-                setLobbyData(null);
-                setLobbyPlayers([]);
+				// 1. Kill listeners immediately so they don't fire during cleanup
+				if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
+				if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
+				lobbyListenerUnsubscribe.current = null;
+				playersListenerUnsubscribe.current = null;
+				
+				// 2. Clear state locally for instant UI response
+				setGameMode('select');
+				setLocalGameState('setup');
+				setLobbyId(null);
+				setLobbyData(null);
+				setLobbyPlayers([]);
 
-                // Perform Firestore actions after resetting local state
-                if (isOnlineMode && currentLobbyId && user) {
-                    if (isHostLeaving) {
-                        // Host is leaving, so delete the entire lobby
-                        await deleteLobby(currentLobbyId);
-                    } else {
-                        // A non-host is leaving, so just delete their own player document
-                        const playerRef = db.collection('lobbies').doc(currentLobbyId).collection('players').doc(user.uid);
-                        await playerRef.delete().catch(err => console.error("Error leaving lobby:", err));
-                    }
-                }
-            };
+				// 3. Backend Cleanup
+				if (isOnlineMode && currentLobbyId && user) {
+					if (isHostLeaving) {
+						await deleteLobby(currentLobbyId);
+					} else {
+						const playerRef = db.collection('lobbies').doc(currentLobbyId).collection('players').doc(user.uid);
+						await playerRef.delete().catch(() => {}); // Lobby might already be gone
+					}
+				}
+			};
 
             const handleCreateLobby = async (username) => {
                 const newLobbyId = generateLobbyId();
