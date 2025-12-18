@@ -305,7 +305,7 @@
         // --- END FIREBASE SETUP ---
 
         // --- DATA ---
-		const WORD_BANK = {
+				const WORD_BANK = {
 		  Supercell: [
 			"Barbarian", "Archer", "Giant", "Goblin", "Wall Breaker", "Balloon", "Wizard", "Healer", "Dragon", "P.E.K.K.A", "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", "Lava Hound", "Bowler", "Baby Dragon", "Miner", "Electro Dragon", "Yeti", "Ice Golem", "Headhunter", "Barbarian King", "Archer Queen", "Grand Warden", "Royal Champion", "Knight", "Musketeer", "Prince", "Skeleton Army", "Goblin Barrel", "Giant Skeleton", "Royal Giant", "Elite Barbarians", "Mega Minion", "Ice Wizard", "Electro Wizard", "Inferno Dragon", "Night Witch", "Bandit", "Royal Ghost", "Magic Archer", "Lumberjack", "Ram Rider", "Fisherman", "Mother Witch", "Electro Giant", "Phoenix", "Monk", "Little Prince", "Cannon", "Tesla", "Mortar", "X-Bow", "Inferno Tower", "Bomb Tower", "Elixir Collector", "Skeletons", "Bats", "Fire Spirit", "Ice Spirit", "Electro Spirit", "Heal Spirit", "Rage", "Freeze", "Poison", "Fireball", "Arrows", "Zap", "Lightning", "Earthquake", "Clone", "Mirror", "Tornado", "Rocket", "Super Barbarian", "Super Archer", "Super Giant", "Super Wall Breaker", "Super Wizard", "Super Dragon", "Super Valkyrie", "Super Witch", "Super Minion", "Super Bowler", "Ice Hound", "Flying Machine", "Battle Ram", "Sparky", "Mega Knight", "Hunter", "Executioner", "Dart Goblin", "Princess", "Log", "Graveyard", "Mirror", "Giant Snowball", "Royal Delivery", "Heal", "Tombstone", "Bomb", "Hidden Tesla", "Air Defense", "Bomb Tower", "Seeking Air Mine", "Spring Trap", "Giant Bomb", "Red Air Bomb", "Town Hall", "Clan Castle", "Gold Mine", "Elixir Pump", "Barracks", "Laboratory", "Spell Factory", "Workshop", "Seige Machine", "Battle Machine", "Electrofire Wizard"
 		  ],
@@ -820,15 +820,20 @@
             const [inspectedCategory, setInspectedCategory] = useState(null);
             const categoryLongPressTimerRef = useRef(null);
 
-            const allPlayersReady = lobbyData.gameState === 'reveal' && lobbyPlayers.length > 0 && lobbyPlayers.every(p => p.hasSeenCard);
+            // UPDATED readiness logic
+            const pollIsActive = lobbyData.gameState === 'reveal' && lobbyPlayers.some(p => p.status === 'confused');
+            const allPlayersReady = lobbyData.gameState === 'reveal' && lobbyPlayers.length > 0 && lobbyPlayers.every(p => {
+                const isImposter = p.id === lobbyData.imposterId;
+                // A player is ready if they have seen their card AND (the poll is not active OR they are the imposter OR they have voted)
+                return p.hasSeenCard && (!pollIsActive || isImposter || p.status);
+            });
 
             // Confusion Poll Logic
             const me = lobbyPlayers.find(p => p.id === user.uid);
-            const isImposter = user.uid === lobbyData.imposterId;
-            const pollIsActive = lobbyPlayers.some(p => p.status === 'confused');
+            const isMyRoleImposter = user.uid === lobbyData.imposterId;
             
             // Show poll IF: poll is active, I am not the imposter, and I have not voted yet.
-            const showConfusionPoll = lobbyData.gameState === 'reveal' && pollIsActive && !isImposter && !me?.status;
+            const showConfusionPoll = lobbyData.gameState === 'reveal' && pollIsActive && !isMyRoleImposter && !me?.status;
 
             const handleCategorySelect = (cat) => {
                 if (isHost && lobbyData.category !== cat) {
@@ -951,25 +956,31 @@
                                     <span className="ml-auto text-[10px] bg-white/5 px-2 py-1 rounded-md text-white/50">{lobbyPlayers.length}</span>
                                 </h2>
                                 <div className="flex flex-col gap-3">
-                                    {lobbyPlayers.map(p => (
-                                        <div key={p.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${p.id === user.uid ? 'bg-white/10' : 'bg-white/5'}`}>
-                                            <i className={`fa-solid ${p.id === lobbyData.hostId ? 'fa-crown text-yellow-400' : 'fa-user-secret text-white/40'}`}></i>
-                                            <span className="font-bold text-white/90">{p.name}</span>
-                                            {(lobbyData.gameState === 'reveal' || lobbyData.gameState === 'turnOrder') && (
-                                                 <span className="ml-auto text-xs font-bold flex items-center gap-2">
-                                                    {p.hasSeenCard ? 
-                                                        <i className="fa-solid fa-check-circle text-green-400 animate-fadeIn"></i> :
-                                                        <i className="fa-solid fa-ellipsis text-white/30"></i>
-                                                    }
-                                                </span>
-                                            )}
-                                            {isHost && p.id !== user.uid && lobbyData.gameState === 'waiting' && (
-                                                <button onClick={() => handleRemovePlayer(p.id)} className="ml-auto w-8 h-8 flex items-center justify-center rounded-full text-white/40 hover:bg-red-500/20 hover:text-red-400 transition-colors">
-                                                    <i className="fa-solid fa-trash-can text-xs"></i>
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {lobbyPlayers.map(p => {
+                                        // UPDATED readiness logic for checkmark
+                                        const isPlayerImposter = p.id === lobbyData.imposterId;
+                                        const isReady = p.hasSeenCard && (!pollIsActive || isPlayerImposter || p.status);
+
+                                        return (
+                                            <div key={p.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${p.id === user.uid ? 'bg-white/10' : 'bg-white/5'}`}>
+                                                <i className={`fa-solid ${p.id === lobbyData.hostId ? 'fa-crown text-yellow-400' : 'fa-user-secret text-white/40'}`}></i>
+                                                <span className="font-bold text-white/90">{p.name}</span>
+                                                {(lobbyData.gameState === 'reveal' || lobbyData.gameState === 'turnOrder') && (
+                                                    <span className="ml-auto text-xs font-bold flex items-center gap-2">
+                                                        {isReady ? 
+                                                            <i className="fa-solid fa-check-circle text-green-400 animate-fadeIn"></i> :
+                                                            <i className="fa-solid fa-ellipsis text-white/30"></i>
+                                                        }
+                                                    </span>
+                                                )}
+                                                {isHost && p.id !== user.uid && lobbyData.gameState === 'waiting' && (
+                                                    <button onClick={() => handleRemovePlayer(p.id)} className="ml-auto w-8 h-8 flex items-center justify-center rounded-full text-white/40 hover:bg-red-500/20 hover:text-red-400 transition-colors">
+                                                        <i className="fa-solid fa-trash-can text-xs"></i>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </section>
                             
@@ -2612,11 +2623,14 @@
                             setLastPlayedEventTimestamp(data.lastSoundEvent.timestamp);
                         }
                     } else {
+                        // This handles the case where the lobby is deleted (e.g., by TTL)
                         const wasIHost = latestLobbyData.current?.hostId === user.uid;
                         if (!wasIHost && lobbyId) {
                             const host = latestLobbyPlayers.current.find(p => p.id === latestLobbyData.current?.hostId);
                             setLobbyClosedInfo({ hostName: host ? host.name : 'The host' });
                         }
+                         // Clean up local state if lobby disappears
+                        handleBackToHome(true); // pass true to indicate a silent/forced exit
                     }
                 });
 
@@ -2627,7 +2641,7 @@
                     const currentLobbyDoc = latestLobbyData.current;
 
                     // Kick detection
-                    if (newPlayers.length > 0) {
+                    if (newPlayers.length > 0 && latestLobbyPlayers.current.length > 0) {
                         const wasIInLobby = latestLobbyPlayers.current.some(p => p.id === user.uid);
                         const amIStillInLobby = newPlayers.some(p => p.id === user.uid);
                         if (wasIInLobby && !amIStillInLobby) setShowRemovedModal(true);
@@ -2635,8 +2649,22 @@
                     
                     setLobbyPlayers(newPlayers);
                     
+                    if (!currentLobbyDoc) return; // Exit if lobby data isn't loaded yet
+
+                    // --- [UPDATED] Host Migration Logic ---
+                    const hostIsMissing = newPlayers.length > 0 && !newPlayers.some(p => p.id === currentLobbyDoc.hostId);
+                    if (hostIsMissing) {
+                        const newHost = newPlayers[0]; // The player who joined first
+                        // Only the client of the new host performs the update to avoid race conditions.
+                        if (newHost && newHost.id === user.uid) {
+                            console.log(`Host left. Promoting ${newHost.name} to new host.`);
+                            lobbyRef.update({ hostId: newHost.id });
+                        }
+                    }
+
                     // --- Game Logic Checks (Host Only) ---
-                    if (!currentLobbyDoc || user.uid !== currentLobbyDoc.hostId) return;
+                    const isHost = user.uid === currentLobbyDoc.hostId;
+                    if (!isHost) return;
                     
                     // A) Check for voting completion
                     if (currentLobbyDoc.gameState === 'voting') {
@@ -2655,7 +2683,6 @@
                             const agentsToPoll = newPlayers.filter(p => p.id !== imposterId && !p.status); // Find agents who haven't voted yet
                             if (agentsToPoll.length === 0) {
                                 // Everyone has voted, safe to calculate result.
-                                // Use a transaction or read to prevent race conditions.
                                 lobbyRef.get().then(doc => {
                                     if (doc.exists && doc.data().gameState === 'reveal') {
                                         calculateConfusionResult(doc.data(), newPlayers);
@@ -2776,27 +2803,36 @@
                 }
             };
             
-			const handleBackToHome = async () => {
-				audioManagerRef.current.playSound('uiClick');
-				const currentLobbyId = lobbyId;
+			const handleBackToHome = async (silent = false) => {
+                if (!silent) {
+				    audioManagerRef.current.playSound('uiClick');
+                }
+				const currentLobbyId = lobbyId; // Capture before state changes
 				const isOnlineMode = gameMode === 'online';
-				const isHostLeaving = isOnlineMode && lobbyData && user && user.uid === lobbyData.hostId;
+                const currentLobbyData = latestLobbyData.current;
 
+				// Unsubscribe from listeners immediately
 				if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
 				if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
 				lobbyListenerUnsubscribe.current = null;
 				playersListenerUnsubscribe.current = null;
 				
+				// Reset all state
 				setGameMode('select');
 				setLocalGameState('setup');
 				setLobbyId(null);
 				setLobbyData(null);
 				setLobbyPlayers([]);
+                latestLobbyData.current = null; // Clear ref as well
 
-				if (isOnlineMode && currentLobbyId && user) {
+				// Perform cleanup if in an online game
+				if (isOnlineMode && currentLobbyId && user && currentLobbyData) {
+                    const isHostLeaving = user.uid === currentLobbyData.hostId;
 					if (isHostLeaving) {
+                        // Host is leaving intentionally. Delete the lobby to clean up.
 						await deleteLobby(currentLobbyId);
 					} else {
+                        // Non-host is leaving. Just remove them from the player list.
 						await db.collection('lobbies').doc(currentLobbyId).collection('players').doc(user.uid).delete().catch(() => {});
 					}
 				}
@@ -2807,7 +2843,7 @@
                 const newPassword = generateLobbyPassword();
                 const lobbyRef = db.collection('lobbies').doc(newLobbyId);
                 const expiryDate = new Date();
-                expiryDate.setDate(expiryDate.getDate() + 1);
+                expiryDate.setDate(expiryDate.getDate() + 1); // Set lobby to expire in 24 hours
                 
                 await lobbyRef.set({
                     hostId: user.uid, password: newPassword, category: 'Movies',
@@ -2838,7 +2874,7 @@
                 if (playersSnapshot.docs.map(doc => doc.data().name).includes(username)) throw new Error('Username is already taken.');
                 
                 await lobbyRef.collection('players').doc(user.uid).set({
-                    name: username, isHost: false,
+                    name: username,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 setLobbyId(lobbyId);
@@ -2975,8 +3011,8 @@
             
             const handleRestartOnline = async () => {
                 if (!lobbyData || user.uid !== lobbyData.hostId || lobbyData.gameState !== 'result') return;
-                // Go back to the lobby, clients will auto-clear their own state via useEffect
-                await db.collection('lobbies').doc(lobbyId).update({
+                
+                const updatePayload = {
                     gameState: 'waiting',
                     secretWord: firebase.firestore.FieldValue.delete(),
                     imposterId: firebase.firestore.FieldValue.delete(),
@@ -2986,7 +3022,16 @@
                     duration: firebase.firestore.FieldValue.delete(),
                     votingRecord: firebase.firestore.FieldValue.delete(),
                     lastSoundEvent: { name: 'playAgain', timestamp: Date.now() }
-                });
+                };
+
+                await db.collection('lobbies').doc(lobbyId).update(updatePayload);
+
+                // --- [UPDATED] Clear the transient 'playAgain' sound event ---
+                setTimeout(() => {
+                    db.collection('lobbies').doc(lobbyId).update({
+                        lastSoundEvent: firebase.firestore.FieldValue.delete()
+                    }).catch(err => console.log("Could not clear sound event, it might have been cleared already."));
+                }, 2000);
             };
 
 
