@@ -537,6 +537,21 @@
 									<p>• <strong>Ask a Question:</strong> Players take turns asking the *next* player in the turn order a question related to the word.</p>
 								</div>
 							</section>
+
+							{/* NEW Section: Word Confusion */}
+							<section>
+								<h3 className="font-bold text-lg text-yellow-400 mb-2 flex items-center gap-2">
+									<img src="https://em-content.zobj.net/source/microsoft-teams/337/face-with-monocle_1f9d0.png" alt="Confusion Icon" className="w-7 h-7" />
+									What if I Don't Know the Word?
+								</h3>
+								<p>It happens! If you're an Agent and receive a secret word you don't recognize, you'll see a special button during the card reveal (online mode only).</p>
+								<div className="mt-3 bg-white/5 p-3 rounded-lg border border-white/10 text-sm space-y-2">
+									<p><strong>1. Declare Confusion:</strong> Press the "I don't recognize this word" button.</p>
+									<p><strong>2. Agents Vote:</strong> This triggers a secret poll for all other Agents, asking if they know the word.</p>
+									<p><strong>3. The Outcome:</strong> If a <span className="font-semibold text-white/90">majority</span> of Agents also vote that they don't know the word, the round is immediately re-dealt with a new word and Imposter. If not, the mission continues as planned!</p>
+								</div>
+								<p className="mt-3 text-xs text-white/50"><i className="fa-solid fa-lightbulb mr-1"></i>This feature ensures the game is always fair, even with a massive word bank.</p>
+							</section>
 							
 							{/* Section 4: Scenario */}
 							<section>
@@ -1130,7 +1145,12 @@
             "Use the 'Verify Identity' button in local mode to ensure you are handing the phone to the right person.",
 			"Did someone smile when they saw their card? That might be a clue.",
             "If you are the Imposter and figure out the word, try to blend in by adding a unique detail.",
-			"Keep your card hidden! Reflections in glasses or windows can give you away."
+			"Keep your card hidden! Reflections in glasses or windows can give you away.",
+            "Got a word you don't recognize? As an Agent, you can press a button on the reveal screen to start a 'Word Check' poll.",
+            "If a 'Word Check' poll appears, vote honestly. Rerolling a confusing word gives the Agents a better chance to win.",
+            "If a round suddenly restarts before it begins, it means a majority of Agents were confused by the secret word and voted to re-deal.",
+            "Imposter Tip: A long pause before the round starts? That's a secret 'Word Check' for Agents. Stay cool, they don't know you're excluded.",
+			"Agent Tip: Don't recognize the word? Use the 'Word Check' button! It's better to admit confusion and help the team than to look like the Imposter."
         ];
 
         const LoadingScreen = () => {
