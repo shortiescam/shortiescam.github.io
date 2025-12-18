@@ -767,8 +767,38 @@
             );
         };
         
+        // NEW: Modal for Confusion Poll
+        const ConfusionPollModal = ({ onVote }) => {
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fadeIn">
+                    <div className="absolute inset-0 bg-black/70 backdrop-blur-md"></div>
+                    <div className="relative w-full max-w-sm glass-panel rounded-3xl p-8 border border-white/10 shadow-2xl animate-slide-up text-center">
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-yellow-500/20 ring-1 ring-white/10 mx-auto">
+                            <i className="fa-solid fa-circle-question text-4xl text-yellow-400"></i>
+                        </div>
+                        <h2 className="text-2xl font-display font-bold text-white mb-2">Word Check</h2>
+                        <p className="text-white/60 mb-8">An agent doesn't recognize the secret word. Do you know what it is?</p>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => onVote('knows')}
+                                className="w-full bg-green-500/80 hover:bg-green-500 text-white font-display font-bold py-4 rounded-xl active:scale-95 transition-all"
+                            >
+                                Yes, I know the word
+                            </button>
+                            <button
+                                onClick={() => onVote('confused')}
+                                className="w-full bg-red-500/80 hover:bg-red-500 text-white font-display font-bold py-4 rounded-xl active:scale-95 transition-all"
+                            >
+                                No, me neither
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         // NEW: Waiting Room Screen (Restyled & Feature-Rich)
-        const WaitingRoom = ({ lobbyData, lobbyPlayers, user, lobbyId, onStartGame, onStartMission, onLeaveLobby, audioManager }) => {
+        const WaitingRoom = ({ lobbyData, lobbyPlayers, user, lobbyId, onStartGame, onStartMission, onLeaveLobby, audioManager, onConfusionVote }) => {
             const isHost = user.uid === lobbyData.hostId;
             const MIN_PLAYERS = 3;
             const [showCopied, setShowCopied] = useState(false);
@@ -776,6 +806,14 @@
             const categoryLongPressTimerRef = useRef(null);
 
             const allPlayersReady = lobbyData.gameState === 'reveal' && lobbyPlayers.length > 0 && lobbyPlayers.every(p => p.hasSeenCard);
+
+            // Confusion Poll Logic
+            const me = lobbyPlayers.find(p => p.id === user.uid);
+            const isImposter = user.uid === lobbyData.imposterId;
+            const pollIsActive = lobbyPlayers.some(p => p.status === 'confused');
+            
+            // Show poll IF: poll is active, I am not the imposter, and I have not voted yet.
+            const showConfusionPoll = lobbyData.gameState === 'reveal' && pollIsActive && !isImposter && !me?.status;
 
             const handleCategorySelect = (cat) => {
                 if (isHost && lobbyData.category !== cat) {
@@ -849,6 +887,7 @@
             return (
                  <div className="flex flex-col h-[100dvh] relative z-10">
                     <CategoryInfoModal category={inspectedCategory} onClose={() => setInspectedCategory(null)} />
+                    {showConfusionPoll && <ConfusionPollModal onVote={onConfusionVote} />}
                     
                     <div className="absolute top-6 left-6 z-20">
                         {lobbyData.gameState === 'waiting' && (
@@ -1036,7 +1075,7 @@
                     <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
                         <div className="max-w-lg mx-auto pb-[env(safe-area-inset-bottom)]">
                         {isHost ? (
-                            allPlayersReady ? (
+                            allPlayersReady && !pollIsActive ? (
                                 <button
                                     onClick={onStartMission}
                                     className="w-full bg-green-500 text-white font-display font-bold text-lg py-5 rounded-[1.5rem] shadow-[0_0_30px_rgba(34,197,94,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 animate-pulse"
@@ -1056,7 +1095,7 @@
                         ) : (
                              <div className="text-center p-4 glass-panel rounded-xl">
                                <p className="text-white/60 font-medium">
-                                 {allPlayersReady ? "All agents are ready! Waiting for host..." : "Waiting for host to start the mission..."}
+                                 {allPlayersReady && !pollIsActive ? "All agents are ready! Waiting for host..." : "Waiting for host to start the mission..."}
                                </p>
                            </div>
                         )}
@@ -1744,7 +1783,7 @@
         };
 
         // 2. Card Reveal Screen (Enhanced with 3D Flip)
-        const CardRevealScreen = ({ player, word, onNext, isLastPlayer, audioManager, onAcknowledge, isOnline, isHost, onStartMission }) => {
+        const CardRevealScreen = ({ player, word, onNext, isLastPlayer, audioManager, onAcknowledge, isOnline, onConfused }) => {
             const [step, setStep] = useState(isOnline ? 'reveal' : 'handover'); 
             const [isFlipped, setIsFlipped] = useState(false);
             
@@ -1878,7 +1917,7 @@
                         </div>
                     </div>
 
-                    {/* Next Button (Only appears after flip) */}
+                    {/* Action Buttons */}
                     <div className={`w-full max-w-sm mt-8 transition-all duration-700 transform ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
                         <button 
                             onClick={(e) => {
@@ -1890,6 +1929,20 @@
                             <i className="fa-solid fa-check-circle text-lg"></i>
                             {isOnline ? "RETURN TO LOBBY" : (isLastPlayer ? "REVEAL TURN ORDER" : "NEXT PLAYER")}
                         </button>
+                        
+                        {isOnline && word !== "IMPOSTER" && (
+                            <div className="w-full max-w-sm mt-3">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onConfused();
+                                    }}
+                                    className="w-full text-white/50 hover:text-white hover:bg-white/5 font-bold text-sm py-3 rounded-xl transition-all"
+                                >
+                                    I don't recognize this word
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -2260,7 +2313,7 @@
                 } else { // Agents win
                      return (
                         <>
-                         <div className="w-28 h-28 bg-gradient-to-br from-teal-500/20 to-transparent rounded-full flex items-center justify-center mx-auto mb-8 ring-1 ring-teal-500/40 shadow-[0_0_40px_rgba(20,184,166,0.2)]">
+                         <div className="w-28 h-28 bg-gradient-to-br from-teal-500/20 to-transparent rounded-full flex items-center justify-center mx-auto mb-8 ring-1 ring-teal-500/40 shadow-[0_0_40px_rgba(20,184,166,0.1)]">
                             <img src="https://em-content.zobj.net/source/microsoft-teams/363/detective_light-skin-tone_1f575-1f3fb_1f3fb.png" alt="Detective" draggable="false" className="w-24 h-24 drop-shadow-lg" />
                         </div>
                         <h2 className="text-3xl font-display font-bold text-teal-400 mb-2">AGENTS WIN</h2>
@@ -2517,95 +2570,103 @@
                 };
             }, []);
 
-// Firestore Listeners & Vote Calculation for Online Mode
-useEffect(() => {
-    if (gameMode !== 'online' || !lobbyId || !user) {
-        if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
-        if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
-        return;
-    }
-    
-    const lobbyRef = db.collection('lobbies').doc(lobbyId);
-    
-    // 1. Lobby Listener
-    lobbyListenerUnsubscribe.current = lobbyRef.onSnapshot(doc => {
-        if (doc.exists) {
-            const data = doc.data();
-            setLobbyData(data);
+            // Firestore Listeners & Game Logic for Online Mode
+            useEffect(() => {
+                if (gameMode !== 'online' || !lobbyId || !user) {
+                    if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
+                    if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
+                    return;
+                }
+                
+                const lobbyRef = db.collection('lobbies').doc(lobbyId);
+                
+                // 1. Lobby Listener
+                lobbyListenerUnsubscribe.current = lobbyRef.onSnapshot(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        setLobbyData(data);
+                        
+                        if (data.lastSoundEvent && data.lastSoundEvent.timestamp > lastPlayedEventTimestamp) {
+                            const soundName = data.lastSoundEvent.name;
+                            audioManagerRef.current.playSound(soundName, data.lastSoundEvent.category || null);
+                            setLastPlayedEventTimestamp(data.lastSoundEvent.timestamp);
+                        }
+                    } else {
+                        const wasIHost = latestLobbyData.current?.hostId === user.uid;
+                        if (!wasIHost && lobbyId) {
+                            const host = latestLobbyPlayers.current.find(p => p.id === latestLobbyData.current?.hostId);
+                            setLobbyClosedInfo({ hostName: host ? host.name : 'The host' });
+                        }
+                    }
+                });
+
+                // 2. Players Listener
+                const playersRef = lobbyRef.collection('players').orderBy('createdAt');
+                playersListenerUnsubscribe.current = playersRef.onSnapshot(snapshot => {
+                    const newPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const currentLobbyDoc = latestLobbyData.current;
+
+                    // Kick detection
+                    if (newPlayers.length > 0) {
+                        const wasIInLobby = latestLobbyPlayers.current.some(p => p.id === user.uid);
+                        const amIStillInLobby = newPlayers.some(p => p.id === user.uid);
+                        if (wasIInLobby && !amIStillInLobby) setShowRemovedModal(true);
+                    }
+                    
+                    setLobbyPlayers(newPlayers);
+                    
+                    // --- Game Logic Checks (Host Only) ---
+                    if (!currentLobbyDoc || user.uid !== currentLobbyDoc.hostId) return;
+                    
+                    // A) Check for voting completion
+                    if (currentLobbyDoc.gameState === 'voting') {
+                        const allVoted = newPlayers.length > 0 && newPlayers.every(p => p.votedFor);
+                        if (allVoted) setTimeout(() => calculateResults(currentLobbyDoc, newPlayers), 1000);
+                    }
+                    
+                    // B) Check for confusion poll completion
+                    if (currentLobbyDoc.gameState === 'reveal') {
+                        const imposterId = currentLobbyDoc.imposterId;
+                        if (!imposterId) return;
+
+                        const pollIsActive = newPlayers.some(p => p.status === 'confused');
+                        if (pollIsActive) {
+                            // Check if all agents who need to vote, have voted.
+                            const agentsToPoll = newPlayers.filter(p => p.id !== imposterId && !p.status); // Find agents who haven't voted yet
+                            if (agentsToPoll.length === 0) {
+                                // Everyone has voted, safe to calculate result.
+                                // Use a transaction or read to prevent race conditions.
+                                lobbyRef.get().then(doc => {
+                                    if (doc.exists && doc.data().gameState === 'reveal') {
+                                        calculateConfusionResult(doc.data(), newPlayers);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+
+                return () => {
+                    if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
+                    if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
+                };
+            }, [gameMode, lobbyId, user]);
             
-            if (data.lastSoundEvent && data.lastSoundEvent.timestamp > lastPlayedEventTimestamp) {
-                const soundName = data.lastSoundEvent.name;
-                audioManagerRef.current.playSound(soundName, data.lastSoundEvent.category || null);
-                setLastPlayedEventTimestamp(data.lastSoundEvent.timestamp);
-            }
-        } else {
-            // THE LOBBY WAS DELETED (Host closed it)
-            const wasIHost = latestLobbyData.current?.hostId === user.uid;
-            
-            // Only show the modal if I wasn't the one who closed it (the host)
-            if (!wasIHost && lobbyId) {
-                const host = latestLobbyPlayers.current.find(p => p.id === latestLobbyData.current?.hostId);
-                setLobbyClosedInfo({ hostName: host ? host.name : 'The host' });
-            }
-        }
-    });
-
-    // 2. Players Listener
-    const playersRef = lobbyRef.collection('players').orderBy('createdAt');
-    playersListenerUnsubscribe.current = playersRef.onSnapshot(snapshot => {
-        const newPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        const previousPlayers = latestLobbyPlayers.current;
-        const currentLobbyDoc = latestLobbyData.current;
-
-        // CHECK FOR KICK (Only if the Lobby document still exists)
-        // If snapshot is empty because the lobby is gone, the Lobby listener handles it.
-        // If snapshot is missing ME, but other players still exist, I was kicked.
-        if (newPlayers.length > 0) {
-            const wasIInLobby = previousPlayers.some(p => p.id === user.uid);
-            const amIStillInLobby = newPlayers.some(p => p.id === user.uid);
-            
-            if (wasIInLobby && !amIStillInLobby) {
-                setShowRemovedModal(true);
-            }
-        }
-
-        setLobbyPlayers(newPlayers);
-        
-        // Voting completion logic...
-        if (currentLobbyDoc && currentLobbyDoc.gameState === 'voting') {
-            const allVoted = newPlayers.length > 0 && newPlayers.every(p => p.votedFor);
-            if (allVoted && user.uid === currentLobbyDoc.hostId) {
-               setTimeout(() => calculateResults(currentLobbyDoc, newPlayers), 1000);
-            }
-        }
-    });
-
-    return () => {
-        if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
-        if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
-    };
-}, [gameMode, lobbyId, user]);
-
-            // NEW: Effect to handle client-side reset on "Play Again"
+            // Effect to handle client-side reset on "Play Again" or "Reroll"
             useEffect(() => {
                 if (lobbyData && lobbyData.gameState !== previousGameStateRef.current) {
                     if (
-                        user &&
-                        lobbyId &&
-                        previousGameStateRef.current === 'result' &&
+                        user && lobbyId &&
+                        (previousGameStateRef.current === 'result' || previousGameStateRef.current === 'reveal') &&
                         lobbyData.gameState === 'waiting'
                     ) {
-                        const playerDocRef = db.collection('lobbies').doc(lobbyId).collection('players').doc(user.uid);
-                        // Each client resets their own state, which is permitted by the security rules.
-                        playerDocRef.update({
+                        // When game moves from result/reveal back to waiting, clients reset their own state
+                        db.collection('lobbies').doc(lobbyId).collection('players').doc(user.uid).update({
                             hasSeenCard: firebase.firestore.FieldValue.delete(),
-                            votedFor: firebase.firestore.FieldValue.delete()
-                        }).catch(error => {
-                            console.error('Failed to reset player state for new game:', error);
-                        });
+                            votedFor: firebase.firestore.FieldValue.delete(),
+                            status: firebase.firestore.FieldValue.delete()
+                        }).catch(err => console.error("Could not reset player state:", err));
                     }
-                    // Update the ref to the new state for the next render.
                     previousGameStateRef.current = lobbyData.gameState;
                 }
             }, [lobbyData, user, lobbyId]);
@@ -2678,7 +2739,7 @@ useEffect(() => {
             };
             
             // --- ONLINE GAME HANDLERS ---
-             const deleteLobby = async (lobbyIdToDelete) => {
+            const deleteLobby = async (lobbyIdToDelete) => {
                 const lobbyRef = db.collection('lobbies').doc(lobbyIdToDelete);
                 const playersRef = lobbyRef.collection('players');
 
@@ -2686,9 +2747,7 @@ useEffect(() => {
                     const playersSnapshot = await playersRef.get();
                     if (!playersSnapshot.empty) {
                         const batch = db.batch();
-                        playersSnapshot.docs.forEach(doc => {
-                            batch.delete(doc.ref);
-                        });
+                        playersSnapshot.docs.forEach(doc => batch.delete(doc.ref));
                         await batch.commit();
                     }
                     await lobbyRef.delete();
@@ -2699,31 +2758,26 @@ useEffect(() => {
             
 			const handleBackToHome = async () => {
 				audioManagerRef.current.playSound('uiClick');
-
 				const currentLobbyId = lobbyId;
 				const isOnlineMode = gameMode === 'online';
 				const isHostLeaving = isOnlineMode && lobbyData && user && user.uid === lobbyData.hostId;
 
-				// 1. Kill listeners immediately so they don't fire during cleanup
 				if (lobbyListenerUnsubscribe.current) lobbyListenerUnsubscribe.current();
 				if (playersListenerUnsubscribe.current) playersListenerUnsubscribe.current();
 				lobbyListenerUnsubscribe.current = null;
 				playersListenerUnsubscribe.current = null;
 				
-				// 2. Clear state locally for instant UI response
 				setGameMode('select');
 				setLocalGameState('setup');
 				setLobbyId(null);
 				setLobbyData(null);
 				setLobbyPlayers([]);
 
-				// 3. Backend Cleanup
 				if (isOnlineMode && currentLobbyId && user) {
 					if (isHostLeaving) {
 						await deleteLobby(currentLobbyId);
 					} else {
-						const playerRef = db.collection('lobbies').doc(currentLobbyId).collection('players').doc(user.uid);
-						await playerRef.delete().catch(() => {}); // Lobby might already be gone
+						await db.collection('lobbies').doc(currentLobbyId).collection('players').doc(user.uid).delete().catch(() => {});
 					}
 				}
 			};
@@ -2732,23 +2786,17 @@ useEffect(() => {
                 const newLobbyId = generateLobbyId();
                 const newPassword = generateLobbyPassword();
                 const lobbyRef = db.collection('lobbies').doc(newLobbyId);
-
                 const expiryDate = new Date();
                 expiryDate.setDate(expiryDate.getDate() + 1);
                 
                 await lobbyRef.set({
-                    hostId: user.uid,
-                    password: newPassword,
-                    category: 'Movies',
-                    isRandomMode: false,
-                    speakCategory: false,
-                    gameState: 'waiting',
+                    hostId: user.uid, password: newPassword, category: 'Movies',
+                    isRandomMode: false, speakCategory: false, gameState: 'waiting',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     expireAt: firebase.firestore.Timestamp.fromDate(expiryDate)
                 });
                 await lobbyRef.collection('players').doc(user.uid).set({
-                    name: username,
-                    isHost: true,
+                    name: username, isHost: true,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 setLobbyId(newLobbyId);
@@ -2764,14 +2812,13 @@ useEffect(() => {
 
                 const playersSnapshot = await lobbyRef.collection('players').get();
                 if (playersSnapshot.docs.some(doc => doc.id === user.uid)) {
-                    setLobbyId(lobbyId);
+                    setLobbyId(lobbyId); // Already in lobby, just join
                     return;
                 }
-                const playerNames = playersSnapshot.docs.map(doc => doc.data().name);
-                if (playerNames.includes(username)) throw new Error('Username is already taken in this lobby.');
+                if (playersSnapshot.docs.map(doc => doc.data().name).includes(username)) throw new Error('Username is already taken.');
+                
                 await lobbyRef.collection('players').doc(user.uid).set({
-                    name: username,
-                    isHost: false,
+                    name: username, isHost: false,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 setLobbyId(lobbyId);
@@ -2779,33 +2826,35 @@ useEffect(() => {
             
              const handleStartGameOnline = async () => {
                 if (lobbyPlayers.length < 3) return;
-                const soundName = lobbyData.isRandomMode ? 'startRandomMission' : 'startMission';
-                const useRandom = lobbyData.isRandomMode;
-                let finalCategory;
-                 if (useRandom) {
-                    const allActualCategories = Object.keys(WORD_BANK);
-                    finalCategory = allActualCategories[Math.floor(Math.random() * allActualCategories.length)];
-                } else {
-                    finalCategory = lobbyData.category;
-                }
+                let finalCategory = lobbyData.isRandomMode 
+                    ? Object.keys(WORD_BANK)[Math.floor(Math.random() * Object.keys(WORD_BANK).length)]
+                    : lobbyData.category;
                 const words = WORD_BANK[finalCategory];
                 const secretWord = words[Math.floor(Math.random() * words.length)];
-
                 const shuffledPlayers = [...lobbyPlayers].sort(() => Math.random() - 0.5);
                 const imposterId = shuffledPlayers[Math.floor(Math.random() * shuffledPlayers.length)].id;
                 
                 await db.collection('lobbies').doc(lobbyId).update({
-                    secretWord,
-                    imposterId,
+                    secretWord, imposterId,
                     turnOrder: shuffledPlayers.map(p => ({name: p.name, id: p.id})),
                     category: finalCategory,
                     gameState: 'reveal',
-                    lastSoundEvent: { name: soundName, timestamp: Date.now() }
+                    lastSoundEvent: { name: lobbyData.isRandomMode ? 'startRandomMission' : 'startMission', timestamp: Date.now() }
                 });
             };
 
             const handleAcknowledgeCard = () => {
                 db.collection('lobbies').doc(lobbyId).collection('players').doc(user.uid).update({ hasSeenCard: true });
+            };
+
+            const handleDeclareConfusion = () => {
+                // Silently flag that this player is confused and has seen their card.
+                db.collection('lobbies').doc(lobbyId).collection('players').doc(user.uid).update({ hasSeenCard: true, status: 'confused' });
+            };
+
+            const handleConfusionVote = (vote) => {
+                // vote is either 'knows' or 'confused'
+                db.collection('lobbies').doc(lobbyId).collection('players').doc(user.uid).update({ status: vote });
             };
             
             const handleStartMissionOnline = () => {
@@ -2816,17 +2865,16 @@ useEffect(() => {
             };
             
             const handleStartActiveMission = () => {
-                const updates = { 
+                db.collection('lobbies').doc(lobbyId).update({ 
                     gameState: 'active', 
                     missionStartTime: firebase.firestore.FieldValue.serverTimestamp(),
-                    duration: 3 * 60,
+                    duration: 3 * 60, // hardcoded for now
                     lastSoundEvent: { 
                         name: lobbyData.speakCategory ? 'category' : 'uiClick', 
                         category: lobbyData.speakCategory ? lobbyData.category : null,
                         timestamp: Date.now() 
                     }
-                };
-                db.collection('lobbies').doc(lobbyId).update(updates);
+                });
             }
 
             const handleEndGameOnline = () => {
@@ -2837,19 +2885,44 @@ useEffect(() => {
                      });
                 }
             };
+
+            const calculateConfusionResult = async (currentLobbyData, currentLobbyPlayers) => {
+                const agents = currentLobbyPlayers.filter(p => p.id !== currentLobbyData.imposterId);
+                const confusedCount = agents.filter(p => p.status === 'confused').length;
+                const majorityIsConfused = confusedCount > (agents.length / 2);
+
+                if (majorityIsConfused) {
+                    // Reroll the round by going back to the waiting screen
+                    await db.collection('lobbies').doc(lobbyId).update({
+                        gameState: 'waiting',
+                        secretWord: firebase.firestore.FieldValue.delete(),
+                        imposterId: firebase.firestore.FieldValue.delete(),
+                        turnOrder: firebase.firestore.FieldValue.delete(),
+                        lastSoundEvent: { name: 'uiClick', timestamp: Date.now() } // Or a new "reroll" sound
+                    });
+                } else {
+                    // Continue the game. The host clears all statuses.
+                    const batch = db.batch();
+                    const playersRef = db.collection('lobbies').doc(lobbyId).collection('players');
+                    currentLobbyPlayers.forEach(player => {
+                        if (player.status) { // Only update if status exists
+                            const playerRef = playersRef.doc(player.id);
+                            batch.update(playerRef, { status: firebase.firestore.FieldValue.delete() });
+                        }
+                    });
+                    await batch.commit();
+                }
+            };
             
             const calculateResults = async (currentLobbyData, currentLobbyPlayers) => {
                 if (currentLobbyData.gameState !== 'voting') return;
 
-                const voteCounts = {};
-                currentLobbyPlayers.forEach(p => {
-                    if (p.votedFor) {
-                        voteCounts[p.votedFor] = (voteCounts[p.votedFor] || 0) + 1;
-                    }
-                });
+                const voteCounts = currentLobbyPlayers.reduce((acc, p) => {
+                    if (p.votedFor) acc[p.votedFor] = (acc[p.votedFor] || 0) + 1;
+                    return acc;
+                }, {});
 
-                let maxVotes = 0;
-                let accusedIds = [];
+                let maxVotes = 0; let accusedIds = [];
                 for (const playerId in voteCounts) {
                     if (voteCounts[playerId] > maxVotes) {
                         maxVotes = voteCounts[playerId];
@@ -2862,38 +2935,27 @@ useEffect(() => {
                 let result = {};
                 if (accusedIds.length === 1 && accusedIds[0] === currentLobbyData.imposterId) {
                     result = { winner: 'agents' };
-                } else if (accusedIds.length !== 1) { // This now covers ties ( > 1) and no votes (0)
+                } else if (accusedIds.length !== 1) {
                     result = { winner: 'imposter', reason: 'tie' };
-                } else { // Exactly one person accused, and it's not the imposter
+                } else {
                     const accusedPlayer = lobbyPlayers.find(p => p.id === accusedIds[0]);
-                    result = { winner: 'imposter', reason: 'wrong_vote', accusedName: accusedPlayer?.name || 'an innocent agent' };
+                    result = { winner: 'imposter', reason: 'wrong_vote', accusedName: accusedPlayer?.name || 'an agent' };
                 }
                 
-                const votingRecord = currentLobbyPlayers.map(voter => {
-                    const votedForPlayer = currentLobbyPlayers.find(p => p.id === voter.votedFor);
-                    return {
-                        voterId: voter.id,
-                        voterName: voter.name,
-                        votedForName: votedForPlayer ? votedForPlayer.name : 'No Vote'
-                    };
-                });
+                const votingRecord = currentLobbyPlayers.map(voter => ({
+                    voterId: voter.id, voterName: voter.name,
+                    votedForName: currentLobbyPlayers.find(p => p.id === voter.votedFor)?.name || 'No Vote'
+                }));
 
                 await db.collection('lobbies').doc(lobbyId).update({ 
-                    gameState: 'result', 
-                    gameResult: result,
-                    votingRecord: votingRecord,
+                    gameState: 'result', gameResult: result, votingRecord,
                     lastSoundEvent: { name: 'result', timestamp: Date.now() }
                 });
             };
             
             const handleRestartOnline = async () => {
-                // Ensure only the host can trigger this and only from the result screen.
-                if (!lobbyData || user.uid !== lobbyData.hostId || lobbyData.gameState !== 'result') {
-                    return;
-                }
-
-                // The host updates the main lobby document. This is allowed by the security rules.
-                // Each client will see this change and reset their own player state via a useEffect hook.
+                if (!lobbyData || user.uid !== lobbyData.hostId || lobbyData.gameState !== 'result') return;
+                // Go back to the lobby, clients will auto-clear their own state via useEffect
                 await db.collection('lobbies').doc(lobbyId).update({
                     gameState: 'waiting',
                     secretWord: firebase.firestore.FieldValue.delete(),
@@ -2919,18 +2981,13 @@ useEffect(() => {
                 if (gameMode === 'local') {
                     switch (localGameState) {
                         case 'setup': return <SetupScreen onStartGame={startLocalGame} audioManager={audioManagerRef.current} onBack={handleBackToHome} />;
-                        case 'pass': return <CardRevealScreen key={localCurrentPlayerIndex} player={localGameData.players[localCurrentPlayerIndex]} word={localCurrentPlayerIndex === localGameData.imposterIndex ? "IMPOSTER" : localGameData.secretWord} onNext={handleLocalNextPlayer} isLastPlayer={localCurrentPlayerIndex === localGameData.players.length - 1} audioManager={audioManagerRef.current} isHost={true} />;
+                        case 'pass': return <CardRevealScreen key={localCurrentPlayerIndex} player={localGameData.players[localCurrentPlayerIndex]} word={localCurrentPlayerIndex === localGameData.imposterIndex ? "IMPOSTER" : localGameData.secretWord} onNext={handleLocalNextPlayer} isLastPlayer={localCurrentPlayerIndex === localGameData.players.length - 1} audioManager={audioManagerRef.current} />;
                         case 'turnOrder': return <TurnOrderScreen players={localGameData.turnOrder} onStartMission={handleStartLocalActiveGame} audioManager={audioManagerRef.current} isHost={true}/>;
                         case 'active': return <GameTimerScreen lobbyData={localGameData} onEndGame={handleLocalEndGame} firstPlayer={localGameData.firstPlayer} audioManager={audioManagerRef.current} isHost={true} lobbyId={null}/>;
                         case 'result': 
                             return <ResultScreen 
-                                isLocal={true} 
-                                lobbyData={localGameData} 
-                                lobbyPlayers={localGameData.players} 
-                                onRestart={handleLocalRestart} 
-                                onBackToHome={handleBackToHome} 
-                                audioManager={audioManagerRef.current} 
-                                isHost={true} 
+                                isLocal={true} lobbyData={localGameData} lobbyPlayers={localGameData.players} 
+                                onRestart={handleLocalRestart} onBackToHome={handleBackToHome} audioManager={audioManagerRef.current} isHost={true} 
                             />;
                         default: return <SetupScreen onStartGame={startLocalGame} audioManager={audioManagerRef.current} onBack={handleBackToHome} />;
                     }
@@ -2946,16 +3003,15 @@ useEffect(() => {
                     const onlineState = lobbyData.gameState;
                     
                     if (onlineState === 'waiting' || (onlineState === 'reveal' && meAsPlayer?.hasSeenCard)) {
-                         return <WaitingRoom lobbyData={lobbyData} lobbyPlayers={lobbyPlayers} user={user} lobbyId={lobbyId} onStartGame={handleStartGameOnline} onStartMission={handleStartMissionOnline} onLeaveLobby={handleBackToHome} audioManager={audioManagerRef.current} />;
+                         return <WaitingRoom lobbyData={lobbyData} lobbyPlayers={lobbyPlayers} user={user} lobbyId={lobbyId} onStartGame={handleStartGameOnline} onStartMission={handleStartMissionOnline} onLeaveLobby={handleBackToHome} audioManager={audioManagerRef.current} onConfusionVote={handleConfusionVote} />;
                     }
                     if (onlineState === 'reveal' && !meAsPlayer?.hasSeenCard) {
                          return <CardRevealScreen 
-                                        isOnline={true}
-                                        player={{ name: meAsPlayer?.name }} 
+                                        isOnline={true} player={{ name: meAsPlayer?.name }} 
                                         word={user.uid === lobbyData.imposterId ? "IMPOSTER" : lobbyData.secretWord}
                                         audioManager={audioManagerRef.current}
                                         onAcknowledge={handleAcknowledgeCard}
-                                        isHost={isHost}
+                                        onConfused={handleDeclareConfusion}
                                      />;
                     }
                     if (onlineState === 'turnOrder') {
@@ -2963,12 +3019,8 @@ useEffect(() => {
                     }
                     if (onlineState === 'active') {
                          return <GameTimerScreen 
-                            lobbyData={lobbyData}
-                            onEndGame={handleEndGameOnline} 
-                            firstPlayer={lobbyData.turnOrder ? lobbyData.turnOrder[0].name : ''} 
-                            audioManager={audioManagerRef.current}
-                            isHost={isHost}
-                            lobbyId={lobbyId}
+                            lobbyData={lobbyData} onEndGame={handleEndGameOnline} 
+                            firstPlayer={lobbyData.turnOrder ? lobbyData.turnOrder[0].name : ''} audioManager={audioManagerRef.current} isHost={isHost} lobbyId={lobbyId}
                         />;
                     }
                     if (onlineState === 'voting') {
@@ -2976,13 +3028,8 @@ useEffect(() => {
                     }
                     if (onlineState === 'result') {
                         return <ResultScreen 
-                            isLocal={false}
-                            lobbyData={lobbyData}
-                            lobbyPlayers={lobbyPlayers}
-                            onRestart={handleRestartOnline} 
-                            onBackToHome={handleBackToHome}
-                            audioManager={audioManagerRef.current}
-                            isHost={isHost}
+                            isLocal={false} lobbyData={lobbyData} lobbyPlayers={lobbyPlayers}
+                            onRestart={handleRestartOnline} onBackToHome={handleBackToHome} audioManager={audioManagerRef.current} isHost={isHost}
                         />;
                     }
                     return <LoadingScreen />; // Fallback
