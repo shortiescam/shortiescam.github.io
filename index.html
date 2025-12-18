@@ -442,12 +442,21 @@
         };
 
         const AUDIO_URLS = {
+            // New Music Tracks
+            menuMusic: "https://www.dropbox.com/scl/fi/2ptwdl60l1d8uonk2565r/01K2F0QVDH804F7BRXZM49PGP6.mp3?rlkey=xup3gy3mvh0s074m0exikou6m&st=b6sy1eaj&raw=1",
+            setupMusic: "https://www.dropbox.com/scl/fi/tpqgmp0vic0fkwu2qa4z6/01K4783N93TC27JX716223WV45.mp3?rlkey=6gl82wcrpvioch4y30q7yaoij&st=nd1z0omz&raw=1",
+            timerMusic: "https://www.dropbox.com/scl/fi/rw6a1k3er9zua9hy50y7r/01HSGT383SN8Y723GMVHWEGF1S.mp3?rlkey=o9inopsmgmztzh439pm3yqmw2&st=aqyn9x8c&raw=1",
+            
+            // New Result Sounds
+            resultWin: "https://www.dropbox.com/scl/fi/dfq6utr0g3ipxd7ie61iw/01HSH4PEC9GGB6AFS60K6059HB-1.mp3?rlkey=hr5l3w6ipwpq3uyo8vspo8slh&st=oqb5yhnp&raw=1",
+            resultLose: "https://www.dropbox.com/scl/fi/dcwhziv1s6y2esdeyshlr/01HSH4TXDZMFD17MZ6X052DSDK.mp3?rlkey=k125vxojv60ef1uimtqwvbmqr&st=k6mrbuoj&raw=1",
+
+            // Existing SFX
             startMission: "https://www.dropbox.com/scl/fi/6mqqjkan6k1z9b3rqv19m/01HX9JKSR2BK842A7XV43SW8Z0.mp3?rlkey=j9bf35mocbr2rceiunaak8r7i&raw=1",
             startRandomMission: "https://www.dropbox.com/scl/fi/9gl6f796t9szuen6f4y6p/01HXW72GB6SAGDFW8VBC8X25F2.mp3?rlkey=1392vzqlrk6dps0a8763us7uf&raw=1",
             selectCategory: "https://www.dropbox.com/scl/fi/tjwfrllo8lsb23t0abu27/01HWD5XAX15KKAKASJCBS18SMC.mp3?rlkey=82jumuuttcx9a0qdo98bp3wty&raw=1",
             deselectCategory: "https://www.dropbox.com/scl/fi/z9s27e8cx9zi4c9yg9zs9/01HWD5XAR2DPE0H1ZXJCBMF4MX.mp3?rlkey=54rmyfgzcntew0e0qy1lbf98z&raw=1",
-            alarm: "https://www.dropbox.com/scl/fi/tdwfnelbxoo06kn1za6on/01HSGT2Z9YWSYE1X5KRHAEH9G3.mp3?rlkey=btqqywkoto0v6xbrc3w758qde&raw=1",
-            result: "https://www.dropbox.com/scl/fi/l9k4wr93e20eb9v1c86c2/01JB990HCJZNAKJDSE9R0ZF2CQ.mp3?rlkey=mti7p26vh1j0hvvyapr0aly89&raw=1",
+            alarm: "https://www.dropbox.com/scl/fi/33ljaplfdfse9h9xrqkia/01J9RASVSTKGV6WQ2GKBY86R84.mp3?rlkey=dhsr2ygnox9se0s88uklsfa5l&st=25yswvvu&raw=1",
             playAgain: "https://www.dropbox.com/scl/fi/o822ufm5jz0y0imeait4m/01HX6MKWSBBS0FW45A5N35AT5Z.mp3?rlkey=pwnm13xyxu5jo33pjgs2wyvyj&raw=1",
             switchOn: "https://www.dropbox.com/scl/fi/wttc9l7ujwjfjw8wuif7z/01HWD5XAV5T7SNYPM79JSPYJTP-1.mp3?rlkey=no7fuxmbz3bcgmtvaje61l5vy&raw=1",
             switchOff: "https://www.dropbox.com/scl/fi/ypnd4hikcnj69qi9y205k/01HWD5XB1GFY4G3Y4AZTC1GN2R.mp3?rlkey=m04pff93t90o6xkoktwqlv6wb&raw=1",
@@ -1767,7 +1776,7 @@ const TIPS = [
                                     <button 
                                         onClick={() => {
                                             setTimerEnabled(!timerEnabled);
-                                            audioManager.playSound(!timerEnabled ? 'switchOn' : 'switchOff');
+                                            audioManager.playSound('switchOn');
                                             if(navigator.vibrate) navigator.vibrate(10);
                                         }}
                                         className={`flex-shrink-0 w-12 h-7 rounded-full p-1 transition-all duration-300 ${timerEnabled ? 'bg-sky-500/80' : 'bg-white/10'}`}
@@ -1803,7 +1812,7 @@ const TIPS = [
                                     <button 
                                         onClick={() => {
                                             setSpeakCategory(!speakCategory);
-                                            audioManager.playSound(!speakCategory ? 'switchOn' : 'switchOff');
+                                            audioManager.playSound('switchOn');
                                             if(navigator.vibrate) navigator.vibrate(10);
                                         }}
                                         className={`flex-shrink-0 w-12 h-7 rounded-full p-1 transition-all duration-300 ${speakCategory ? 'bg-purple-500/80' : 'bg-white/10'}`}
@@ -1829,7 +1838,7 @@ const TIPS = [
                                         onClick={() => {
                                             if (players.length >= 10) {
                                                 setEnableTwoImposters(!enableTwoImposters);
-                                                audioManager.playSound(!enableTwoImposters ? 'switchOn' : 'switchOff');
+                                                audioManager.playSound('switchOn');
                                                 if(navigator.vibrate) navigator.vibrate(10);
                                             }
                                         }}
@@ -2237,6 +2246,7 @@ const TIPS = [
 
                     if (newTimeLeft <= 0) {
                         clearInterval(timerRef.current);
+                        audioManager.stopMusic(); // Stop the timer music
                         
                         const sound = audioManager.getSound('alarm');
                         if (sound && sound.paused) {
@@ -2464,11 +2474,15 @@ const TIPS = [
 
             useEffect(() => {
                 if (isLocal) {
-                    audioManager.playSound('result');
+                    // For local games, it just reveals the imposter. We'll use the 'lose' sound.
+                    audioManager.playSound('resultLose');
                 }
+                
+                // Cleanup function for local mode sound
                 return () => { 
-                    const sound = audioManager.getSound('result');
-                    if (sound) sound.pause(); 
+                    if (isLocal) {
+                        audioManager.stopSound('resultLose'); 
+                    }
                 };
             }, [audioManager, isLocal]);
 
@@ -2670,6 +2684,7 @@ const TIPS = [
 
             // Audio Manager & Sync State
             const audioManagerRef = useRef(null);
+            const [userInteracted, setUserInteracted] = useState(false); // Add this line
             const [lastPlayedEventTimestamp, setLastPlayedEventTimestamp] = useState(0);
             
             // --- Refs to hold the latest state for use in Firestore listeners ---
@@ -2694,6 +2709,7 @@ const TIPS = [
                 if (audioManagerRef.current) return;
                 const manager = {
                     sounds: {},
+                    currentMusic: null, // Track current music
                     initSound: function(name, url, loop = false) {
                         this.sounds[name] = new Audio(url);
                         this.sounds[name].loop = loop;
@@ -2705,14 +2721,37 @@ const TIPS = [
                         }
                         return this.sounds[name];
                     },
-                    playSound: function(name, category = null) {
+                    playSound: function(name, options = {}) {
+                        const { category = null, volume = 1.0 } = options;
                         const sound = this.getSound(name, category);
                         if (sound) {
+                            sound.volume = volume;
                             sound.currentTime = 0;
                             const playPromise = sound.play();
                             if (playPromise !== undefined) {
                                 playPromise.catch(error => { /* Autoplay was prevented */ });
                             }
+                        }
+                    },
+                    playMusic: function(name, options = {}) {
+                        const { volume = 1.0 } = options;
+                        if (this.currentMusic && this.currentMusic.name === name) return;
+
+                        this.stopMusic();
+
+                        const sound = this.getSound(name);
+                        if (sound) {
+                            this.currentMusic = { name: name, sound: sound };
+                            sound.volume = volume;
+                            sound.currentTime = 0;
+                            sound.play().catch(e => console.error("Music playback failed", e));
+                        }
+                    },
+                    stopMusic: function() {
+                        if (this.currentMusic) {
+                            this.currentMusic.sound.pause();
+                            this.currentMusic.sound.currentTime = 0;
+                            this.currentMusic = null;
                         }
                     },
                     stopSound: function(name, category = null) {
@@ -2723,9 +2762,17 @@ const TIPS = [
                         }
                     }
                 };
-                Object.keys(AUDIO_URLS).forEach(key => { if (key !== 'categories') { manager.initSound(key, AUDIO_URLS[key], key === 'alarm'); } });
+                Object.keys(AUDIO_URLS).forEach(key => { 
+                    if (key !== 'categories') { 
+                        const isMusic = key.includes('Music');
+                        manager.initSound(key, AUDIO_URLS[key], isMusic); 
+                    } 
+                });
                 manager.sounds.categories = {};
-                for (const cat in AUDIO_URLS.categories) { manager.sounds.categories[cat] = new Audio(AUDIO_URLS.categories[cat]); manager.sounds.categories[cat].preload = 'auto'; }
+                for (const cat in AUDIO_URLS.categories) { 
+                    manager.sounds.categories[cat] = new Audio(AUDIO_URLS.categories[cat]); 
+                    manager.sounds.categories[cat].preload = 'auto'; 
+                }
                 audioManagerRef.current = manager;
             }, []);
 
@@ -2769,6 +2816,48 @@ const TIPS = [
                     document.removeEventListener('contextmenu', disableImageContextMenu); // Cleanup
                 };
             }, []);
+            
+            // Effect for managing background music based on game state
+            useEffect(() => {
+                const audioManager = audioManagerRef.current;
+                if (!audioManager || !userInteracted) return; // Updated line
+
+                // For Online Mode
+                if (gameMode === 'online') {
+                    if (!lobbyId) {
+                        audioManager.playMusic('menuMusic');
+                    } else if (lobbyData) {
+                        if (lobbyData.gameState === 'waiting') {
+                            audioManager.playMusic('setupMusic', { volume: 0.8 });
+                        } else if (lobbyData.gameState === 'active') {
+                            audioManager.playMusic('timerMusic', { volume: 0.7 }); // soft
+                        } else if (lobbyData.gameState === 'result') {
+                            audioManager.stopMusic(); // Result screen has its own sounds
+                        } else {
+                            // For reveal, turnOrder, voting screens, we might want silence
+                            audioManager.stopMusic();
+                        }
+                    }
+                } 
+                // For Local Mode
+                else if (gameMode === 'local') {
+                    if (localGameState === 'setup') {
+                        audioManager.playMusic('setupMusic', { volume: 0.8 }); // a bit softer
+                    } else if (localGameState === 'active') {
+                        audioManager.playMusic('timerMusic', { volume: 0.7 }); // soft
+                    } else if (localGameState === 'result') {
+                        audioManager.stopMusic(); // Result screen has its own sounds
+                    } else {
+                        // For pass, turnOrder screens, silence is better
+                         audioManager.stopMusic();
+                    }
+                }
+                // For Main Menu
+                else {
+                    audioManager.playMusic('menuMusic');
+                }
+
+            }, [gameMode, localGameState, lobbyId, lobbyData?.gameState, userInteracted]);
 
             // Firestore Listeners & Game Logic for Online Mode
             useEffect(() => {
@@ -2794,8 +2883,8 @@ const TIPS = [
 						}
                         
                         if (data.lastSoundEvent && data.lastSoundEvent.timestamp > lastPlayedEventTimestamp) {
-                            const soundName = data.lastSoundEvent.name;
-                            audioManagerRef.current.playSound(soundName, data.lastSoundEvent.category || null);
+                            const { name, category } = data.lastSoundEvent;
+                            audioManagerRef.current.playSound(name, { category: category || null });
                             setLastPlayedEventTimestamp(data.lastSoundEvent.timestamp);
                         }
                     } else {
@@ -2948,7 +3037,7 @@ const TIPS = [
             const handleStartLocalActiveGame = () => {
                 audioManagerRef.current.playSound('uiClick');
                  if (localGameData.speakCategory && localGameData.category) {
-                    audioManagerRef.current.playSound('category', localGameData.category);
+                    audioManagerRef.current.playSound('category', { category: localGameData.category });
                 }
                 setLocalGameData(prev => ({ ...prev, missionStartTime: new Date() }));
                 setLocalGameState('active');
@@ -2964,7 +3053,6 @@ const TIPS = [
 
             const handleLocalRestart = () => {
                 audioManagerRef.current.playSound('playAgain');
-                audioManagerRef.current.stopSound('result');
                 setLocalGameState('setup');
                 setLocalGameData({
                     players: [], imposterIndices: [], secretWord: '',
@@ -2993,6 +3081,7 @@ const TIPS = [
 			const handleBackToHome = async (silent = false) => {
                 if (!silent) {
 				    audioManagerRef.current.playSound('uiClick');
+                    audioManagerRef.current.stopMusic();
                 }
 				const currentLobbyId = lobbyId; // Capture before state changes
 				const isOnlineMode = gameMode === 'online';
@@ -3180,8 +3269,10 @@ const TIPS = [
                 }
                 
                 let result = {};
+                let resultSound = 'resultLose';
                 if (accusedIds.length === 1 && currentLobbyData.imposterIds.includes(accusedIds[0])) {
                     result = { winner: 'agents' };
+                    resultSound = 'resultWin';
                 } else if (accusedIds.length !== 1) {
                     result = { winner: 'imposter', reason: 'tie' };
                 } else {
@@ -3196,7 +3287,7 @@ const TIPS = [
 
                 await db.collection('lobbies').doc(lobbyId).update({ 
                     gameState: 'result', gameResult: result, votingRecord,
-                    lastSoundEvent: { name: 'result', timestamp: Date.now() }
+                    lastSoundEvent: { name: resultSound, timestamp: Date.now() }
                 });
             };
             
@@ -3225,7 +3316,12 @@ const TIPS = [
                     }).catch(err => console.log("Could not clear sound event, it might have been cleared already."));
                 }, 2000);
             };
-
+			
+			const handleFirstInteraction = () => {
+                if (!userInteracted) {
+                    setUserInteracted(true);
+                }
+            };
 
             // --- RENDER LOGIC ---
             const renderContent = () => {
@@ -3294,7 +3390,10 @@ const TIPS = [
             };
             
             return (
-                <div className="w-full h-full text-slate-200 font-sans selection:bg-brand-500/30">
+                <div 
+                    className="w-full h-full text-slate-200 font-sans selection:bg-brand-500/30"
+                    onClick={handleFirstInteraction}
+                >
                     <div className="fixed inset-0 bg-[#020617] -z-10"></div>
                      <div className="absolute inset-0 pointer-events-none">
                         <div className="blob bg-brand-600/30 top-[-20%] left-[-20%] w-[60%] h-[60%]"></div>
