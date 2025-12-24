@@ -96,6 +96,12 @@
     </script>
 
     <style>
+		html, body {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+        }
+		
         :root {
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
@@ -103,10 +109,11 @@
         body {
             background-color: #020617;
             color: #f8fafc;
-            overflow: hidden;
+            /* overflow: hidden; is now handled by the 'html, body' rule above */
             -webkit-tap-highlight-color: transparent;
-            touch-action: pan-x pan-y;
-            height: 100dvh;
+            touch-action: none; /* This prevents panning/scrolling gestures */
+            height: 100%; /* Use 100% which works best with position: fixed */
+            width: 100%;
             user-select: none;
             -webkit-user-select: none;
         }
@@ -778,7 +785,7 @@
                             </section>
                         </div>
                     </div>
-                     <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
+                     <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
                         <div className="max-w-lg mx-auto pb-[env(safe-area-inset-bottom)]">
                              <button
                                 onClick={handleAction}
@@ -1219,7 +1226,7 @@
                         </div>
                     </div>
                     
-                    <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
+                    <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
                         <div className="max-w-lg mx-auto pb-[env(safe-area-inset-bottom)]">
                         {isHost ? (
                             allPlayersReady && !pollIsActive ? (
@@ -2023,7 +2030,7 @@
                     </div>
 
                     {/* Fixed Bottom Start Button */}
-                    <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
+                    <div className="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-50">
                         <div className="max-w-lg mx-auto pb-[env(safe-area-inset-bottom)]">
                             <button
                                 onClick={handleStartClick}
